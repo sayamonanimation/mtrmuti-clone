@@ -28,6 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute(['hero_banner_path', $heroBannerPath]);
     }
 
+    $stmt->execute(['chatbot_enabled', isset($_POST['chatbot_enabled']) ? '1' : '0']);
+
     set_flash('บันทึกการตั้งค่าเรียบร้อยแล้ว');
     header('Location: /admin/settings.php');
     exit;
@@ -92,6 +94,13 @@ foreach ($pdo->query('SELECT setting_key, setting_value FROM site_settings') as 
                 <img class="current-thumb" src="<?= h($settings['hero_banner_path']) ?>" alt="">
             <?php endif; ?>
             <input type="file" name="hero_banner" accept="image/*">
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="chatbot_enabled" value="1" <?= ($settings['chatbot_enabled'] ?? '1') === '1' ? 'checked' : '' ?>>
+                เปิดใช้งานผู้ช่วยตอบคำถาม (chatbot) บนหน้าเว็บไซต์
+            </label>
+            <p class="field-hint" style="margin-top:0;">ถ้าปิด ปุ่มแชทจะหายไปจากทุกหน้าของเว็บไซต์ทันที</p>
         </div>
         <div class="form-actions">
             <button class="btn" type="submit">บันทึก</button>

@@ -46,7 +46,7 @@ $mourningMode = get_setting('mourning_mode', '0') === '1';
                     <?php if (is_admin_logged_in()): ?>
                     <a class="topbar-btn topbar-btn-ghost topbar-btn-auth" href="/admin/dashboard.php"><?= h(t('topbar.dashboard')) ?></a>
                     <?php else: ?>
-                    <a class="topbar-btn topbar-btn-ghost topbar-btn-auth" href="/admin/login.php"><?= h(t('topbar.login')) ?></a>
+                    <a class="topbar-btn topbar-btn-ghost topbar-btn-auth" href="/admin/index.php"><?= h(t('topbar.login')) ?></a>
                     <?php endif; ?>
                     <?php if ($enrollUrl): ?>
                     <a class="topbar-btn topbar-btn-solid" href="<?= h($enrollUrl) ?>" target="_blank" rel="noopener"><?= h(t('topbar.enroll')) ?></a>

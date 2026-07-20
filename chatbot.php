@@ -4,6 +4,11 @@ require_once __DIR__ . '/includes/functions.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+if (get_setting('chatbot_enabled', '1') !== '1') {
+    echo json_encode(['results' => []]);
+    exit;
+}
+
 $query = trim($_GET['q'] ?? $_POST['q'] ?? '');
 if ($query === '' || mb_strlen($query) > 200) {
     echo json_encode(['results' => []]);
