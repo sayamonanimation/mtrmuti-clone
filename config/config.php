@@ -48,6 +48,7 @@ try {
         ]
     );
 } catch (PDOException $e) {
+    error_log('DB connection failed: ' . $e->getMessage());
     http_response_code(500);
     die('เชื่อมต่อฐานข้อมูลไม่สำเร็จ กรุณาตรวจสอบการตั้งค่าใน config/config.php');
 }
