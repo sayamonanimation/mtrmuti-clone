@@ -55,6 +55,6 @@ window.__chatbotStrings = {
 };
 </script>
 <?php endif; ?>
-<script src="/assets/js/main.js"></script>
+<script src="/assets/js/main.js?v=<?= (int) @filemtime(__DIR__ . '/../assets/js/main.js') ?>"></script>
 </body>
 </html>
