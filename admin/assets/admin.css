@@ -140,6 +140,7 @@ table.admin-table { width: 100%; border-collapse: collapse; }
     padding: 36px;
     border-radius: var(--radius);
     width: 340px;
+    max-width: calc(100vw - 32px);
     box-shadow: var(--shadow);
 }
 .login-box h1 { font-size: 1.2rem; margin: 0 0 20px; text-align: center; }
@@ -165,3 +166,16 @@ table.admin-table { width: 100%; border-collapse: collapse; }
     margin-bottom: 6px;
 }
 .portfolio-thumb-item p { margin: 0 0 8px; font-size: .82rem; color: #666; }
+
+@media (max-width: 860px) {
+    .admin-shell { flex-direction: column; }
+    .admin-sidebar { width: 100%; }
+    .admin-sidebar ul { display: flex; flex-wrap: wrap; padding: 6px; }
+    .admin-sidebar a { padding: 8px 12px; border-left: none; border-radius: 6px; }
+    .admin-sidebar a.active { border-left: none; }
+    .admin-logout { border-top: none; }
+    .admin-topbar { padding: 14px 16px; flex-wrap: wrap; gap: 10px; }
+    .admin-content { padding: 16px; }
+    table.admin-table { display: block; overflow-x: auto; white-space: nowrap; }
+    .inline-edit-form { max-width: 100%; }
+}
