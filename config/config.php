@@ -20,6 +20,7 @@ if (!defined('DB_HOST') && getenv('DB_HOST') !== false) {
     define('DB_NAME', getenv('DB_NAME'));
     define('DB_USER', getenv('DB_USER'));
     define('DB_PASS', getenv('DB_PASS'));
+    define('DB_PORT', getenv('DB_PORT') ?: '3306'); // some free hosts (e.g. Clever Cloud) use a non-standard port
 }
 
 if (!defined('DB_HOST')) {
@@ -27,6 +28,7 @@ if (!defined('DB_HOST')) {
     define('DB_NAME', 'cloudrambo_dbname');   // e.g. cpaneluser_mtrmuti
     define('DB_USER', 'cloudrambo_dbuser');
     define('DB_PASS', 'cloudrambo_dbpass');
+    define('DB_PORT', '3306');
 }
 
 define('SITE_ROOT', dirname(__DIR__));
@@ -39,7 +41,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 try {
     $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
+        'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=utf8mb4',
         DB_USER,
         DB_PASS,
         [
