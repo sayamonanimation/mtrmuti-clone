@@ -868,6 +868,9 @@ a.card-link { display: block; color: inherit; }
     overflow: hidden;
     z-index: 200;
 }
+.chatbot-panel[hidden] {
+    display: none;
+}
 .chatbot-header {
     background: var(--red);
     color: var(--white);
