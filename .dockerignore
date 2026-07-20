@@ -1,0 +1,8 @@
+.git
+.gitignore
+config/config.local.php
+assets/uploads/*
+!assets/uploads/.gitkeep
+db4free
+*.md
+.DS_Store

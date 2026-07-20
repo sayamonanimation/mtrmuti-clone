@@ -1,0 +1,35 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      DB_HOST: db
+      DB_NAME: mtrmuti
+      DB_USER: mtrmuti
+      DB_PASS: mtrmuti_pass
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/var/www/html/assets/uploads
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: mtrmuti
+      MYSQL_USER: mtrmuti
+      MYSQL_PASSWORD: mtrmuti_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:
+  uploads_data:
