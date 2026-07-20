@@ -884,7 +884,8 @@ a.card-link { display: block; color: inherit; }
     font-size: 1.4rem;
     line-height: 1;
     cursor: pointer;
-    padding: 0;
+    padding: 8px;
+    margin: -8px;
 }
 .chatbot-messages {
     flex: 1;

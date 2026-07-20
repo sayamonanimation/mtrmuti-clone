@@ -111,6 +111,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         if (chatClose) chatClose.addEventListener('click', closeChat);
 
+        document.addEventListener('click', function (e) {
+            if (chatPanel.hidden) return;
+            if (chatPanel.contains(e.target) || chatToggle.contains(e.target)) return;
+            closeChat();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !chatPanel.hidden) closeChat();
+        });
+
         chatForm.addEventListener('submit', function (e) {
             e.preventDefault();
             var q = chatInput.value.trim();
