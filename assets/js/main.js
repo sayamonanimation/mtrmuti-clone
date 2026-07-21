@@ -1,3 +1,10 @@
+document.addEventListener('error', function (e) {
+    var el = e.target;
+    if (el.tagName !== 'IMG' || el.dataset.fallbackApplied) return;
+    el.dataset.fallbackApplied = '1';
+    el.src = '/assets/img/placeholder-avatar.svg';
+}, true);
+
 document.addEventListener('DOMContentLoaded', function () {
     var toggle = document.getElementById('navToggle');
     var nav = document.getElementById('mainNav');
