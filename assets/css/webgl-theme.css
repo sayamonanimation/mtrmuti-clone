@@ -705,3 +705,110 @@ section.alt { background: transparent; }
 .classroom-lightbox-nav.next { right: 18px; top: 50%; transform: translateY(-50%); }
 .classroom-lightbox-close:hover,
 .classroom-lightbox-nav:hover { background: var(--fx-accent); }
+
+/* Student statistics: WebGL 3D bar chart (assets/js/stats-fx.js) */
+.stats3d {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 22px;
+    border-radius: var(--radius);
+    background: var(--fx-surface);
+    border: 1px solid var(--fx-border);
+    box-shadow: var(--fx-glow);
+    backdrop-filter: var(--fx-blur);
+    -webkit-backdrop-filter: var(--fx-blur);
+}
+.stats3d-chips {
+    display: grid;
+    grid-template-columns: 1.4fr repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.stats3d-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid var(--fx-border);
+}
+.stats3d-chip-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .78rem;
+    color: var(--fx-muted);
+}
+.stats3d-chip-label i { width: 9px; height: 9px; border-radius: 2px; box-shadow: 0 0 8px currentColor; }
+.stats3d-chip-num { font-size: 1.5rem; font-weight: 700; color: #fff; line-height: 1.2; }
+.stats3d-chip-total .stats3d-chip-num {
+    background: linear-gradient(180deg, #fff, var(--fx-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.stats3d-stage {
+    position: relative;
+    height: 340px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 85%, rgba(255, 70, 40, .12), transparent 65%);
+}
+.stats3d-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: none; }
+.stats3d-ready .stats3d-canvas { display: block; }
+.stats3d-labels { position: absolute; inset: 0; pointer-events: none; }
+.stats3d-value,
+.stats3d-year {
+    position: absolute;
+    left: 0;
+    top: 0;
+    white-space: nowrap;
+    will-change: transform;
+}
+.stats3d-value {
+    font-size: .82rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 90, 60, .9);
+    transition: opacity .3s;
+}
+.stats3d-value.is-hover { color: var(--fx-accent-2); font-size: .95rem; }
+.stats3d-year {
+    font-size: .8rem;
+    color: var(--fx-muted);
+    letter-spacing: .02em;
+}
+.stats3d-tip {
+    position: absolute;
+    transform: translate(-50%, calc(-100% - 14px));
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: .82rem;
+    white-space: nowrap;
+    color: #fff;
+    background: rgba(20, 5, 6, .9);
+    border: 1px solid var(--fx-border-hi);
+    box-shadow: 0 0 18px rgba(255, 70, 40, .35);
+    pointer-events: none;
+}
+/* Plain table: shown without WebGL, kept for screen readers otherwise */
+.stats3d-table { width: 100%; border-collapse: collapse; color: var(--fx-text); font-size: .9rem; }
+.stats3d-table th,
+.stats3d-table td { padding: 8px; border-bottom: 1px solid var(--fx-border); text-align: center; }
+.stats3d-ready .stats3d-table {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+.stats3d:not(.stats3d-ready) .stats3d-stage { height: auto; padding: 10px; }
+
+@media (max-width: 720px) {
+    .stats3d { padding: 14px; }
+    .stats3d-chips { grid-template-columns: repeat(2, 1fr); }
+    .stats3d-chip-total { grid-column: 1 / -1; }
+    .stats3d-chip-num { font-size: 1.25rem; }
+    .stats3d-stage { height: 260px; }
+}
