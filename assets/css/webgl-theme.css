@@ -812,3 +812,10 @@ section.alt { background: transparent; }
     .stats3d-chip-num { font-size: 1.25rem; }
     .stats3d-stage { height: 260px; }
 }
+.stats3d-chips-4 { grid-template-columns: 1.4fr repeat(3, 1fr); }
+.stats3d-chip-num.is-up { color: #6be29a; }
+.stats3d-chip-num.is-down { color: #ff8a7a; }
+.stats3d + .stats3d { margin-top: 24px; }
+@media (max-width: 720px) {
+    .stats3d-chips-4 { grid-template-columns: repeat(2, 1fr); }
+}
