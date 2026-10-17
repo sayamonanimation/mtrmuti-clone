@@ -121,7 +121,7 @@ $sliders = $pdo->query('SELECT * FROM sliders ORDER BY sort_order ASC')->fetchAl
             </tr>
             <?php endforeach; ?>
             <?php if (!$sliders): ?>
-            <tr><td colspan="4">ยังไม่มีสไลด์ (หน้าแรกจะแสดง hero แบบข้อความแทน)</td></tr>
+            <tr><td colspan="4">ยังไม่มีสไลด์ (หน้าแรกจะแสดงเฉพาะหัวข้อแบบ WebGL)</td></tr>
             <?php endif; ?>
         </tbody>
     </table>

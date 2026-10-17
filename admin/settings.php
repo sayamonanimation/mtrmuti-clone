@@ -90,14 +90,14 @@ foreach ($pdo->query('SELECT setting_key, setting_value FROM site_settings') as 
         </div>
         <div class="form-group">
             <label>แบนเนอร์หน้าแรก (แนะนำขนาดกว้าง เช่น 1920x480px)</label>
-            <p class="field-hint" style="margin-top:0;">แสดงเป็นพื้นหลังของหัวข้อหน้าแรก ใช้เฉพาะตอนที่ยังไม่มี "สไลด์หน้าแรก" ที่เปิดใช้งานอยู่</p>
+            <p class="field-hint" style="margin-top:0;">แสดงจาง ๆ เป็นพื้นหลังของหัวข้อหน้าแรกแบบ WebGL</p>
             <?php if (!empty($settings['hero_banner_path'])): ?>
                 <img class="current-thumb" src="<?= h($settings['hero_banner_path']) ?>" alt="">
             <?php endif; ?>
             <input type="file" name="hero_banner" accept="image/*">
         </div>
         <h3>หัวข้อหน้าแรกแบบ WebGL</h3>
-        <p class="field-hint" style="margin-top:0;">ใช้เฉพาะตอนที่ยังไม่มี "สไลด์หน้าแรก" ที่เปิดใช้งานอยู่</p>
+        <p class="field-hint" style="margin-top:0;">แสดงด้านบนสุดของหน้าแรกเสมอ ส่วน "สไลด์หน้าแรก" (ถ้ามี) จะแสดงต่อจากหัวข้อนี้</p>
         <div class="form-group">
             <label>ข้อความอนุภาคแสง (ตัวอักษรที่ประกอบจากจุดแสง เล่นกับเมาส์ได้)</label>
             <p class="field-hint" style="margin-top:0;">แนะนำภาษาอังกฤษสั้น ๆ 1-2 คำ เช่น MULTIMEDIA หรือ MT RMUTI ขึ้นบรรทัดใหม่ด้วยเครื่องหมาย | เช่น MULTIMEDIA|TECHNOLOGY</p>

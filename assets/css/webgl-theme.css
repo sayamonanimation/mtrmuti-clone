@@ -614,3 +614,22 @@ section.alt { background: transparent; }
 @media (prefers-reduced-motion: reduce) {
     .hero-fx-video { display: none; }
 }
+
+/* Homepage slider: a framed card under the WebGL hero */
+.home-slider-section { padding: 48px 0 8px; }
+.home-slider-section .slider {
+    height: min(60vh, 540px);
+    border-radius: var(--radius);
+    border: 1px solid var(--fx-border);
+    box-shadow: var(--fx-glow);
+}
+.home-slider-section .slider-caption {
+    justify-content: flex-end;
+    padding-bottom: 56px;
+    background: linear-gradient(180deg, rgba(11, 2, 3, 0) 35%, rgba(11, 2, 3, .82) 100%);
+}
+@media (max-width: 720px) {
+    .home-slider-section { padding-top: 32px; }
+    .home-slider-section .slider { height: 260px; }
+    .home-slider-section .slider-caption { padding-bottom: 40px; }
+}
