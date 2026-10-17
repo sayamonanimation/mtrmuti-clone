@@ -2,8 +2,9 @@
 require_once __DIR__ . '/includes/auth.php';
 
 $keys = ['site_name', 'site_name_en', 'address', 'phone', 'email', 'facebook_url', 'enroll_url', 'homepage_video_url', 'logo_path', 'hero_banner_path',
-    'hero_particle_text', 'hero_keywords', 'hero_video_url'];
-$imageKeys = ['logo_path', 'hero_banner_path'];
+    'hero_particle_text', 'hero_keywords', 'hero_video_url',
+    'facebook_page_name', 'facebook_followers', 'facebook_post_urls', 'facebook_cover_path'];
+$imageKeys = ['logo_path', 'hero_banner_path', 'facebook_cover_path'];
 $urlKeys = ['facebook_url', 'enroll_url', 'homepage_video_url', 'hero_video_url'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -32,6 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute(['hero_banner_path', $heroBannerPath]);
     } elseif (!empty($_POST['remove_hero_banner'])) {
         $stmt->execute(['hero_banner_path', '']);
+    }
+
+    $facebookCoverPath = handle_image_upload('facebook_cover', 'branding');
+    if ($facebookCoverPath) {
+        $stmt->execute(['facebook_cover_path', $facebookCoverPath]);
+    } elseif (!empty($_POST['remove_facebook_cover'])) {
+        $stmt->execute(['facebook_cover_path', '']);
     }
 
     $stmt->execute(['chatbot_enabled', isset($_POST['chatbot_enabled']) ? '1' : '0']);
@@ -103,6 +111,30 @@ foreach ($pdo->query('SELECT setting_key, setting_value FROM site_settings') as 
             <?php endif; ?>
             <input type="file" name="hero_banner" accept="image/*">
         </div>
+        <h3>ส่วน Facebook หน้าแรก</h3>
+        <p class="field-hint" style="margin-top:0;">ใช้ลิงก์ Facebook ด้านบน แสดงเป็นการ์ดหน้าเพจแบบ Facebook พร้อมโพสต์จริงจากเพจ</p>
+        <div class="form-group">
+            <label>ลิงก์โพสต์ Facebook ที่จะแสดง (บรรทัดละ 1 ลิงก์ สูงสุด 10 โพสต์ เรียงจากบนลงล่าง)</label>
+            <p class="field-hint" style="margin-top:0;">เปิดโพสต์ในเพจ Facebook → กดปุ่ม ··· ที่มุมโพสต์ หรือกดที่เวลาโพสต์ → คัดลอกลิงก์มาวาง (ต้องเป็นโพสต์สาธารณะ) ถ้าเว้นว่างจะแสดงปลั๊กอินเพจของ Facebook แทน</p>
+            <textarea name="facebook_post_urls" rows="5" placeholder="https://www.facebook.com/multimedia.rmuti/posts/..."><?= h($settings['facebook_post_urls'] ?? '') ?></textarea>
+        </div>
+        <div class="form-group">
+            <label>ชื่อเพจที่แสดง</label>
+            <input type="text" name="facebook_page_name" value="<?= h($settings['facebook_page_name'] ?? '') ?>" placeholder="Mt.rmuti">
+        </div>
+        <div class="form-group">
+            <label>จำนวนผู้ติดตาม (ไม่บังคับ)</label>
+            <input type="text" name="facebook_followers" value="<?= h($settings['facebook_followers'] ?? '') ?>" placeholder="3,543">
+        </div>
+        <div class="form-group">
+            <label>ภาพปกเพจ (แนะนำ 1640x624px ถ้าไม่ใส่จะใช้แบนเนอร์หน้าแรก)</label>
+            <?php if (!empty($settings['facebook_cover_path'])): ?>
+                <img class="current-thumb" src="<?= h($settings['facebook_cover_path']) ?>" alt="">
+                <label class="remove-image-option"><input type="checkbox" name="remove_facebook_cover" value="1"> ลบภาพปกนี้</label>
+            <?php endif; ?>
+            <input type="file" name="facebook_cover" accept="image/*">
+        </div>
+
         <h3>หัวข้อหน้าแรกแบบ WebGL</h3>
         <p class="field-hint" style="margin-top:0;">แสดงด้านบนสุดของหน้าแรกเสมอ ส่วน "สไลด์หน้าแรก" (ถ้ามี) จะแสดงต่อจากหัวข้อนี้</p>
         <div class="form-group">

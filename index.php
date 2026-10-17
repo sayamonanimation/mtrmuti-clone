@@ -146,20 +146,66 @@ $heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?
                     <h2><?= h(t('home.facebook_heading')) ?></h2>
                     <div class="bar"></div>
                 </div>
-                <div class="fb-embed-wrap">
+                <?php
+                $fbSlug = trim((string) parse_url($facebookEmbedUrl, PHP_URL_PATH), '/');
+                $fbSlug = explode('/', $fbSlug)[0];
+                $fbName = get_setting('facebook_page_name') ?: $fbSlug;
+                $fbFollowers = get_setting('facebook_followers');
+                $fbCover = get_setting('facebook_cover_path') ?: $heroBanner;
+                $fbAvatar = get_setting('logo_path');
+                $fbPosts = array_slice(array_values(array_filter(array_map('trim', preg_split('/\R/', (string) get_setting('facebook_post_urls'))), function ($u) {
+                    return preg_match('#^https://(www\.|web\.|m\.)?facebook\.com/#i', $u);
+                })), 0, 10);
+                ?>
+                <div class="fb-look">
                     <div id="fb-root"></div>
-                    <div class="fb-page"
-                         data-href="<?= h($facebookEmbedUrl) ?>"
-                         data-tabs="timeline"
-                         data-width=""
-                         data-height="500"
-                         data-small-header="false"
-                         data-adapt-container-width="true"
-                         data-hide-cover="false"
-                         data-show-facepile="true">
-                        <blockquote cite="<?= h($facebookEmbedUrl) ?>" class="fb-xfbml-parse-ignore">
-                            <a href="<?= h($facebookUrl) ?>" target="_blank" rel="noopener"><?= h(t('home.facebook_link')) ?></a>
-                        </blockquote>
+                    <div class="fb-look-cover"<?php if ($fbCover): ?> style="background-image:url('<?= h($fbCover) ?>')"<?php endif; ?>></div>
+                    <div class="fb-look-head">
+                        <div class="fb-look-avatar">
+                            <?php if ($fbAvatar): ?><img src="<?= h($fbAvatar) ?>" alt="<?= h($fbName) ?>"><?php else: ?><span>MT</span><?php endif; ?>
+                        </div>
+                        <div class="fb-look-meta">
+                            <a class="fb-look-name" href="<?= h($facebookUrl) ?>" target="_blank" rel="noopener"><?= h($fbName) ?></a>
+                            <?php if ($fbFollowers): ?><div class="fb-look-followers"><?= h($fbFollowers) ?> <?= h(t('home.facebook_followers')) ?></div><?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="fb-look-actions">
+                        <a class="fb-look-btn fb-look-btn-primary" href="<?= h($facebookUrl) ?>" target="_blank" rel="noopener">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5H16.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H8v3h2.5V21h3z"/></svg>
+                            <?= h(t('home.facebook_follow')) ?>
+                        </a>
+                        <?php if ($fbSlug): ?>
+                        <a class="fb-look-btn" href="https://m.me/<?= h(rawurlencode($fbSlug)) ?>" target="_blank" rel="noopener">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2C6.4 2 2 6.1 2 11.3c0 2.9 1.4 5.5 3.7 7.2V22l3.4-1.9c.9.3 1.9.4 2.9.4 5.6 0 10-4.1 10-9.3S17.6 2 12 2zm1 12.5-2.5-2.7-4.9 2.7 5.4-5.8 2.6 2.7 4.8-2.7-5.4 5.8z"/></svg>
+                            <?= h(t('home.facebook_message')) ?>
+                        </a>
+                        <?php endif; ?>
+                    </div>
+                    <div class="fb-look-feed">
+                        <?php if ($fbPosts): ?>
+                            <?php foreach ($fbPosts as $postUrl): ?>
+                            <div class="fb-look-post">
+                                <div class="fb-post" data-href="<?= h($postUrl) ?>" data-width="500" data-show-text="true">
+                                    <blockquote cite="<?= h($postUrl) ?>" class="fb-xfbml-parse-ignore"><a href="<?= h($postUrl) ?>" target="_blank" rel="noopener"><?= h(t('home.facebook_link')) ?></a></blockquote>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <!-- No post links set in Settings yet: fall back to Facebook's page plugin -->
+                            <div class="fb-page"
+                                 data-href="<?= h($facebookEmbedUrl) ?>"
+                                 data-tabs="timeline"
+                                 data-width="500"
+                                 data-height="560"
+                                 data-small-header="true"
+                                 data-adapt-container-width="true"
+                                 data-hide-cover="true"
+                                 data-show-facepile="false">
+                                <blockquote cite="<?= h($facebookEmbedUrl) ?>" class="fb-xfbml-parse-ignore">
+                                    <a href="<?= h($facebookUrl) ?>" target="_blank" rel="noopener"><?= h(t('home.facebook_link')) ?></a>
+                                </blockquote>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -170,10 +216,10 @@ $heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?
 <?php if ($facebookEmbedUrl): ?>
 <script async defer crossorigin="anonymous" src="https://connect.facebook.net/th_TH/sdk.js#xfbml=1&version=v19.0"></script>
 <script>
-// The Facebook Page Plugin measures its container's width once when it first
-// parses, which can happen before our CSS grid layout has settled (fonts,
-// image reflow, etc.) and leaves the widget stuck at a too-narrow width.
-// Re-parsing once everything has finished loading forces it to re-measure.
+// Facebook plugins measure their container's width once when they first
+// parse, which can happen before our CSS grid layout has settled (fonts,
+// image reflow, etc.) and leaves them stuck at a too-narrow width.
+// Re-parsing once everything has finished loading forces a re-measure.
 window.addEventListener('load', function () {
     if (window.FB && FB.XFBML) {
         FB.XFBML.parse();
