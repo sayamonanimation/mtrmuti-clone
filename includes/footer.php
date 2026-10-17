@@ -56,6 +56,11 @@ window.__chatbotStrings = {
 </script>
 <?php endif; ?>
 <script src="/assets/js/main.js?v=<?= (int) @filemtime(__DIR__ . '/../assets/js/main.js') ?>"></script>
+<?php if (($currentSlug ?? '') !== 'home'): ?>
+<!-- Inner pages: WebGL particle title in .page-header (the homepage loads these with its hero) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+<script src="/assets/js/hero-fx.js?v=<?= (int) @filemtime(__DIR__ . '/../assets/js/hero-fx.js') ?>" defer></script>
+<?php endif; ?>
 <script src="/assets/js/webgl-fx.js?v=<?= (int) @filemtime(__DIR__ . '/../assets/js/webgl-fx.js') ?>"></script>
 </body>
 </html>

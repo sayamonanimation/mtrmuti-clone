@@ -819,3 +819,35 @@ section.alt { background: transparent; }
 @media (max-width: 720px) {
     .stats3d-chips-4 { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Inner-page headers with a compact WebGL particle title (hero-fx.js) */
+.page-header.page-header-fx {
+    min-height: 270px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    isolation: isolate;
+}
+.page-header-fx .hero-fx-canvas { z-index: -1; }
+.page-header-fx .container { padding-top: 40px; padding-bottom: 40px; }
+.page-header-fx.page-header-fx-ready h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+/* Subtitle sits under the particle title */
+.page-header-fx.page-header-fx-ready .container {
+    margin-top: auto;
+    padding-top: 0;
+    padding-bottom: 30px;
+    pointer-events: none;
+}
+@media (max-width: 720px) {
+    .page-header.page-header-fx { min-height: 230px; }
+    .page-header-fx.page-header-fx-ready .container { padding-bottom: 22px; }
+}

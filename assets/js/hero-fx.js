@@ -9,14 +9,13 @@
  */
 (function () {
     var hero = document.getElementById('heroFx');
-    if (!hero) return;
 
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var isSmall = window.innerWidth < 720;
 
     // ---------- Keyword rotator (works without WebGL) ----------
     (function keywords() {
-        var el = hero.querySelector('.hero-fx-glitch');
+        var el = hero && hero.querySelector('.hero-fx-glitch');
         var words = [];
         try { words = JSON.parse(hero.getAttribute('data-keywords') || '[]'); } catch (e) {}
         if (!el || words.length < 2 || reduceMotion) return;
@@ -31,8 +30,15 @@
         }, 2600);
     })();
 
-    function start() {
+    /**
+     * Runs the particle-text + orbiting-icons scene inside `hero`.
+     * opts.compact = inner-page header: title taken from its <h1> (Thai
+     * marks need taller lines), fewer/smaller icons, text kept within the
+     * header height.
+     */
+    function startFx(hero, opts) {
         if (!window.THREE) return;
+        var compact = !!opts.compact;
         var canvas = hero.querySelector('.hero-fx-canvas');
         var renderer;
         try {
@@ -58,7 +64,9 @@
         resize();
 
         // ---------- Particle text ----------
-        var text = (hero.getAttribute('data-particle-text') || 'MULTIMEDIA').split('|');
+        var text = compact
+            ? [opts.title]
+            : (hero.getAttribute('data-particle-text') || 'MULTIMEDIA').split('|');
         var particles = null;
 
         function buildParticles() {
@@ -76,7 +84,7 @@
             ctx.font = '700 ' + size + 'px Kanit, sans-serif';
             var widest = Math.max.apply(null, text.map(function (t) { return ctx.measureText(t).width; }));
             size = Math.floor(size * Math.min(1, (cw * 0.94) / widest));
-            var lineH = Math.round(size * 1.08);
+            var lineH = Math.round(size * (compact ? 1.5 : 1.08));
             c.height = lineH * text.length + 40;
             ctx.font = '700 ' + size + 'px Kanit, sans-serif'; // resizing the canvas resets the context
             ctx.fillStyle = '#fff';
@@ -85,7 +93,7 @@
             text.forEach(function (t, i) { ctx.fillText(t, cw / 2, 20 + lineH * (i + 0.5)); });
 
             var img = ctx.getImageData(0, 0, c.width, c.height).data;
-            var step = isSmall ? 7 : 6;
+            var step = compact ? (isSmall ? 5 : 4) : (isSmall ? 7 : 6);
             var homes = [];
             for (var y = 0; y < c.height; y += step) {
                 for (var x = 0; x < cw; x += step) {
@@ -95,8 +103,12 @@
             var count = homes.length / 2;
             // Text spans ~78% of the view width (less on phones), sitting in the upper part of the hero.
             var targetW = Math.min(viewW * (isSmall ? 0.9 : 0.72), 15);
+            if (compact) {
+                // Keep the title inside the (short) header.
+                targetW = Math.min(viewW * (isSmall ? 0.92 : 0.62), viewH * 0.5 / c.height * cw);
+            }
             var scale = targetW / cw;
-            var offsetY = viewH * (isSmall ? 0.14 : 0.1);
+            var offsetY = compact ? (opts.hasSubtitle ? viewH * 0.07 : 0) : viewH * (isSmall ? 0.14 : 0.1);
 
             var home = new Float32Array(count * 3);
             var pos = new Float32Array(count * 3);
@@ -126,7 +138,7 @@
                 blending: THREE.AdditiveBlending,
                 uniforms: {
                     uTime: { value: 0 },
-                    uSize: { value: (isSmall ? 3.6 : 4.4) * renderer.getPixelRatio() },
+                    uSize: { value: (compact ? (isSmall ? 2.6 : 3.2) : (isSmall ? 3.6 : 4.4)) * renderer.getPixelRatio() },
                     uMinX: { value: -targetW / 2 },
                     uWidth: { value: targetW }
                 },
@@ -163,8 +175,9 @@
 
         // ---------- Low-poly multimedia icons ----------
         var accent = new THREE.Color(0xff5a3c);
-        var edgeMat = new THREE.LineBasicMaterial({ color: accent, transparent: true, opacity: 0.9 });
-        var faceMat = new THREE.MeshBasicMaterial({ color: 0x3a0806, transparent: true, opacity: 0.35, depthWrite: false });
+        // Compact headers keep icons faint so they never compete with the title.
+        var edgeMat = new THREE.LineBasicMaterial({ color: accent, transparent: true, opacity: compact ? 0.45 : 0.9 });
+        var faceMat = new THREE.MeshBasicMaterial({ color: 0x3a0806, transparent: true, opacity: compact ? 0.18 : 0.35, depthWrite: false });
 
         function part(geometry, x, y, z, rx, ry, rz) {
             var g = new THREE.Group();
@@ -244,22 +257,24 @@
         var orbit = new THREE.Group();
         scene.add(orbit);
         var icons = [];
-        var iconCount = isSmall ? 5 : iconBuilders.length;
+        var iconCount = compact ? (isSmall ? 3 : 5) : (isSmall ? 5 : iconBuilders.length);
+        var iconScale = compact ? (isSmall ? 0.85 : 1.05) : (isSmall ? 0.75 : 1);
         for (var k = 0; k < iconCount; k++) {
-            var m = iconBuilders[k]();
+            // Compact headers pick a different subset per page so they don't all look alike.
+            var m = iconBuilders[(k + (opts.seed || 0)) % iconBuilders.length]();
             m.userData = {
                 angle: k / iconCount * Math.PI * 2,
                 speed: 0.08 + Math.random() * 0.05,
                 spin: new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(0.9),
                 bob: Math.random() * Math.PI * 2
             };
-            m.scale.setScalar(isSmall ? 0.75 : 1);
+            m.scale.setScalar(iconScale);
             orbit.add(m);
             icons.push(m);
         }
 
         function placeIcons(t) {
-            var rx = viewW * (isSmall ? 0.42 : 0.4), ry = viewH * 0.36;
+            var rx = viewW * (compact ? 0.46 : (isSmall ? 0.42 : 0.4)), ry = viewH * (compact ? 0.28 : 0.36);
             icons.forEach(function (m) {
                 var d = m.userData;
                 var a = d.angle + t * d.speed;
@@ -267,7 +282,7 @@
                 m.rotation.set(t * d.spin.x, t * d.spin.y, t * d.spin.z);
                 // Icons passing behind the title fade out so the text stays readable.
                 var behind = Math.max(0, -Math.sin(a));
-                m.scale.setScalar((isSmall ? 0.75 : 1) * (1 - behind * 0.35));
+                m.scale.setScalar(iconScale * (1 - behind * 0.35));
             });
         }
 
@@ -284,7 +299,7 @@
         hero.addEventListener('pointerleave', function () { pointerWorld.set(999, 999, 0); pointer.set(0, 0); });
 
         function stepParticles(dt) {
-            var p = particles, R = isSmall ? 1.3 : 1.6, R2 = R * R;
+            var p = particles, R = compact ? 1.1 : (isSmall ? 1.3 : 1.6), R2 = R * R;
             for (var i = 0; i < p.count; i++) {
                 var ix = i * 3, iy = ix + 1, iz = ix + 2;
                 var dx = p.pos[ix] - pointerWorld.x, dy = p.pos[iy] - pointerWorld.y;
@@ -335,7 +350,7 @@
         var fontReady = document.fonts && document.fonts.load ? document.fonts.load('700 100px Kanit') : Promise.resolve();
         fontReady.catch(function () {}).then(function () {
             buildParticles();
-            hero.classList.add('hero-fx-ready');
+            hero.classList.add(compact ? 'page-header-fx-ready' : 'hero-fx-ready');
             if (reduceMotion) still(); else play();
         });
 
@@ -362,6 +377,25 @@
         });
     }
 
-    if (document.readyState === 'complete') start();
-    else window.addEventListener('load', start);
+    function boot() {
+        if (hero) startFx(hero, { compact: false });
+        // Inner pages: give every .page-header its own compact scene.
+        document.querySelectorAll('.page-header').forEach(function (header, i) {
+            var h1 = header.querySelector('h1');
+            if (!h1 || !h1.textContent.trim()) return;
+            var canvas = document.createElement('canvas');
+            canvas.className = 'hero-fx-canvas';
+            canvas.setAttribute('aria-hidden', 'true');
+            header.insertBefore(canvas, header.firstChild);
+            header.classList.add('page-header-fx');
+            startFx(header, {
+                compact: true,
+                title: h1.textContent.trim(),
+                hasSubtitle: !!header.querySelector('p'),
+                seed: (h1.textContent.length + i) % 8
+            });
+        });
+    }
+    if (document.readyState === 'complete') boot();
+    else window.addEventListener('load', boot);
 })();
