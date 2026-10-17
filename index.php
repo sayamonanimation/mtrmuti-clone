@@ -17,31 +17,6 @@ $facebookUrl = get_setting('facebook_url');
 $facebookEmbedUrl = $facebookUrl ? preg_replace('#^https?://(web|m)\.facebook\.com#', 'https://www.facebook.com', $facebookUrl) : '';
 ?>
 
-<?php if ($sliders): ?>
-<div class="slider">
-    <?php foreach ($sliders as $i => $slide): ?>
-    <div class="slide<?= $i === 0 ? ' active' : '' ?>">
-        <img src="<?= h($slide['image_path']) ?>" alt="<?= h(lang_field($slide, 'caption')) ?>">
-        <?php if (lang_field($slide, 'caption') || lang_field($slide, 'subtitle')): ?>
-        <div class="slider-caption">
-            <?php if (lang_field($slide, 'caption')): ?><h2><?= h(lang_field($slide, 'caption')) ?></h2><?php endif; ?>
-            <?php if (lang_field($slide, 'subtitle')): ?><p><?= h(lang_field($slide, 'subtitle')) ?></p><?php endif; ?>
-        </div>
-        <?php endif; ?>
-    </div>
-    <?php endforeach; ?>
-
-    <?php if (count($sliders) > 1): ?>
-    <button type="button" class="slider-arrow slider-arrow-prev" aria-label="สไลด์ก่อนหน้า">&lsaquo;</button>
-    <button type="button" class="slider-arrow slider-arrow-next" aria-label="สไลด์ถัดไป">&rsaquo;</button>
-    <div class="slider-dots">
-        <?php foreach ($sliders as $i => $slide): ?>
-        <button type="button" class="slider-dot<?= $i === 0 ? ' active' : '' ?>" data-slide-index="<?= $i ?>" aria-label="ไปที่สไลด์ <?= $i + 1 ?>"></button>
-        <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
-</div>
-<?php else: ?>
 <?php
 $heroParticleText = trim(get_setting('hero_particle_text')) ?: 'MULTIMEDIA|TECHNOLOGY';
 $heroKeywords = array_values(array_filter(array_map('trim', explode(',', get_setting('hero_keywords') ?: 'ANIMATION, GAME, FILM, GRAPHIC DESIGN, VR / AR, SOUND'))));
@@ -81,6 +56,35 @@ $heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
 <script src="/assets/js/hero-fx.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/hero-fx.js') ?>" defer></script>
+
+<?php if ($sliders): ?>
+<section class="home-slider-section">
+<div class="container">
+<div class="slider">
+    <?php foreach ($sliders as $i => $slide): ?>
+    <div class="slide<?= $i === 0 ? ' active' : '' ?>">
+        <img src="<?= h($slide['image_path']) ?>" alt="<?= h(lang_field($slide, 'caption')) ?>">
+        <?php if (lang_field($slide, 'caption') || lang_field($slide, 'subtitle')): ?>
+        <div class="slider-caption">
+            <?php if (lang_field($slide, 'caption')): ?><h2><?= h(lang_field($slide, 'caption')) ?></h2><?php endif; ?>
+            <?php if (lang_field($slide, 'subtitle')): ?><p><?= h(lang_field($slide, 'subtitle')) ?></p><?php endif; ?>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php endforeach; ?>
+
+    <?php if (count($sliders) > 1): ?>
+    <button type="button" class="slider-arrow slider-arrow-prev" aria-label="สไลด์ก่อนหน้า">&lsaquo;</button>
+    <button type="button" class="slider-arrow slider-arrow-next" aria-label="สไลด์ถัดไป">&rsaquo;</button>
+    <div class="slider-dots">
+        <?php foreach ($sliders as $i => $slide): ?>
+        <button type="button" class="slider-dot<?= $i === 0 ? ' active' : '' ?>" data-slide-index="<?= $i ?>" aria-label="ไปที่สไลด์ <?= $i + 1 ?>"></button>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+</div>
+</div>
+</section>
 <?php endif; ?>
 
 <?php if ($posts): ?>
