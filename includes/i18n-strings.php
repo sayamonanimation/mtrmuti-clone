@@ -38,6 +38,7 @@ return [
     'topbar.menu' => ['th' => 'เปิดเมนู', 'en' => 'Open menu'],
 
     // Homepage
+    'home.hero_works' => ['th' => 'ดูผลงานนักศึกษา', 'en' => 'Student Works'],
     'home.posts_heading' => ['th' => 'ข่าวประชาสัมพันธ์ & กิจกรรม', 'en' => 'News & Activities'],
     'home.read_more' => ['th' => 'อ่านเพิ่มเติม', 'en' => 'Read more'],
     'home.gallery_heading' => ['th' => 'ภาพกิจกรรม', 'en' => 'Activity Gallery'],

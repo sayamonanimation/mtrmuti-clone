@@ -35,6 +35,8 @@ define('SITE_ROOT', dirname(__DIR__));
 define('UPLOAD_DIR', SITE_ROOT . '/assets/uploads');
 define('UPLOAD_URL', '/assets/uploads');
 
+require_once SITE_ROOT . '/includes/opendrive.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     // Several admins work in the back office at the same time, often for a
     // long editing stretch. Keep sessions for 8 hours, and in a folder of our

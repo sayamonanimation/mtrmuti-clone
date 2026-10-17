@@ -4,3 +4,5 @@ assets/uploads/*
 config/config.local.php
 storage/sessions/
 storage/presence/
+storage/temp/
+storage/opendrive_folders.json

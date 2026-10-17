@@ -595,7 +595,8 @@ function require_admin_login() {
 }
 
 /**
- * Saves an uploaded file ($_FILES[$field]) into UPLOAD_DIR, returns the public path or null.
+ * Saves an uploaded file ($_FILES[$field]) to OpenDrive when configured (see
+ * includes/opendrive.php), otherwise into UPLOAD_DIR; returns the public URL/path or null.
  * $allowedMimeByExt maps lowercase extension => expected MIME type, e.g. ['pdf' => 'application/pdf'].
  */
 function handle_file_upload($field, $subdir, array $allowedMimeByExt) {
@@ -609,6 +610,18 @@ function handle_file_upload($field, $subdir, array $allowedMimeByExt) {
     $mime = mime_content_type($_FILES[$field]['tmp_name']);
     if ($mime !== $allowedMimeByExt[$ext]) {
         return null;
+    }
+
+    // Preferred storage: OpenDrive (one folder per section). If OpenDrive is
+    // unreachable, keep the admin's upload by saving it locally instead and
+    // tell them, rather than silently dropping the file.
+    if (opendrive_enabled()) {
+        try {
+            return opendrive_store_file($_FILES[$field]['tmp_name'], $ext, trim((string) $subdir, '/'));
+        } catch (Throwable $e) {
+            error_log('OpenDrive upload failed, saved locally instead: ' . $e->getMessage());
+            $_SESSION['upload_notice'] = 'อัปโหลดไป OpenDrive ไม่สำเร็จ ระบบเก็บไฟล์ไว้บนเซิร์ฟเวอร์แทน (ไฟล์ยังใช้งานได้ตามปกติ)';
+        }
     }
 
     $targetDir = UPLOAD_DIR . ($subdir ? '/' . trim($subdir, '/') : '');

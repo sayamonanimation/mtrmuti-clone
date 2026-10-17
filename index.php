@@ -42,12 +42,45 @@ $facebookEmbedUrl = $facebookUrl ? preg_replace('#^https?://(web|m)\.facebook\.c
     <?php endif; ?>
 </div>
 <?php else: ?>
-<div class="hero<?= $heroBanner ? ' hero-has-banner' : '' ?>"<?php if ($heroBanner): ?> style="background-image: linear-gradient(135deg, rgba(71,6,0,.72), rgba(163,13,0,.72)), url('<?= h($heroBanner) ?>');"<?php endif; ?>>
-    <div class="container">
-        <h1><?= h(lang_field($page, 'title')) ?></h1>
-        <p><?= h(lang_field($page, 'subtitle')) ?></p>
+<?php
+$heroParticleText = trim(get_setting('hero_particle_text')) ?: 'MULTIMEDIA|TECHNOLOGY';
+$heroKeywords = array_values(array_filter(array_map('trim', explode(',', get_setting('hero_keywords') ?: 'ANIMATION, GAME, FILM, GRAPHIC DESIGN, VR / AR, SOUND'))));
+$heroVideoUrl = get_setting('hero_video_url');
+$heroVideoId = youtube_video_id($heroVideoUrl);
+$heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?$#i', (string) $heroVideoUrl) ? $heroVideoUrl : '';
+?>
+<div class="hero hero-fx<?= $heroBanner ? ' hero-has-banner' : '' ?>" id="heroFx"
+     data-particle-text="<?= h($heroParticleText) ?>"
+     data-keywords="<?= h(json_encode($heroKeywords, JSON_UNESCAPED_UNICODE)) ?>"<?php if ($heroBanner): ?>
+     style="background-image: linear-gradient(135deg, rgba(11,2,3,.78), rgba(71,6,0,.7)), url('<?= h($heroBanner) ?>');"<?php endif; ?>>
+    <?php if ($heroVideoId): ?>
+    <div class="hero-fx-video" aria-hidden="true">
+        <iframe src="https://www.youtube.com/embed/<?= h($heroVideoId) ?>?autoplay=1&mute=1&loop=1&playlist=<?= h($heroVideoId) ?>&controls=0&modestbranding=1&playsinline=1&rel=0&disablekb=1" title="" tabindex="-1" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+    </div>
+    <?php elseif ($heroVideoFile): ?>
+    <div class="hero-fx-video" aria-hidden="true">
+        <video src="<?= h($heroVideoFile) ?>" autoplay muted loop playsinline preload="metadata"></video>
+    </div>
+    <?php endif; ?>
+    <canvas class="hero-fx-canvas" aria-hidden="true"></canvas>
+    <div class="hero-fx-fallback" aria-hidden="true"><?= str_replace('|', '<br>', h($heroParticleText)) ?></div>
+    <div class="container hero-fx-content">
+        <h1 class="visually-hidden"><?= h(lang_field($page, 'title')) ?></h1>
+        <?php if ($heroKeywords): ?>
+        <div class="hero-fx-keywords" aria-live="off">
+            <span class="hero-fx-glitch" data-text="<?= h($heroKeywords[0]) ?>"><?= h($heroKeywords[0]) ?></span>
+        </div>
+        <?php endif; ?>
+        <div class="hero-fx-cta">
+            <?php if ($enrollUrl = get_setting('enroll_url')): ?>
+            <a class="btn hero-fx-btn" href="<?= h($enrollUrl) ?>" target="_blank" rel="noopener"><?= h(t('topbar.enroll')) ?></a>
+            <?php endif; ?>
+            <a class="btn hero-fx-btn hero-fx-btn-ghost" href="/student-works.php"><?= h(t('home.hero_works')) ?></a>
+        </div>
     </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+<script src="/assets/js/hero-fx.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/hero-fx.js') ?>" defer></script>
 <?php endif; ?>
 
 <?php if ($posts): ?>

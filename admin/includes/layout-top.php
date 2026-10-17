@@ -17,6 +17,7 @@ $adminNav = [
     ['href' => '/admin/student-year-stats.php', 'label' => 'สถิตินักศึกษาแยกชั้นปี'],
     ['href' => '/admin/fields.php', 'label' => 'รายวิชาที่เปิดสอน'],
     ['href' => '/admin/settings.php', 'label' => 'ตั้งค่าเว็บไซต์'],
+    ['href' => '/admin/opendrive.php', 'label' => 'ที่เก็บไฟล์ OpenDrive'],
     ['href' => '/admin/admins.php', 'label' => 'ผู้ดูแลระบบ'],
 ];
 $currentPath = $_SERVER['SCRIPT_NAME'];
@@ -58,4 +59,8 @@ $currentPath = $_SERVER['SCRIPT_NAME'];
         <?php if (!empty($_SESSION['flash'])): ?>
             <div class="flash flash-<?= h($_SESSION['flash']['type']) ?>"><?= h($_SESSION['flash']['message']) ?></div>
             <?php unset($_SESSION['flash']); ?>
+        <?php endif; ?>
+        <?php if (!empty($_SESSION['upload_notice'])): ?>
+            <div class="flash flash-error"><?= h($_SESSION['upload_notice']) ?></div>
+            <?php unset($_SESSION['upload_notice']); ?>
         <?php endif; ?>

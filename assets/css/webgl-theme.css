@@ -445,3 +445,172 @@ section.alt { background: transparent; }
     .slide.active .slider-caption > * { animation: none; }
     .slide img { transition: none; transform: none; }
 }
+
+/* ---------- Homepage WebGL hero (assets/js/hero-fx.js) ---------- */
+.hero.hero-fx {
+    min-height: min(74vh, 660px);
+    padding: 0;
+    display: flex;
+    align-items: flex-end;
+    background-size: cover;
+    background-position: center;
+    isolation: isolate;
+}
+.hero-fx-video {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: -2;
+    pointer-events: none;
+}
+.hero-fx-video iframe,
+.hero-fx-video video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, calc(100vh * 16 / 9 * 0.88));
+    height: max(100%, calc(100vw * 9 / 16));
+    transform: translate(-50%, -50%);
+    border: 0;
+    object-fit: cover;
+}
+.hero-fx-video::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(11, 2, 3, .55), rgba(11, 2, 3, .88) 75%),
+        linear-gradient(180deg, rgba(11, 2, 3, .2), var(--fx-bg));
+}
+.hero-fx-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    display: block;
+}
+/* Shown until (or instead of, without WebGL) the particle text */
+.hero-fx-fallback {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 16%;
+    text-align: center;
+    font-size: clamp(2.6rem, 9vw, 7rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: .02em;
+    background: linear-gradient(120deg, #fff 20%, var(--fx-accent-2) 55%, var(--fx-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 30px rgba(255, 90, 60, .35));
+    pointer-events: none;
+}
+.hero-fx-ready .hero-fx-fallback { display: none; }
+
+.hero-fx-content {
+    position: relative;
+    width: 100%;
+    padding-top: 0;
+    padding-bottom: 56px;
+    text-align: center;
+    pointer-events: none;
+}
+.hero-fx-content a { pointer-events: auto; }
+.hero.hero-fx h1 {
+    font-size: clamp(1.5rem, 3.2vw, 2.3rem);
+    margin-bottom: 6px;
+    animation: none;
+    background: none;
+    color: #fff;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, .6);
+}
+.hero.hero-fx p { font-size: 1.05rem; }
+
+/* Visible to screen readers and search engines only */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Keyword rotator with an RGB-split glitch on change */
+.hero-fx-keywords {
+    margin-top: 0;
+    font-family: 'Courier New', ui-monospace, monospace;
+    font-size: clamp(1.15rem, 2.6vw, 1.6rem);
+    font-weight: 700;
+    letter-spacing: .18em;
+    color: #fff;
+}
+.hero-fx-glitch {
+    position: relative;
+    display: inline-block;
+    padding: 0 .35em;
+}
+.hero-fx-glitch::before,
+.hero-fx-glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    padding: 0 .35em;
+    opacity: 0;
+}
+.hero-fx-glitch::before { color: #00e5ff; }
+.hero-fx-glitch::after { color: #ff2a6d; }
+.hero-fx-glitch.is-glitching { animation: fx-glitch-main .6s steps(2) both; }
+.hero-fx-glitch.is-glitching::before { animation: fx-glitch-a .6s steps(3) both; }
+.hero-fx-glitch.is-glitching::after { animation: fx-glitch-b .6s steps(3) both; }
+@keyframes fx-glitch-main {
+    0% { opacity: 0; transform: skewX(20deg); }
+    30% { opacity: 1; transform: skewX(-8deg); }
+    100% { opacity: 1; transform: none; }
+}
+@keyframes fx-glitch-a {
+    0% { opacity: .9; transform: translate(-6px, -2px); clip-path: inset(0 0 60% 0); }
+    50% { opacity: .9; transform: translate(4px, 1px); clip-path: inset(40% 0 20% 0); }
+    100% { opacity: 0; transform: none; clip-path: inset(0); }
+}
+@keyframes fx-glitch-b {
+    0% { opacity: .9; transform: translate(6px, 2px); clip-path: inset(55% 0 0 0); }
+    50% { opacity: .9; transform: translate(-4px, -1px); clip-path: inset(10% 0 55% 0); }
+    100% { opacity: 0; transform: none; clip-path: inset(0); }
+}
+
+/* Call-to-action buttons */
+.hero-fx-cta {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 26px;
+}
+.hero-fx-btn {
+    padding: 13px 30px;
+    border-radius: 30px;
+    font-size: 1rem;
+}
+.hero-fx-btn-ghost {
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(255, 255, 255, .35);
+    box-shadow: none;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+.hero-fx-btn-ghost:hover { background: rgba(255, 255, 255, .14); box-shadow: none; }
+
+@media (max-width: 720px) {
+    .hero.hero-fx { min-height: 540px; }
+    .hero-fx-fallback { top: 14%; }
+    .hero-fx-content { padding-bottom: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hero-fx-video { display: none; }
+}
