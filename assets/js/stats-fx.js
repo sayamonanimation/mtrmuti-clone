@@ -1,31 +1,39 @@
 /**
- * Student statistics as a WebGL 3D bar chart (three.js r128, loaded by the
- * homepage hero). Glowing bars grow when scrolled into view, sit on a neon
- * grid floor, tilt with the pointer, and show a tooltip on hover. Values and
- * year labels are HTML overlays so Thai text stays crisp.
+ * Homepage statistics as WebGL 3D bar charts (three.js r128, loaded by the
+ * homepage hero). Every .stats3d block on the page becomes a chart: glowing
+ * bars grow when scrolled into view, sit on a neon grid floor, tilt with the
+ * pointer, and show a tooltip on hover. Values and year labels are HTML
+ * overlays so Thai text stays crisp.
  *
+ * data-stats: [{year, counts: [...], label?}] - one group per year, one bar
+ * per series (4 year levels, or a single admissions count).
  * Without WebGL the plain data table inside .stats3d-stage stays visible.
  */
 (function () {
-    var root = document.getElementById('stats3d');
-    if (!root) return;
-
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function initChart(root) {
     var data = JSON.parse(root.getAttribute('data-stats') || '[]');
     var colors = JSON.parse(root.getAttribute('data-colors') || '[]');
-    var levelLabel = root.getAttribute('data-level-label') || '';
+    var seriesLabels = JSON.parse(root.getAttribute('data-series-labels') || '[]');
     var yearLabel = root.getAttribute('data-year-label') || '';
     var unit = root.getAttribute('data-unit') || '';
 
     // ---------- Count-up chips ----------
     function countUp() {
-        root.querySelectorAll('.stats3d-chip-num').forEach(function (el) {
-            var target = parseInt(el.getAttribute('data-count'), 10) || 0;
-            if (reduceMotion) { el.textContent = target; return; }
+        root.querySelectorAll('.stats3d-chip-num[data-count]').forEach(function (el) {
+            var target = parseFloat(el.getAttribute('data-count')) || 0;
+            var suffix = el.getAttribute('data-suffix') || '';
+            var signed = el.hasAttribute('data-signed');
+            function show(n) {
+                n = Math.round(n);
+                el.textContent = (signed && n > 0 ? '+' : '') + n + suffix;
+            }
+            if (reduceMotion) { show(target); return; }
             var start = performance.now();
             (function tick(now) {
                 var p = Math.min(1, (now - start) / 1400);
-                el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+                show(target * (1 - Math.pow(1 - p, 3)));
                 if (p < 1) requestAnimationFrame(tick);
             })(start);
         });
@@ -51,8 +59,9 @@
         var camera = new THREE.PerspectiveCamera(32, 1, 0.1, 200);
 
         // ---------- Layout ----------
-        var BAR = 0.8, GAP = 0.18, GROUP_GAP = 1.1, MAX_H = 4.2;
-        var levels = 4;
+        var levels = Math.max.apply(null, data.map(function (d) { return d.counts.length; }));
+        var single = levels === 1;
+        var BAR = single ? 1.1 : 0.8, GAP = 0.18, GROUP_GAP = single ? 0.6 : 1.1, MAX_H = 4.2;
         var groupW = levels * BAR + (levels - 1) * GAP;
         var totalW = data.length * groupW + (data.length - 1) * GROUP_GAP;
         var maxVal = Math.max(1, Math.max.apply(null, data.map(function (d) { return Math.max.apply(null, d.counts); })));
@@ -97,7 +106,7 @@
                 mesh.add(edges);
                 mesh.position.set(gx + li * (BAR + GAP) + BAR / 2, 0, 0);
                 mesh.scale.y = 0.001;
-                mesh.userData = { year: d.year, level: li + 1, count: count, target: Math.max(0.02, count / maxVal * MAX_H), delay: gi * 0.12 + li * 0.08 };
+                mesh.userData = { year: d.year, series: d.label || seriesLabels[li] || '', count: count, target: Math.max(0.02, count / maxVal * MAX_H), delay: gi * 0.12 + li * 0.08 };
                 scene.add(mesh);
 
                 var label = document.createElement('span');
@@ -156,7 +165,7 @@
                 if (hovered) {
                     hovered.material.emissiveIntensity = 0.9;
                     var u = hovered.userData;
-                    tip.textContent = yearLabel + ' ' + u.year + ' · ' + levelLabel + ' ' + u.level + ' · ' + u.count + ' ' + unit;
+                    tip.textContent = yearLabel + ' ' + u.year + (u.series ? ' · ' + u.series : '') + ' · ' + u.count + ' ' + unit;
                 }
                 tip.hidden = !hovered;
                 stage.style.cursor = hovered ? 'pointer' : '';
@@ -232,6 +241,12 @@
         window.addEventListener('resize', function () { resize(); if (!running) render(); });
     }
 
-    if (document.readyState === 'complete') start();
-    else window.addEventListener('load', start);
+    start();
+    }
+
+    function boot() {
+        document.querySelectorAll('.stats3d').forEach(initChart);
+    }
+    if (document.readyState === 'complete') boot();
+    else window.addEventListener('load', boot);
 })();
