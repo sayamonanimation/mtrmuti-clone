@@ -1,9 +1,10 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
 
-$keys = ['site_name', 'site_name_en', 'address', 'phone', 'email', 'facebook_url', 'enroll_url', 'homepage_video_url', 'logo_path', 'hero_banner_path'];
+$keys = ['site_name', 'site_name_en', 'address', 'phone', 'email', 'facebook_url', 'enroll_url', 'homepage_video_url', 'logo_path', 'hero_banner_path',
+    'hero_particle_text', 'hero_keywords', 'hero_video_url'];
 $imageKeys = ['logo_path', 'hero_banner_path'];
-$urlKeys = ['facebook_url', 'enroll_url', 'homepage_video_url'];
+$urlKeys = ['facebook_url', 'enroll_url', 'homepage_video_url', 'hero_video_url'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     reject_oversized_upload('/admin/settings.php');
@@ -94,6 +95,22 @@ foreach ($pdo->query('SELECT setting_key, setting_value FROM site_settings') as 
                 <img class="current-thumb" src="<?= h($settings['hero_banner_path']) ?>" alt="">
             <?php endif; ?>
             <input type="file" name="hero_banner" accept="image/*">
+        </div>
+        <h3>หัวข้อหน้าแรกแบบ WebGL</h3>
+        <p class="field-hint" style="margin-top:0;">ใช้เฉพาะตอนที่ยังไม่มี "สไลด์หน้าแรก" ที่เปิดใช้งานอยู่</p>
+        <div class="form-group">
+            <label>ข้อความอนุภาคแสง (ตัวอักษรที่ประกอบจากจุดแสง เล่นกับเมาส์ได้)</label>
+            <p class="field-hint" style="margin-top:0;">แนะนำภาษาอังกฤษสั้น ๆ 1-2 คำ เช่น MULTIMEDIA หรือ MT RMUTI ขึ้นบรรทัดใหม่ด้วยเครื่องหมาย | เช่น MULTIMEDIA|TECHNOLOGY</p>
+            <input type="text" name="hero_particle_text" value="<?= h($settings['hero_particle_text'] ?? '') ?>" placeholder="MULTIMEDIA|TECHNOLOGY">
+        </div>
+        <div class="form-group">
+            <label>คำสาขาย่อยที่หมุนเปลี่ยน (คั่นด้วยเครื่องหมายจุลภาค ,)</label>
+            <input type="text" name="hero_keywords" value="<?= h($settings['hero_keywords'] ?? '') ?>" placeholder="ANIMATION, GAME, FILM, GRAPHIC DESIGN, VR / AR, SOUND">
+        </div>
+        <div class="form-group">
+            <label>วิดีโอ Showreel พื้นหลังหัวข้อ (YouTube หรือไฟล์ .mp4)</label>
+            <p class="field-hint" style="margin-top:0;">เล่นวนแบบไม่มีเสียงอยู่ด้านหลังหัวข้อ วางลิงก์ YouTube หรือลิงก์ไฟล์ .mp4 เว้นว่างไว้ถ้าไม่ต้องการ</p>
+            <input type="text" name="hero_video_url" value="<?= h($settings['hero_video_url'] ?? '') ?>" placeholder="https://www.youtube.com/watch?v=...">
         </div>
         <div class="form-group">
             <label>
