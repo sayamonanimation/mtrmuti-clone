@@ -1,8 +1,8 @@
 /**
  * Homepage hero: particle-text title that scatters under the pointer, low-poly
  * multimedia icons (camera, film reel, gamepad, headphones, VR headset,
- * clapperboard, play button, pen) orbiting around it, a glitching keyword
- * rotator and an equalizer strip. Uses three.js (r128, loaded by index.php).
+ * clapperboard, play button, pen) orbiting around it, and a glitching
+ * keyword rotator. Uses three.js (r128, loaded by index.php).
  *
  * Without WebGL / three.js the CSS fallback title stays visible; with
  * prefers-reduced-motion a single still frame is drawn.
@@ -29,18 +29,6 @@
             el.setAttribute('data-text', words[i]);
             el.classList.add('is-glitching');
         }, 2600);
-    })();
-
-    // ---------- Equalizer: give each bar its own rhythm ----------
-    (function equalizer() {
-        var bars = hero.querySelectorAll('.hero-fx-eq span');
-        for (var i = 0; i < bars.length; i++) {
-            // Taller in the middle, like a spectrum analyser.
-            var centre = 1 - Math.abs(i / (bars.length - 1) - 0.5) * 1.4;
-            bars[i].style.setProperty('--eq-max', (0.35 + centre * 0.65 * (0.6 + Math.random() * 0.4)).toFixed(2));
-            bars[i].style.setProperty('--eq-dur', (0.55 + Math.random() * 0.9).toFixed(2) + 's');
-            bars[i].style.setProperty('--eq-delay', (-Math.random() * 1.5).toFixed(2) + 's');
-        }
     })();
 
     function start() {
@@ -108,7 +96,7 @@
             // Text spans ~78% of the view width (less on phones), sitting in the upper part of the hero.
             var targetW = Math.min(viewW * (isSmall ? 0.9 : 0.72), 15);
             var scale = targetW / cw;
-            var offsetY = viewH * (isSmall ? 0.2 : 0.16);
+            var offsetY = viewH * (isSmall ? 0.14 : 0.1);
 
             var home = new Float32Array(count * 3);
             var pos = new Float32Array(count * 3);

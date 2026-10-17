@@ -65,14 +65,12 @@ $heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?
     <canvas class="hero-fx-canvas" aria-hidden="true"></canvas>
     <div class="hero-fx-fallback" aria-hidden="true"><?= str_replace('|', '<br>', h($heroParticleText)) ?></div>
     <div class="container hero-fx-content">
-        <h1><?= h(lang_field($page, 'title')) ?></h1>
-        <?php if (lang_field($page, 'subtitle')): ?><p><?= h(lang_field($page, 'subtitle')) ?></p><?php endif; ?>
+        <h1 class="visually-hidden"><?= h(lang_field($page, 'title')) ?></h1>
         <?php if ($heroKeywords): ?>
         <div class="hero-fx-keywords" aria-live="off">
-            <span class="hero-fx-bracket">&lt;</span><span class="hero-fx-glitch" data-text="<?= h($heroKeywords[0]) ?>"><?= h($heroKeywords[0]) ?></span><span class="hero-fx-bracket">/&gt;</span>
+            <span class="hero-fx-glitch" data-text="<?= h($heroKeywords[0]) ?>"><?= h($heroKeywords[0]) ?></span>
         </div>
         <?php endif; ?>
-        <div class="hero-fx-eq" aria-hidden="true"><?= str_repeat('<span></span>', 48) ?></div>
         <div class="hero-fx-cta">
             <?php if ($enrollUrl = get_setting('enroll_url')): ?>
             <a class="btn hero-fx-btn" href="<?= h($enrollUrl) ?>" target="_blank" rel="noopener"><?= h(t('topbar.enroll')) ?></a>
