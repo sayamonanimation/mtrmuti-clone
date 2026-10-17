@@ -633,3 +633,75 @@ section.alt { background: transparent; }
     .home-slider-section .slider { height: 260px; }
     .home-slider-section .slider-caption { padding-bottom: 40px; }
 }
+
+/* Classroom cards: main photo + up to 6 thumbnails, lightbox (classroom.php) */
+.classroom-gallery { position: relative; }
+.classroom-main {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+}
+.card .classroom-main img { height: 200px; }
+.classroom-thumbs {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    padding: 6px 6px 0;
+}
+.classroom-thumb {
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    overflow: hidden;
+    background: none;
+    cursor: pointer;
+    opacity: .6;
+    transition: opacity .2s, border-color .2s;
+}
+.classroom-thumb:hover,
+.classroom-thumb.is-active { opacity: 1; border-color: var(--fx-accent); }
+.card .classroom-thumb img {
+    height: 38px;
+    width: 100%;
+    object-fit: cover;
+    transform: none;
+}
+.classroom-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 1, 2, .92);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+.classroom-lightbox[hidden] { display: none; }
+.classroom-lightbox img {
+    max-width: min(92vw, 1400px);
+    max-height: 86vh;
+    border-radius: 10px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .6);
+}
+.classroom-lightbox-close,
+.classroom-lightbox-nav {
+    position: absolute;
+    border: 1px solid var(--fx-border);
+    background: rgba(20, 5, 6, .6);
+    color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 46px;
+    height: 46px;
+    font-size: 1.6rem;
+    line-height: 1;
+}
+.classroom-lightbox-close { top: 18px; right: 18px; }
+.classroom-lightbox-nav.prev { left: 18px; top: 50%; transform: translateY(-50%); }
+.classroom-lightbox-nav.next { right: 18px; top: 50%; transform: translateY(-50%); }
+.classroom-lightbox-close:hover,
+.classroom-lightbox-nav:hover { background: var(--fx-accent); }

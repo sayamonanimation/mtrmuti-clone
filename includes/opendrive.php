@@ -73,6 +73,7 @@ const OPENDRIVE_PATH_COLUMNS = [
     ['student_photos', 'id', 'image_path'],
     ['student_works', 'id', 'image_path'],
     ['classrooms', 'id', 'image_path'],
+    ['classroom_photos', 'id', 'image_path'],
     ['site_settings', 'setting_key', 'setting_value'],
 ];
 
@@ -80,8 +81,12 @@ const OPENDRIVE_PATH_COLUMNS = [
 function opendrive_local_files(PDO $pdo) {
     $found = [];
     foreach (OPENDRIVE_PATH_COLUMNS as [$table, $idCol, $pathCol]) {
-        $stmt = $pdo->prepare("SELECT $idCol AS id, $pathCol AS path FROM $table WHERE $pathCol LIKE ?");
-        $stmt->execute([UPLOAD_URL . '/%']);
+        try {
+            $stmt = $pdo->prepare("SELECT $idCol AS id, $pathCol AS path FROM $table WHERE $pathCol LIKE ?");
+            $stmt->execute([UPLOAD_URL . '/%']);
+        } catch (PDOException $e) {
+            continue; // table not created yet on this install
+        }
         foreach ($stmt->fetchAll() as $row) {
             $found[] = [$table, $idCol, $pathCol, $row['id'], $row['path']];
         }

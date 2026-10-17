@@ -249,6 +249,17 @@ CREATE TABLE IF NOT EXISTS classrooms (
     sort_order INT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Up to 6 photos per classroom; classrooms.image_path mirrors the first one.
+CREATE TABLE IF NOT EXISTS classroom_photos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    classroom_id INT NOT NULL,
+    image_path VARCHAR(255) NOT NULL,
+    sort_order INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX (classroom_id),
+    FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Site navigation: main menu items (parent_id NULL) and their submenus.
 -- This is the single source of truth for the header's nav bar, fully
 -- managed via /admin/nav-menu.php.
