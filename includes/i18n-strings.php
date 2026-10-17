@@ -49,6 +49,9 @@ return [
     'home.stats_year_prefix' => ['th' => 'ปี', 'en' => 'Year'],
     'home.student_stats_heading' => ['th' => 'สถิตินักศึกษา ชั้นปีที่ 1-4', 'en' => 'Student Statistics by Year Level 1-4'],
     'home.student_stats_year' => ['th' => 'ชั้นปีที่', 'en' => 'Year'],
+    'home.student_stats_academic_year' => ['th' => 'ปีการศึกษา', 'en' => 'Academic year'],
+    'home.student_stats_people' => ['th' => 'คน', 'en' => 'students'],
+    'home.student_stats_total' => ['th' => 'รวมทั้งหมด', 'en' => 'Total'],
 
     // Calendar pages
     'calendar.no_links' => ['th' => 'ยังไม่มีลิงก์', 'en' => 'No links yet'],

@@ -203,46 +203,58 @@ window.addEventListener('load', function () {
 <?php endif; ?>
 
 <?php if ($studentYearStats): ?>
+<?php
+$statsData = array_map(function ($row) {
+    return [
+        'year' => (string) $row['academic_year'],
+        'counts' => [(int) $row['year1_count'], (int) $row['year2_count'], (int) $row['year3_count'], (int) $row['year4_count']],
+    ];
+}, $studentYearStats);
+$latestStats = end($statsData);
+$levelColors = ['#ff5a3c', '#c81e0c', '#ffa07f', '#8f7d7a'];
+?>
 <section>
     <div class="container">
         <div class="section-title">
             <h2><?= h(t('home.student_stats_heading')) ?></h2>
             <div class="bar"></div>
         </div>
-        <div class="chart-wrap">
-            <canvas id="studentYearChart" height="320"></canvas>
+        <div class="stats3d" id="stats3d"
+             data-stats="<?= h(json_encode($statsData)) ?>"
+             data-colors="<?= h(json_encode($levelColors)) ?>"
+             data-level-label="<?= h(t('home.student_stats_year')) ?>"
+             data-year-label="<?= h(t('home.student_stats_academic_year')) ?>"
+             data-unit="<?= h(t('home.student_stats_people')) ?>">
+            <div class="stats3d-chips">
+                <div class="stats3d-chip stats3d-chip-total">
+                    <span class="stats3d-chip-label"><?= h(t('home.student_stats_total')) ?> (<?= h(t('home.student_stats_academic_year')) ?> <?= h($latestStats['year']) ?>)</span>
+                    <span class="stats3d-chip-num" data-count="<?= array_sum($latestStats['counts']) ?>"><?= array_sum($latestStats['counts']) ?></span>
+                </div>
+                <?php foreach ($latestStats['counts'] as $i => $count): ?>
+                <div class="stats3d-chip">
+                    <span class="stats3d-chip-label"><i style="background:<?= $levelColors[$i] ?>"></i><?= h(t('home.student_stats_year')) ?> <?= $i + 1 ?></span>
+                    <span class="stats3d-chip-num" data-count="<?= $count ?>"><?= $count ?></span>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="stats3d-stage">
+                <canvas class="stats3d-canvas" aria-hidden="true"></canvas>
+                <div class="stats3d-labels" aria-hidden="true"></div>
+                <div class="stats3d-tip" hidden></div>
+                <!-- Fallback / screen-reader table, replaced visually by the WebGL chart -->
+                <table class="stats3d-table">
+                    <thead><tr><th><?= h(t('home.student_stats_academic_year')) ?></th><?php for ($i = 1; $i <= 4; $i++): ?><th><?= h(t('home.student_stats_year')) ?> <?= $i ?></th><?php endfor; ?></tr></thead>
+                    <tbody>
+                        <?php foreach ($statsData as $row): ?>
+                        <tr><th><?= h($row['year']) ?></th><?php foreach ($row['counts'] as $count): ?><td><?= $count ?></td><?php endforeach; ?></tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </section>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script>
-(function () {
-    var labels = <?= json_encode(array_column($studentYearStats, 'academic_year')) ?>;
-    var yearLabel = <?= json_encode(t('home.student_stats_year')) ?>;
-    var ctx = document.getElementById('studentYearChart');
-    if (ctx && window.Chart) {
-        Chart.defaults.color = '#c9b2ae';
-        Chart.defaults.borderColor = 'rgba(255, 140, 120, 0.14)';
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    { label: yearLabel + ' 1', data: <?= json_encode(array_map('intval', array_column($studentYearStats, 'year1_count'))) ?>, backgroundColor: '#ff5a3c' },
-                    { label: yearLabel + ' 2', data: <?= json_encode(array_map('intval', array_column($studentYearStats, 'year2_count'))) ?>, backgroundColor: '#b51200' },
-                    { label: yearLabel + ' 3', data: <?= json_encode(array_map('intval', array_column($studentYearStats, 'year3_count'))) ?>, backgroundColor: '#ff9b7a' },
-                    { label: yearLabel + ' 4', data: <?= json_encode(array_map('intval', array_column($studentYearStats, 'year4_count'))) ?>, backgroundColor: '#7a6a68' }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom' } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-            }
-        });
-    }
-})();
-</script>
+<script src="/assets/js/stats-fx.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/stats-fx.js') ?>" defer></script>
 <?php endif; ?>
 
 <?php if ($gallery): ?>
