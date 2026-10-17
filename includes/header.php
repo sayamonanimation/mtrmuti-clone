@@ -28,6 +28,8 @@ $mourningMode = get_setting('mourning_mode', '0') === '1';
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/style.css?v=<?= (int) @filemtime(__DIR__ . '/../assets/css/style.css') ?>">
+<link rel="stylesheet" href="/assets/css/webgl-theme.css?v=<?= (int) @filemtime(__DIR__ . '/../assets/css/webgl-theme.css') ?>">
+<meta name="theme-color" content="#0b0203">
 </head>
 <body>
 <header class="site-header">

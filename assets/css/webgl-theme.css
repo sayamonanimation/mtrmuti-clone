@@ -1,0 +1,447 @@
+/*
+ * WebGL theme - dark glass surfaces over the animated shader backdrop
+ * (assets/js/webgl-fx.js). Loaded after style.css and only overrides it,
+ * so removing this file + the script tag restores the original look.
+ */
+:root {
+    --fx-bg: #0b0203;
+    --fx-surface: rgba(28, 8, 9, 0.58);
+    --fx-surface-strong: rgba(22, 6, 7, 0.82);
+    --fx-border: rgba(255, 140, 120, 0.16);
+    --fx-border-hi: rgba(255, 120, 95, 0.45);
+    --fx-text: #f6ecea;
+    --fx-muted: #c9b2ae;
+    --fx-accent: #ff5a3c;
+    --fx-accent-2: #ff9b7a;
+    --fx-glow: 0 0 0 1px var(--fx-border), 0 18px 50px rgba(0, 0, 0, 0.45);
+    --fx-blur: blur(14px) saturate(140%);
+    --radius: 16px;
+    --shadow: var(--fx-glow);
+}
+
+/* Fallback when WebGL is unavailable: a static version of the same palette. */
+body {
+    background:
+        radial-gradient(1200px 700px at 75% 10%, rgba(163, 13, 0, 0.55), transparent 60%),
+        radial-gradient(900px 600px at 10% 80%, rgba(71, 6, 0, 0.7), transparent 60%),
+        var(--fx-bg);
+    background-attachment: fixed;
+    color: var(--fx-text);
+}
+.fx-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    display: block;
+    pointer-events: none;
+}
+html.fx-webgl body { background: var(--fx-bg); }
+::selection { background: var(--fx-accent); color: #fff; }
+
+/* ---------- Header ---------- */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.topbar {
+    background: rgba(12, 3, 4, 0.55);
+    backdrop-filter: var(--fx-blur);
+    -webkit-backdrop-filter: var(--fx-blur);
+    border-bottom: 1px solid var(--fx-border);
+}
+.brand-mark {
+    background: linear-gradient(135deg, var(--fx-accent), #8a0b00);
+    box-shadow: 0 0 22px rgba(255, 90, 60, 0.55);
+}
+.topbar-btn-solid {
+    background: linear-gradient(135deg, var(--fx-accent), #b51200);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 6px 20px rgba(255, 70, 40, 0.35);
+}
+.topbar-btn-solid:hover { background: linear-gradient(135deg, #ff7356, #cc1a00); }
+.topbar-btn-ghost { border-color: rgba(255, 255, 255, 0.25); }
+
+.main-nav {
+    background: rgba(18, 5, 6, 0.45);
+    backdrop-filter: var(--fx-blur);
+    -webkit-backdrop-filter: var(--fx-blur);
+    border-bottom: 1px solid var(--fx-border);
+}
+.main-nav a {
+    color: var(--fx-text);
+    position: relative;
+    border-bottom: none;
+}
+.main-nav > .container > ul > li > a::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 6px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--fx-accent), var(--fx-accent-2));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .3s ease;
+    box-shadow: 0 0 10px var(--fx-accent);
+}
+.main-nav a:hover,
+.main-nav a.active {
+    background: rgba(255, 90, 60, 0.1);
+    color: #fff;
+}
+.main-nav > .container > ul > li > a:hover::before,
+.main-nav > .container > ul > li > a.active::before { transform: scaleX(1); }
+.main-nav .dropdown {
+    background: var(--fx-surface-strong);
+    backdrop-filter: var(--fx-blur);
+    -webkit-backdrop-filter: var(--fx-blur);
+    border: 1px solid var(--fx-border);
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 6px 0;
+}
+.main-nav .dropdown a:hover,
+.main-nav .dropdown a.active { background: rgba(255, 90, 60, 0.18); }
+
+/* ---------- Hero / page headers ---------- */
+.hero,
+.page-header {
+    background: transparent;
+    position: relative;
+    overflow: hidden;
+}
+.hero { padding: 130px 0 120px; }
+.page-header { padding: 90px 0 70px; }
+.hero h1,
+.page-header h1 {
+    font-size: clamp(2rem, 5vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    background: linear-gradient(120deg, #fff 20%, var(--fx-accent-2) 55%, #fff 85%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+    animation: fx-shine 8s linear infinite;
+}
+.page-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+.hero p,
+.page-header p {
+    color: var(--fx-muted);
+    font-size: 1.15rem;
+    max-width: 680px;
+    margin: 0 auto;
+}
+.hero .container,
+.page-header .container { animation: fx-rise .9s cubic-bezier(.2, .7, .2, 1) both; }
+/* Thin glowing horizon line under each header */
+.hero::after,
+.page-header::after {
+    content: '';
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--fx-accent), transparent);
+    box-shadow: 0 0 18px var(--fx-accent);
+}
+.hero-has-banner { background-blend-mode: normal; }
+
+/* Slider: Ken Burns zoom + glass caption */
+.slider {
+    height: min(78vh, 620px);
+    background: transparent;
+}
+.slide img {
+    transform: scale(1.08);
+    transition: transform 7s ease-out;
+}
+.slide.active img { transform: scale(1); }
+.slider-caption {
+    background:
+        linear-gradient(180deg, rgba(11, 2, 3, 0.15) 0%, rgba(11, 2, 3, 0.55) 60%, var(--fx-bg) 100%);
+}
+.slider-caption h2 {
+    font-size: clamp(1.6rem, 4.5vw, 3.2rem);
+    text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+}
+.slide.active .slider-caption > * { animation: fx-rise .9s cubic-bezier(.2, .7, .2, 1) both; }
+.slide.active .slider-caption p { animation-delay: .15s; }
+.slider-arrow {
+    background: rgba(20, 5, 6, 0.45);
+    border: 1px solid var(--fx-border);
+    backdrop-filter: var(--fx-blur);
+    -webkit-backdrop-filter: var(--fx-blur);
+}
+.slider-arrow:hover { background: var(--fx-accent); }
+.slider-dot.active { background: var(--fx-accent); box-shadow: 0 0 10px var(--fx-accent); }
+
+/* ---------- Sections ---------- */
+section.alt { background: transparent; }
+.section-title h2 {
+    color: var(--fx-text);
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+}
+.section-title .bar {
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--fx-accent), transparent);
+    box-shadow: 0 0 14px var(--fx-accent);
+}
+
+/* ---------- Glass surfaces ---------- */
+.card,
+.post-card,
+.stat-box,
+.chart-wrap,
+.content-card,
+.profile-section,
+.link-list-item,
+.fb-embed-wrap blockquote {
+    background: var(--fx-surface);
+    border: 1px solid var(--fx-border);
+    box-shadow: var(--fx-glow);
+    backdrop-filter: var(--fx-blur);
+    -webkit-backdrop-filter: var(--fx-blur);
+    color: var(--fx-text);
+}
+.profile-section { border-left: 3px solid var(--fx-accent); }
+
+/* 3D tilt (driven by --rx/--ry from webgl-fx.js) + moving specular highlight */
+.card,
+.post-card,
+.stat-box,
+.link-list-item,
+.profile-section,
+.gallery-grid img {
+    position: relative;
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--ty, 0));
+    transition: transform .5s cubic-bezier(.2, .7, .2, 1), box-shadow .3s, border-color .3s, opacity .7s;
+    will-change: transform;
+}
+.is-tilting { transition: transform .08s linear, box-shadow .3s, border-color .3s, opacity .7s; }
+.card:hover,
+.post-card:hover,
+.stat-box:hover,
+.link-list-item:hover,
+.profile-section:hover {
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-4px);
+    border-color: var(--fx-border-hi);
+    box-shadow: 0 0 0 1px var(--fx-border-hi), 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(255, 70, 40, 0.18);
+}
+.card::after,
+.post-card::after,
+.stat-box::after,
+.link-list-item::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 140, 110, 0.14), transparent 45%);
+    opacity: 0;
+    transition: opacity .3s;
+}
+.card:hover::after,
+.post-card:hover::after,
+.stat-box:hover::after,
+.link-list-item:hover::after { opacity: 1; }
+
+.card img,
+.post-card img { transition: transform .6s ease, filter .6s ease; filter: saturate(.92); }
+.card:hover img,
+.post-card:hover img { transform: scale(1.05); filter: saturate(1.1); }
+.card,
+.post-card { overflow: hidden; }
+
+.card-body p,
+.post-card p,
+.post-card-date,
+.stat-box .label,
+.teacher-contact,
+.gallery-grid figcaption,
+.portfolio-thumbs figcaption { color: var(--fx-muted); }
+.card-body p.student-work-author,
+.teacher-card .position,
+.post-card .post-link,
+.teacher-contact-profile a,
+.link-list-arrow,
+.profile-section h2,
+.batch-section h2 { color: var(--fx-accent-2); }
+.teacher-contact { border-top-color: var(--fx-border); }
+.profile-section p,
+.profile-list li { color: var(--fx-text); }
+.profile-list li::before { background: var(--fx-accent); box-shadow: 0 0 8px var(--fx-accent); }
+.batch-section h2 { border-bottom-color: var(--fx-border); }
+.link-list-item:hover { color: #fff; }
+
+.stat-box .num {
+    font-size: 2.6rem;
+    background: linear-gradient(180deg, #fff, var(--fx-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 14px rgba(255, 90, 60, 0.4));
+}
+
+.gallery-grid img {
+    border-radius: 12px;
+    border: 1px solid var(--fx-border);
+    height: 170px;
+}
+.gallery-grid img:hover { box-shadow: 0 0 0 1px var(--fx-border-hi), 0 20px 50px rgba(0, 0, 0, 0.55); }
+
+.video-banner,
+.fb-embed-wrap {
+    border: 1px solid var(--fx-border);
+    box-shadow: var(--fx-glow);
+}
+
+.post-carousel-track::-webkit-scrollbar-thumb { background: rgba(255, 120, 95, 0.35); }
+.post-carousel-btn {
+    background: var(--fx-surface);
+    border-color: var(--fx-border);
+    color: var(--fx-text);
+}
+.post-carousel-btn:hover { background: var(--fx-accent); border-color: var(--fx-accent); }
+
+.btn,
+.fb-embed-wrap blockquote a {
+    background: linear-gradient(135deg, var(--fx-accent), #b51200);
+    box-shadow: 0 8px 24px rgba(255, 70, 40, 0.35);
+    transition: transform .2s, box-shadow .2s;
+}
+.btn:hover {
+    background: linear-gradient(135deg, #ff7356, #cc1a00);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(255, 70, 40, 0.5);
+}
+
+/* ---------- Long-form content ---------- */
+.prose { color: var(--fx-text); }
+.prose h2 { color: var(--fx-accent-2); border-bottom-color: var(--fx-border); }
+.prose h3 { color: #fff; }
+.prose h4 { color: var(--fx-accent-2); }
+.prose a { color: var(--fx-accent-2); }
+.prose blockquote {
+    background: rgba(255, 90, 60, 0.08);
+    border-left-color: var(--fx-accent);
+    color: var(--fx-muted);
+}
+/* Admin-edited HTML may carry inline dark text colors/backgrounds that would
+   vanish on the dark theme - neutralise them. */
+.prose [style*="color"] { color: inherit !important; }
+.prose [style*="background"] { background: transparent !important; }
+.prose table { border-collapse: collapse; width: 100%; }
+.prose th,
+.prose td { border: 1px solid var(--fx-border); padding: 8px 12px; }
+.prose th { background: rgba(255, 90, 60, 0.12); }
+.page-content a:not(.btn):not(.card-link):not(.link-list-item) { color: var(--fx-accent-2); }
+
+/* ---------- Footer ---------- */
+.site-footer {
+    background: rgba(8, 2, 3, 0.7);
+    backdrop-filter: var(--fx-blur);
+    -webkit-backdrop-filter: var(--fx-blur);
+    border-top: 1px solid var(--fx-border);
+    color: var(--fx-muted);
+    margin-top: 40px;
+}
+.footer-nav a { color: var(--fx-muted); }
+.footer-nav a:hover { color: var(--fx-accent-2); }
+.footer-bottom { border-top-color: var(--fx-border); color: #8f7773; }
+
+/* ---------- Chatbot ---------- */
+.chatbot-toggle {
+    background: linear-gradient(135deg, var(--fx-accent), #b51200);
+    box-shadow: 0 0 0 0 rgba(255, 90, 60, 0.6), 0 10px 26px rgba(0, 0, 0, 0.4);
+    animation: fx-pulse 2.8s ease-out infinite;
+}
+.chatbot-panel {
+    background: var(--fx-surface-strong);
+    border: 1px solid var(--fx-border);
+    backdrop-filter: var(--fx-blur);
+    -webkit-backdrop-filter: var(--fx-blur);
+}
+.chatbot-header { background: linear-gradient(135deg, #8a0b00, var(--fx-accent)); }
+.chatbot-messages { background: transparent; }
+.chatbot-msg-bot,
+.chatbot-result {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--fx-text);
+    border-color: var(--fx-border);
+}
+.chatbot-result-title { color: var(--fx-text); }
+.chatbot-result-excerpt { color: var(--fx-muted); }
+.chatbot-result-link { color: var(--fx-accent-2); }
+.chatbot-msg-user { background: var(--fx-accent); }
+.chatbot-form { background: transparent; border-top-color: var(--fx-border); }
+.chatbot-form input {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--fx-border);
+    color: var(--fx-text);
+}
+.chatbot-form button { background: var(--fx-accent); }
+
+/* ---------- Scroll reveal (classes added by webgl-fx.js) ---------- */
+.reveal {
+    opacity: 0;
+    --ty: 28px;
+    transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal:not(.card):not(.post-card):not(.stat-box):not(.link-list-item):not(.profile-section):not(.gallery-grid img) {
+    transform: translateY(var(--ty));
+    transition: opacity .8s ease, transform .8s cubic-bezier(.2, .7, .2, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-visible { opacity: 1; --ty: 0px; }
+.reveal.is-visible.is-tilting,
+.reveal.is-visible:hover { transition-delay: 0ms; }
+
+/* ---------- Keyframes ---------- */
+@keyframes fx-shine { to { background-position: 200% center; } }
+@keyframes fx-rise {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes fx-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 90, 60, 0.55), 0 10px 26px rgba(0, 0, 0, 0.4); }
+    70% { box-shadow: 0 0 0 16px rgba(255, 90, 60, 0), 0 10px 26px rgba(0, 0, 0, 0.4); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 90, 60, 0), 0 10px 26px rgba(0, 0, 0, 0.4); }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 720px) {
+    .hero { padding: 80px 0 70px; }
+    .page-header { padding: 60px 0 46px; }
+    .slider { height: 300px; }
+    .main-nav { background: var(--fx-surface-strong); }
+    .main-nav.open { max-height: calc(100vh - 72px); overflow-y: auto; }
+    .main-nav > .container > ul > li > a::before { display: none; }
+    .main-nav .dropdown {
+        background: rgba(255, 255, 255, 0.04);
+        border: none;
+        border-radius: 0;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+    .main-nav .dropdown a { color: var(--fx-muted); padding-left: 32px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero h1,
+    .page-header h1,
+    .chatbot-toggle,
+    .hero .container,
+    .page-header .container,
+    .slide.active .slider-caption > * { animation: none; }
+    .slide img { transition: none; transform: none; }
+}

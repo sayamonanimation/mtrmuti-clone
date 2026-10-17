@@ -575,10 +575,23 @@ function is_admin_logged_in() {
 }
 
 function require_admin_login() {
+    global $pdo;
     if (!is_admin_logged_in()) {
         header('Location: /admin/index.php');
         exit;
     }
+    // With many admin accounts, one may be deleted while its owner is still
+    // logged in somewhere - end that session instead of letting it keep editing.
+    $stmt = $pdo->prepare('SELECT username FROM admin_users WHERE id = ?');
+    $stmt->execute([$_SESSION['admin_id']]);
+    $username = $stmt->fetchColumn();
+    if ($username === false) {
+        $_SESSION = [];
+        session_destroy();
+        header('Location: /admin/index.php');
+        exit;
+    }
+    $_SESSION['admin_username'] = $username;
 }
 
 /**

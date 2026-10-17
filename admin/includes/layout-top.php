@@ -17,6 +17,7 @@ $adminNav = [
     ['href' => '/admin/student-year-stats.php', 'label' => 'สถิตินักศึกษาแยกชั้นปี'],
     ['href' => '/admin/fields.php', 'label' => 'รายวิชาที่เปิดสอน'],
     ['href' => '/admin/settings.php', 'label' => 'ตั้งค่าเว็บไซต์'],
+    ['href' => '/admin/admins.php', 'label' => 'ผู้ดูแลระบบ'],
 ];
 $currentPath = $_SERVER['SCRIPT_NAME'];
 ?>
@@ -30,7 +31,7 @@ $currentPath = $_SERVER['SCRIPT_NAME'];
 <link rel="stylesheet" href="/assets/css/style.css?v=<?= (int) @filemtime(__DIR__ . '/../../assets/css/style.css') ?>">
 <link rel="stylesheet" href="/admin/assets/admin.css?v=<?= (int) @filemtime(__DIR__ . '/../assets/admin.css') ?>">
 </head>
-<body class="admin-body">
+<body class="admin-body" data-csrf="<?= h(csrf_token()) ?>" data-admin-user="<?= h($_SESSION['admin_username'] ?? '') ?>" data-loaded-at="<?= time() ?>">
 <div class="admin-shell">
     <aside class="admin-sidebar">
         <div class="admin-brand">ระบบหลังบ้าน</div>
@@ -46,9 +47,14 @@ $currentPath = $_SERVER['SCRIPT_NAME'];
     <main class="admin-main">
         <header class="admin-topbar">
             <h1><?= h($adminPageTitle ?? '') ?></h1>
-            <a href="/index.php" target="_blank" class="btn btn-ghost">ดูหน้าเว็บไซต์</a>
+            <div class="admin-topbar-actions">
+                <span class="admin-current-user">ผู้ใช้: <?= h($_SESSION['admin_username'] ?? '') ?></span>
+                <span class="presence-online" id="presenceOnline" hidden></span>
+                <a href="/index.php" target="_blank" class="btn btn-ghost">ดูหน้าเว็บไซต์</a>
+            </div>
         </header>
         <div class="admin-content">
+        <div class="presence-banner" id="presenceBanner" role="status" hidden></div>
         <?php if (!empty($_SESSION['flash'])): ?>
             <div class="flash flash-<?= h($_SESSION['flash']['type']) ?>"><?= h($_SESSION['flash']['message']) ?></div>
             <?php unset($_SESSION['flash']); ?>
