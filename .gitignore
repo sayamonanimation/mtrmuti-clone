@@ -2,3 +2,5 @@
 assets/uploads/*
 !assets/uploads/.gitkeep
 config/config.local.php
+storage/sessions/
+storage/presence/

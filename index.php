@@ -184,15 +184,17 @@ window.addEventListener('load', function () {
     var yearLabel = <?= json_encode(t('home.student_stats_year')) ?>;
     var ctx = document.getElementById('studentYearChart');
     if (ctx && window.Chart) {
+        Chart.defaults.color = '#c9b2ae';
+        Chart.defaults.borderColor = 'rgba(255, 140, 120, 0.14)';
         new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: yearLabel + ' 1', data: <?= json_encode(array_map('intval', array_column($studentYearStats, 'year1_count'))) ?>, backgroundColor: '#A30D00' },
-                    { label: yearLabel + ' 2', data: <?= json_encode(array_map('intval', array_column($studentYearStats, 'year2_count'))) ?>, backgroundColor: '#470600' },
-                    { label: yearLabel + ' 3', data: <?= json_encode(array_map('intval', array_column($studentYearStats, 'year3_count'))) ?>, backgroundColor: '#d94f3d' },
-                    { label: yearLabel + ' 4', data: <?= json_encode(array_map('intval', array_column($studentYearStats, 'year4_count'))) ?>, backgroundColor: '#8c8c8c' }
+                    { label: yearLabel + ' 1', data: <?= json_encode(array_map('intval', array_column($studentYearStats, 'year1_count'))) ?>, backgroundColor: '#ff5a3c' },
+                    { label: yearLabel + ' 2', data: <?= json_encode(array_map('intval', array_column($studentYearStats, 'year2_count'))) ?>, backgroundColor: '#b51200' },
+                    { label: yearLabel + ' 3', data: <?= json_encode(array_map('intval', array_column($studentYearStats, 'year3_count'))) ?>, backgroundColor: '#ff9b7a' },
+                    { label: yearLabel + ' 4', data: <?= json_encode(array_map('intval', array_column($studentYearStats, 'year4_count'))) ?>, backgroundColor: '#7a6a68' }
                 ]
             },
             options: {

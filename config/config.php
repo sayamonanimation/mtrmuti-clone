@@ -36,6 +36,26 @@ define('UPLOAD_DIR', SITE_ROOT . '/assets/uploads');
 define('UPLOAD_URL', '/assets/uploads');
 
 if (session_status() === PHP_SESSION_NONE) {
+    // Several admins work in the back office at the same time, often for a
+    // long editing stretch. Keep sessions for 8 hours, and in a folder of our
+    // own: on shared hosting the default session dir is shared with other
+    // sites whose shorter gc_maxlifetime would delete our sessions early.
+    $sessionLifetime = 8 * 60 * 60;
+    $sessionDir = SITE_ROOT . '/storage/sessions';
+    if (!is_dir($sessionDir)) {
+        @mkdir($sessionDir, 0700, true);
+    }
+    if (is_dir($sessionDir) && is_writable($sessionDir)) {
+        session_save_path($sessionDir);
+    }
+    ini_set('session.gc_maxlifetime', (string) $sessionLifetime);
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
 }
 
