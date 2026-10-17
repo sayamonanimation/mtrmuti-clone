@@ -346,9 +346,61 @@ function get_all_teacher_service_links() {
     return $pdo->query('SELECT * FROM teacher_service_links ORDER BY sort_order ASC, id ASC')->fetchAll();
 }
 
+const CLASSROOM_MAX_PHOTOS = 6;
+
 function get_classrooms() {
     global $pdo;
     return $pdo->query('SELECT * FROM classrooms ORDER BY sort_order ASC, id ASC')->fetchAll();
+}
+
+/**
+ * Creates classroom_photos on first use (no manual migration needed on the
+ * live host) and copies each classroom's old single image_path in as its
+ * first photo. Guarded by a site setting so it only runs once.
+ */
+function ensure_classroom_photos_table() {
+    global $pdo;
+    static $done = false;
+    if ($done || get_setting('classroom_photos_ready') === '1') {
+        $done = true;
+        return;
+    }
+    $pdo->exec('CREATE TABLE IF NOT EXISTS classroom_photos (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        classroom_id INT NOT NULL,
+        image_path VARCHAR(255) NOT NULL,
+        sort_order INT DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX (classroom_id),
+        FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+    $pdo->exec("INSERT INTO classroom_photos (classroom_id, image_path, sort_order)
+        SELECT c.id, c.image_path, 0 FROM classrooms c
+        WHERE c.image_path IS NOT NULL AND c.image_path <> ''
+          AND NOT EXISTS (SELECT 1 FROM classroom_photos p WHERE p.classroom_id = c.id)");
+    set_setting('classroom_photos_ready', '1');
+    $done = true;
+}
+
+/** [classroom_id => [photo rows...]] for every classroom, in display order. */
+function get_classroom_photos() {
+    global $pdo;
+    ensure_classroom_photos_table();
+    $byClassroom = [];
+    foreach ($pdo->query('SELECT * FROM classroom_photos ORDER BY sort_order ASC, id ASC') as $row) {
+        $byClassroom[$row['classroom_id']][] = $row;
+    }
+    return $byClassroom;
+}
+
+/** Keeps classrooms.image_path pointing at the first photo (used as the cover elsewhere). */
+function sync_classroom_cover($classroomId) {
+    global $pdo;
+    $stmt = $pdo->prepare('SELECT image_path FROM classroom_photos WHERE classroom_id = ? ORDER BY sort_order ASC, id ASC LIMIT 1');
+    $stmt->execute([$classroomId]);
+    $cover = $stmt->fetchColumn();
+    $stmt = $pdo->prepare('UPDATE classrooms SET image_path = ? WHERE id = ?');
+    $stmt->execute([$cover ?: null, $classroomId]);
 }
 
 function get_active_calendar_links($type) {
@@ -644,6 +696,44 @@ function handle_image_upload($field, $subdir = '') {
         'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png',
         'webp' => 'image/webp', 'gif' => 'image/gif',
     ]);
+}
+
+/**
+ * Saves up to $limit images from a multiple file input (name="field[]").
+ * Returns ['paths' => [...], 'skipped' => n] - skipped counts files over the
+ * limit or rejected as non-images.
+ */
+function handle_multi_image_upload($field, $subdir, $limit) {
+    $result = ['paths' => [], 'skipped' => 0];
+    if (empty($_FILES[$field]) || !is_array($_FILES[$field]['name'])) {
+        return $result;
+    }
+    $files = $_FILES[$field];
+    foreach ($files['name'] as $i => $name) {
+        if ($files['error'][$i] === UPLOAD_ERR_NO_FILE) {
+            continue;
+        }
+        if (count($result['paths']) >= $limit) {
+            $result['skipped']++;
+            continue;
+        }
+        // Reuse the single-file validation/storage path for each entry.
+        $_FILES['__multi_item'] = [
+            'name' => $name,
+            'type' => $files['type'][$i],
+            'tmp_name' => $files['tmp_name'][$i],
+            'error' => $files['error'][$i],
+            'size' => $files['size'][$i],
+        ];
+        $path = handle_image_upload('__multi_item', $subdir);
+        if ($path) {
+            $result['paths'][] = $path;
+        } else {
+            $result['skipped']++;
+        }
+    }
+    unset($_FILES['__multi_item']);
+    return $result;
 }
 
 /** Saves an uploaded PDF ($_FILES[$field]) into UPLOAD_DIR, returns the public path or null. */
