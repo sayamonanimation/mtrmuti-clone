@@ -317,3 +317,15 @@ table.admin-table { width: 100%; border-collapse: collapse; }
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* "Remove this image" option under a current image (settings) */
+.remove-image-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0 10px;
+    font-size: .88rem;
+    font-weight: 400;
+    color: #a3222c;
+    cursor: pointer;
+}
