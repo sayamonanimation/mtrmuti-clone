@@ -19,14 +19,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$key, $value]);
     }
 
+    // A newly uploaded image wins over the "remove" checkbox.
     $logoPath = handle_image_upload('logo', 'branding');
     if ($logoPath) {
         $stmt->execute(['logo_path', $logoPath]);
+    } elseif (!empty($_POST['remove_logo'])) {
+        $stmt->execute(['logo_path', '']);
     }
 
     $heroBannerPath = handle_image_upload('hero_banner', 'branding');
     if ($heroBannerPath) {
         $stmt->execute(['hero_banner_path', $heroBannerPath]);
+    } elseif (!empty($_POST['remove_hero_banner'])) {
+        $stmt->execute(['hero_banner_path', '']);
     }
 
     $stmt->execute(['chatbot_enabled', isset($_POST['chatbot_enabled']) ? '1' : '0']);
@@ -85,6 +90,7 @@ foreach ($pdo->query('SELECT setting_key, setting_value FROM site_settings') as 
             <label>โลโก้เว็บไซต์</label>
             <?php if (!empty($settings['logo_path'])): ?>
                 <img class="current-thumb" src="<?= h($settings['logo_path']) ?>" alt="">
+                <label class="remove-image-option"><input type="checkbox" name="remove_logo" value="1"> ลบโลโก้นี้ (จะแสดงตัวอักษร MT แทน)</label>
             <?php endif; ?>
             <input type="file" name="logo" accept="image/*">
         </div>
@@ -93,6 +99,7 @@ foreach ($pdo->query('SELECT setting_key, setting_value FROM site_settings') as 
             <p class="field-hint" style="margin-top:0;">แสดงจาง ๆ เป็นพื้นหลังของหัวข้อหน้าแรกแบบ WebGL</p>
             <?php if (!empty($settings['hero_banner_path'])): ?>
                 <img class="current-thumb" src="<?= h($settings['hero_banner_path']) ?>" alt="">
+                <label class="remove-image-option"><input type="checkbox" name="remove_hero_banner" value="1"> ลบแบนเนอร์นี้</label>
             <?php endif; ?>
             <input type="file" name="hero_banner" accept="image/*">
         </div>
