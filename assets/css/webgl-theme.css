@@ -1195,3 +1195,139 @@ section.alt { background: transparent; }
 @media (max-width: 600px) {
     .media-quick { grid-template-columns: 1fr; }
 }
+
+/* Teacher identity effects (assets/js/teacher-fx.js) */
+.tid { position: relative; display: block; overflow: hidden; isolation: isolate; }
+.tid img { position: relative; z-index: 1; display: block; }
+.tid-glow {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: -10%;
+    height: 80%;
+    z-index: 0;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--tid-color), transparent);
+    opacity: .28;
+    filter: blur(20px);
+    transition: opacity .4s;
+}
+.card:hover .tid-glow, .tid-large .tid-glow { opacity: .45; }
+.tid-glyphs { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+.tid-glyph {
+    position: absolute;
+    bottom: -10%;
+    font-family: 'Courier New', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: var(--size, .8rem);
+    white-space: nowrap;
+    opacity: 0;
+    text-shadow: 0 0 8px currentColor;
+    animation: tid-float var(--d, 8s) linear var(--delay, 0s) infinite;
+    animation-play-state: paused;
+}
+.tid-playing .tid-glyph { animation-play-state: running; }
+@keyframes tid-float {
+    0% { transform: translate(0, 0) scale(.8); opacity: 0; }
+    12% { opacity: .85; }
+    80% { opacity: .55; }
+    100% { transform: translate(var(--drift, 0), -115%) scale(1.05); opacity: 0; }
+}
+.card:hover .tid-glyph { filter: brightness(1.3); }
+
+/* Bottom accent strip */
+.tid-accent {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    z-index: 3;
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    padding: 6px 8px;
+    max-width: calc(100% - 84px);
+    border-radius: 8px;
+    background: rgba(8, 2, 3, .62);
+    border: 1px solid color-mix(in srgb, var(--tid-color) 45%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: var(--tid-color);
+    font-family: 'Courier New', ui-monospace, monospace;
+    font-size: .68rem;
+    line-height: 1.35;
+    pointer-events: none;
+}
+.tid-accent-code, .tid-accent-web { flex-direction: column; align-items: flex-start; gap: 0; }
+.tid-code-line { white-space: pre; overflow: hidden; max-width: 100%; }
+.tid-code-line:last-child::after { content: '▌'; animation: tid-blink 1s steps(1) infinite; }
+@keyframes tid-blink { 50% { opacity: 0; } }
+.tid-accent-algorithm, .tid-accent-sound { height: 34px; width: 110px; }
+.tid-bar {
+    flex: 1;
+    height: var(--h);
+    border-radius: 2px 2px 0 0;
+    background: var(--tid-color);
+    box-shadow: 0 0 6px var(--tid-color);
+    animation: tid-bar 1.4s ease-in-out var(--delay) infinite alternate;
+    animation-play-state: paused;
+}
+.tid-playing .tid-bar { animation-play-state: running; }
+@keyframes tid-bar { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
+.tid-bar { transform-origin: bottom; }
+.tid-accent-game { align-items: center; gap: 6px; font-weight: 700; }
+.tid-hp-bar { width: 56px; height: 7px; border-radius: 4px; background: rgba(255, 255, 255, .15); overflow: hidden; }
+.tid-hp-fill { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #ff5a3c, var(--tid-color)); animation: tid-hp 3s ease-in-out infinite; animation-play-state: paused; }
+.tid-playing .tid-hp-fill { animation-play-state: running; }
+@keyframes tid-hp { 0%, 100% { width: 100%; } 50% { width: 72%; } }
+.tid-rec { font-weight: 700; animation: tid-blink 1.4s steps(1) infinite; }
+.tid-spark { font-size: 1rem; }
+
+/* Chips + badge */
+.tid-chips {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 3;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    pointer-events: none;
+}
+.tid-chip {
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: .7rem;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(8, 2, 3, .55);
+    border: 1px solid color-mix(in srgb, var(--tid-color) 60%, transparent);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--tid-color) 35%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    transform: translateY(-6px);
+    animation: tid-chip-in .5s ease-out var(--delay, 0s) forwards;
+}
+@keyframes tid-chip-in { to { opacity: 1; transform: none; } }
+.tid-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 3;
+    padding: 4px 7px;
+    border-radius: 10px;
+    font-size: .85rem;
+    background: rgba(8, 2, 3, .55);
+    border: 1px solid color-mix(in srgb, var(--tid-color) 50%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+.tid-large .tid-chip { font-size: .8rem; padding: 4px 11px; }
+.tid-large .tid-accent { font-size: .78rem; }
+.teacher-profile-photo .tid { border-radius: var(--radius); box-shadow: var(--shadow); }
+.teacher-profile-photo .tid img { box-shadow: none; border-radius: 0; }
+.tid-static .tid-glyph { animation: none; opacity: .5; bottom: auto; top: 20%; }
+.tid-static .tid-glyph:nth-child(3n) { top: 45%; }
+.tid-static .tid-glyph:nth-child(3n+1) { top: 70%; }
+.tid-static .tid-bar, .tid-static .tid-hp-fill, .tid-static .tid-rec, .tid-static .tid-code-line::after { animation: none; }

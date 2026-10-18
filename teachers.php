@@ -18,7 +18,10 @@ $teachers = get_teachers();
         <div class="card-grid">
             <?php foreach ($teachers as $t): ?>
             <a class="card teacher-card card-link" href="<?= h(clean_public_url('/teacher-profile?id=' . (int) $t['id'])) ?>">
-                <img src="<?= h($t['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="<?= h($t['name']) ?>">
+                <?php $identity = teacher_identity($t); ?>
+                <div class="tid" data-themes="<?= h(implode(',', $identity['themes'])) ?>" data-tags="<?= h(json_encode($identity['tags'], JSON_UNESCAPED_UNICODE)) ?>">
+                    <img src="<?= h($t['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="<?= h($t['name']) ?>">
+                </div>
                 <div class="card-body">
                     <div class="name"><?= h($t['name']) ?></div>
                     <div class="position"><?= h(lang_field($t, 'position')) ?></div>
@@ -37,4 +40,5 @@ $teachers = get_teachers();
         <?php endif; ?>
     </div>
 </div>
+<script src="/assets/js/teacher-fx.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/teacher-fx.js') ?>" defer></script>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

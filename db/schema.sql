@@ -102,7 +102,8 @@ CREATE TABLE IF NOT EXISTS teachers (
     copyrights_patents_en TEXT,
     awards_en TEXT,
     classroom_online_url VARCHAR(255),-- ลิงก์ Classroom Online ของอาจารย์ท่านนี้
-    sort_order INT DEFAULT 0
+    sort_order INT DEFAULT 0,
+    identity_tags VARCHAR(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Photo evidence attached to a teacher's work items (research, creative,
