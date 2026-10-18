@@ -1103,3 +1103,6 @@ section.alt { background: transparent; }
     color: #65676b;
 }
 .fbp-actions a:hover { background: #f2f2f2; }
+.fbp-embedded { display: flex; justify-content: center; background: #fff; }
+.fbp-embedded .fb-post, .fbp-embedded .fb-post > span, .fbp-embedded iframe { max-width: 100% !important; }
+.fbp-embedded blockquote { margin: 0; padding: 16px; }

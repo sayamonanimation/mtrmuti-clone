@@ -27,20 +27,42 @@ function facebook_feed() {
     }
 
     try {
-        $page = facebook_graph_get(FB_PAGE_ID, ['fields' => 'name,link,followers_count,fan_count,picture.width(200).height(200){url}']);
-        $posts = facebook_graph_get(FB_PAGE_ID . '/posts', [
-            'limit' => FACEBOOK_POST_LIMIT,
-            'fields' => 'id,message,created_time,permalink_url,full_picture,'
-                . 'attachments{media_type,type,title,description,url,media{image{src,width,height}},'
-                . 'subattachments.limit(100){media{image{src,width,height}},type}},'
-                . 'reactions.summary(total_count).limit(0),comments.summary(total_count).limit(0),shares',
-        ]);
+        try {
+            $page = facebook_graph_get(FB_PAGE_ID, ['fields' => 'name,link,followers_count,fan_count,picture.width(200).height(200){url}']);
+        } catch (RuntimeException $e) {
+            $page = facebook_graph_get(FB_PAGE_ID, ['fields' => 'name,link,picture.width(200).height(200){url}']);
+        }
+        // Richest request first; some fields (comments, reactions) need extra
+        // permissions on some Pages, so fall back to fewer fields.
+        $base = 'id,message,created_time,permalink_url,full_picture,status_type,'
+            . 'attachments{media_type,type,title,description,url,media{image{src,width,height}},'
+            . 'subattachments.limit(100){media{image{src,width,height}},type}}';
+        $attempts = [
+            $base . ',reactions.summary(total_count).limit(0),comments.summary(total_count).limit(0),shares',
+            $base . ',reactions.summary(total_count).limit(0),shares',
+            $base . ',shares',
+            'id,message,created_time,permalink_url,full_picture,status_type',
+        ];
+        $posts = null;
+        $lastError = null;
+        foreach ($attempts as $fields) {
+            try {
+                $posts = facebook_graph_get(FB_PAGE_ID . '/posts', ['limit' => FACEBOOK_POST_LIMIT, 'fields' => $fields]);
+                break;
+            } catch (RuntimeException $e) {
+                $lastError = $e;
+            }
+        }
+        if ($posts === null) {
+            throw $lastError;
+        }
         $feed = [
             'page' => [
                 'name' => $page['name'] ?? '',
                 'link' => $page['link'] ?? '',
                 'followers' => $page['followers_count'] ?? ($page['fan_count'] ?? null),
-                'picture' => $page['picture']['data']['url'] ?? '',
+                // Public redirect to the Page's profile picture works without a token.
+                'picture' => ($page['picture']['data']['url'] ?? '') ?: 'https://graph.facebook.com/' . rawurlencode(FB_PAGE_ID) . '/picture?type=large',
             ],
             'posts' => array_map('facebook_normalize_post', $posts['data'] ?? []),
             'fetched_at' => time(),
@@ -104,6 +126,9 @@ function facebook_normalize_post(array $p) {
         'url' => $p['permalink_url'] ?? '',
         'images' => $images,
         'link' => $link,
+        // Posts with no readable photos (typically shares of another Page's
+        // post, whose media our token can't read) are embedded by the template.
+        'shared' => ($p['status_type'] ?? '') === 'shared_story',
         'reactions' => (int) ($p['reactions']['summary']['total_count'] ?? 0),
         'comments' => (int) ($p['comments']['summary']['total_count'] ?? 0),
         'shares' => (int) ($p['shares']['count'] ?? 0),
@@ -144,6 +169,15 @@ function facebook_render_posts(array $feed) {
     $name = $page['name'] ?? '';
     ob_start();
     foreach ($feed['posts'] ?? [] as $post): ?>
+    <?php if (!$post['images'] && $post['url']): ?>
+    <!-- No readable photos (e.g. a share of another Page's post): Facebook's
+         own embed shows the whole post, header and caption included. -->
+    <article class="fbp fbp-embedded" data-post-id="<?= h($post['id']) ?>">
+        <div class="fb-post" data-href="<?= h($post['url']) ?>" data-width="476" data-show-text="true">
+            <blockquote cite="<?= h($post['url']) ?>" class="fb-xfbml-parse-ignore"><a href="<?= h($post['url']) ?>" target="_blank" rel="noopener"><?= h(mb_substr($post['message'], 0, 120)) ?></a></blockquote>
+        </div>
+    </article>
+    <?php continue; endif; ?>
     <article class="fbp" data-post-id="<?= h($post['id']) ?>">
         <header class="fbp-head">
             <?php if ($avatar): ?><img class="fbp-avatar" src="<?= h($avatar) ?>" alt="" loading="lazy"><?php endif; ?>
