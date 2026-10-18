@@ -11,7 +11,7 @@
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     var THEMES = {
-        code:      { color: '#5cf2a6', glyphs: ['</>', '{ }', '01', '=>', 'fn()', ';', 'if', '[ ]', '#', '&&'], icon: '💻' },
+        code:      { color: '#5cf2a6', glyphs: ['</>', '{ }', '0101', '1010', '01101', '110', '#include', '#!/bin', 'int main()', '// code', 'print()', 'def', 'return', '0x1F', '=>', ';', 'if ()', '[ ]', '&&', '#'], icon: '💻', binary: true },
         algorithm: { color: '#7cc4ff', glyphs: ['O(n)', '∑', 'log n', '→', '⇄', 'π', '∞', 'f(x)', '≤', 'Δ'], icon: '🧠' },
         game:      { color: '#ffd166', glyphs: ['▲', '●', '■', '✕', '1UP', '★', 'HP', '♥', 'LV', 'GG'], icon: '🎮' },
         web:       { color: '#8be9fd', glyphs: ['<div>', 'CSS', '#id', 'UI', 'UX', 'www', '.app', '⌘', '☰', '↗'], icon: '🌐' },
@@ -60,6 +60,20 @@
             g.style.setProperty('--drift', ((Math.random() - 0.5) * 30).toFixed(0) + 'px');
             g.style.color = th.color;
             layer.appendChild(g);
+        }
+        // Code theme: a few columns of 0/1 "binary rain" falling behind the photo
+        if (themeNames.some(function (t) { return THEMES[t].binary; })) {
+            var cols = large ? 7 : 5;
+            for (var c = 0; c < cols; c++) {
+                var digits = '';
+                for (var d = 0; d < 18; d++) digits += Math.random() < 0.5 ? '0' : '1';
+                var col = el('span', 'tid-binary', digits);
+                col.style.left = (6 + c * (88 / (cols - 1)) + (Math.random() - 0.5) * 6).toFixed(1) + '%';
+                col.style.setProperty('--d', (7 + Math.random() * 6).toFixed(1) + 's');
+                col.style.setProperty('--delay', (-Math.random() * 12).toFixed(1) + 's');
+                col.style.color = THEMES.code.color;
+                layer.appendChild(col);
+            }
         }
         wrap.insertBefore(layer, wrap.querySelector('img'));
 
