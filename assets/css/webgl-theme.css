@@ -959,3 +959,75 @@ section.alt { background: transparent; }
     .fb-look-name { font-size: 1.2rem; }
     .fb-look-feed { max-height: 520px; padding: 8px; }
 }
+
+/* Scroll progress bar + back-to-top button (webgl-fx.js) */
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 400;
+    transform: scaleX(0);
+    transform-origin: left;
+    background: linear-gradient(90deg, #a30d00, var(--fx-accent), var(--fx-accent-2), #fff);
+    box-shadow: 0 0 10px var(--fx-accent), 0 0 2px #fff;
+    pointer-events: none;
+}
+.back-to-top {
+    position: fixed;
+    right: 27px; /* centred over the 58px chatbot button */
+    bottom: 96px;
+    z-index: 190;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(20, 5, 6, .6);
+    backdrop-filter: var(--fx-blur);
+    -webkit-backdrop-filter: var(--fx-blur);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .4);
+    color: #fff;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(16px) scale(.9);
+    pointer-events: none;
+    transition: opacity .3s, transform .3s, background .2s;
+}
+.back-to-top.is-visible { opacity: 1; transform: none; pointer-events: auto; }
+.back-to-top:hover { background: rgba(255, 90, 60, .25); }
+.back-to-top svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+.back-to-top-track { fill: none; stroke: rgba(255, 140, 120, .18); stroke-width: 3; }
+.back-to-top-ring {
+    fill: none;
+    stroke: var(--fx-accent);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 138.2;
+    stroke-dashoffset: 138.2;
+    filter: drop-shadow(0 0 4px var(--fx-accent));
+}
+.back-to-top-arrow {
+    position: relative;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 52px;
+    display: block;
+    text-align: center;
+    transition: transform .2s;
+}
+.back-to-top:hover .back-to-top-arrow { transform: translateY(-3px); }
+@media (max-width: 480px) {
+    .back-to-top { right: 22px; bottom: 84px; width: 46px; height: 46px; }
+    .back-to-top-arrow { line-height: 46px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .back-to-top, .back-to-top-arrow { transition: none; }
+}
