@@ -1382,5 +1382,9 @@ section.alt { background: transparent; }
 }
 /* WebGL teacher photo (teacher-fx.js): canvas sits exactly over the <img> */
 .tid-canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-.tid-gl img { visibility: hidden; }
+/* Dots while moving; the real sharp photo once they have all settled */
+.tid-gl img { opacity: 0; }
+.tid-gl .tid-canvas { opacity: 1; }
+.tid-gl.tid-settled img { opacity: 1; transition: opacity .35s ease; }
+.tid-gl.tid-settled .tid-canvas { opacity: 0; transition: opacity .35s ease; }
 .card .tid-gl img, .card:hover .tid-gl img { transform: none; }
