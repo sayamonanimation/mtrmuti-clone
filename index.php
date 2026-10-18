@@ -263,6 +263,7 @@ $heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?
                 if (firstNew && firstOld && firstNew.dataset.postId === firstOld.dataset.postId) return;
                 feed.innerHTML = html;
                 collapse(feed);
+                if (window.FB && FB.XFBML) FB.XFBML.parse(feed); // embedded shared posts
                 var top = feed.querySelector('.fbp');
                 if (top) top.classList.add('fbp-new');
             });

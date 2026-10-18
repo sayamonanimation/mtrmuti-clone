@@ -15,4 +15,9 @@ if (!facebook_graph_enabled()) {
     http_response_code(404);
     exit;
 }
-echo facebook_render_posts(facebook_feed());
+$feed = facebook_feed();
+echo facebook_render_posts($feed);
+if (!empty($feed['error'])) {
+    // Graph API error text (never contains the token) for troubleshooting.
+    echo "\n<!-- fb-error: " . str_replace('--', '- -', h($feed['error'])) . " -->";
+}
