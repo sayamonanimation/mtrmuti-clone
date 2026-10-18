@@ -147,12 +147,19 @@ $heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?
                     <div class="bar"></div>
                 </div>
                 <?php
+                require_once __DIR__ . '/includes/facebook.php';
+                $fbGraph = facebook_graph_enabled() ? facebook_feed() : null;
                 $fbSlug = trim((string) parse_url($facebookEmbedUrl, PHP_URL_PATH), '/');
                 $fbSlug = explode('/', $fbSlug)[0];
                 $fbName = get_setting('facebook_page_name') ?: $fbSlug;
                 $fbFollowers = get_setting('facebook_followers');
                 $fbCover = get_setting('facebook_cover_path') ?: $heroBanner;
                 $fbAvatar = get_setting('logo_path');
+                if ($fbGraph && !empty($fbGraph['page']['name'])) {
+                    $fbName = get_setting('facebook_page_name') ?: $fbGraph['page']['name'];
+                    $fbFollowers = $fbFollowers ?: ($fbGraph['page']['followers'] !== null ? number_format($fbGraph['page']['followers']) : '');
+                    $fbAvatar = $fbGraph['page']['picture'] ?: $fbAvatar;
+                }
                 $fbPosts = array_slice(array_values(array_filter(array_map('trim', preg_split('/\R/', (string) get_setting('facebook_post_urls'))), function ($u) {
                     return preg_match('#^https://(www\.|web\.|m\.)?facebook\.com/#i', $u);
                 })), 0, 10);
@@ -181,8 +188,10 @@ $heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?
                         </a>
                         <?php endif; ?>
                     </div>
-                    <div class="fb-look-feed">
-                        <?php if ($fbPosts): ?>
+                    <div class="fb-look-feed"<?php if ($fbGraph && $fbGraph['posts']): ?> id="fbGraphFeed" data-refresh="/facebook-feed.php"<?php endif; ?>>
+                        <?php if ($fbGraph && $fbGraph['posts']): ?>
+                            <?= facebook_render_posts($fbGraph) ?>
+                        <?php elseif ($fbPosts): ?>
                             <?php foreach ($fbPosts as $postUrl): ?>
                             <div class="fb-look-post">
                                 <div class="fb-post" data-href="<?= h($postUrl) ?>" data-width="500" data-show-text="true">
@@ -220,6 +229,46 @@ $heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?
 // parse, which can happen before our CSS grid layout has settled (fonts,
 // image reflow, etc.) and leaves them stuck at a too-narrow width.
 // Re-parsing once everything has finished loading forces a re-measure.
+// Graph feed: collapse long captions, and poll for new Page posts every
+// 5 minutes while the page is open (server caches Facebook for 5 minutes).
+(function () {
+    var feed = document.getElementById('fbGraphFeed');
+    if (!feed) return;
+    function collapse(root) {
+        root.querySelectorAll('[data-collapsible]').forEach(function (el) {
+            if (el.dataset.ready) return;
+            el.dataset.ready = '1';
+            if (el.scrollHeight > 140) {
+                el.classList.add('is-collapsed');
+                var more = document.createElement('button');
+                more.type = 'button';
+                more.className = 'fbp-more-btn';
+                more.textContent = 'ดูเพิ่มเติม';
+                more.addEventListener('click', function () { el.classList.remove('is-collapsed'); more.remove(); });
+                el.after(more);
+            }
+        });
+    }
+    collapse(feed);
+    setInterval(function () {
+        if (document.hidden) return;
+        fetch(feed.getAttribute('data-refresh'), { credentials: 'same-origin' })
+            .then(function (r) { return r.ok ? r.text() : ''; })
+            .then(function (html) {
+                if (!html.trim()) return;
+                var firstOld = feed.querySelector('.fbp');
+                var tmp = document.createElement('div');
+                tmp.innerHTML = html;
+                var firstNew = tmp.querySelector('.fbp');
+                if (firstNew && firstOld && firstNew.dataset.postId === firstOld.dataset.postId) return;
+                feed.innerHTML = html;
+                collapse(feed);
+                var top = feed.querySelector('.fbp');
+                if (top) top.classList.add('fbp-new');
+            });
+    }, 300000);
+})();
+
 window.addEventListener('load', function () {
     if (window.FB && FB.XFBML) {
         FB.XFBML.parse();

@@ -6,3 +6,4 @@ storage/sessions/
 storage/presence/
 storage/temp/
 storage/opendrive_folders.json
+storage/facebook_cache.json
