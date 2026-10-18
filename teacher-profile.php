@@ -46,7 +46,7 @@ foreach (get_teacher_portfolio($teacher['id']) as $item) {
             <div class="teacher-profile-photo">
                 <?php $identity = teacher_identity($teacher); ?>
                 <div class="tid tid-large" data-themes="<?= h(implode(',', $identity['themes'])) ?>" data-tags="<?= h(json_encode($identity['tags'], JSON_UNESCAPED_UNICODE)) ?>">
-                    <img src="<?= h($teacher['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="<?= h($teacher['name']) ?>">
+                    <img src="<?= h($teacher['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="<?= h($teacher['name']) ?>" crossorigin="anonymous">
                 </div>
                 <?php if ($teacher['phone'] || $teacher['email']): ?>
                 <div class="teacher-contact teacher-contact-profile">

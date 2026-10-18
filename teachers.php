@@ -20,7 +20,7 @@ $teachers = get_teachers();
             <a class="card teacher-card card-link" href="<?= h(clean_public_url('/teacher-profile?id=' . (int) $t['id'])) ?>">
                 <?php $identity = teacher_identity($t); ?>
                 <div class="tid" data-themes="<?= h(implode(',', $identity['themes'])) ?>" data-tags="<?= h(json_encode($identity['tags'], JSON_UNESCAPED_UNICODE)) ?>">
-                    <img src="<?= h($t['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="<?= h($t['name']) ?>">
+                    <img src="<?= h($t['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="<?= h($t['name']) ?>" crossorigin="anonymous">
                 </div>
                 <div class="card-body">
                     <div class="name"><?= h($t['name']) ?></div>

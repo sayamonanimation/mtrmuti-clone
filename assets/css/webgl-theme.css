@@ -1356,14 +1356,31 @@ section.alt { background: transparent; }
     to { top: 105%; }
 }
 .tid-static .tid-binary { animation: none; top: 15%; }
-/* Subject terms among the floating glyphs */
+/* The teacher's own words among the floating glyphs: faint, borderless,
+   letters slowly breathe apart and glow */
 .tid-term {
     font-family: 'Kanit', sans-serif;
-    font-weight: 600;
-    font-size: calc(var(--size, .8rem) * .82);
+    font-weight: 500;
+    font-size: calc(var(--size, .8rem) * .95);
     letter-spacing: .02em;
-    padding: 1px 7px;
-    border-radius: 999px;
-    border: 1px solid currentColor;
-    background: rgba(8, 2, 3, .35);
+    color: color-mix(in srgb, var(--tid-color) 70%, #fff) !important;
+    filter: blur(.2px);
+    animation: tid-float-soft var(--d, 8s) linear var(--delay, 0s) infinite,
+               tid-breathe 3.2s ease-in-out var(--delay, 0s) infinite alternate;
+    animation-play-state: paused, paused;
 }
+.tid-playing .tid-term { animation-play-state: running, running; }
+@keyframes tid-float-soft {
+    0% { bottom: -8%; transform: translateX(0); opacity: 0; }
+    15% { opacity: .5; }
+    75% { opacity: .35; }
+    100% { bottom: 102%; transform: translateX(var(--drift, 0)); opacity: 0; }
+}
+@keyframes tid-breathe {
+    from { letter-spacing: .02em; text-shadow: 0 0 4px currentColor; }
+    to { letter-spacing: .22em; text-shadow: 0 0 14px currentColor, 0 0 2px #fff; }
+}
+/* WebGL teacher photo (teacher-fx.js): canvas sits exactly over the <img> */
+.tid-canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+.tid-gl img { visibility: hidden; }
+.card .tid-gl img, .card:hover .tid-gl img { transform: none; }
