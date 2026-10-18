@@ -1356,3 +1356,14 @@ section.alt { background: transparent; }
     to { top: 105%; }
 }
 .tid-static .tid-binary { animation: none; top: 15%; }
+/* Subject terms among the floating glyphs */
+.tid-term {
+    font-family: 'Kanit', sans-serif;
+    font-weight: 600;
+    font-size: calc(var(--size, .8rem) * .82);
+    letter-spacing: .02em;
+    padding: 1px 7px;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    background: rgba(8, 2, 3, .35);
+}
