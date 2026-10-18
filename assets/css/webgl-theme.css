@@ -1332,3 +1332,27 @@ section.alt { background: transparent; }
 .tid-static .tid-glyph:nth-child(3n) { top: 45%; }
 .tid-static .tid-glyph:nth-child(3n+1) { top: 70%; }
 .tid-static .tid-bar, .tid-static .tid-hp-fill, .tid-static .tid-rec, .tid-static .tid-code-line::after { animation: none; }
+/* Binary rain columns for the code theme (behind the photo) */
+.tid-binary {
+    position: absolute;
+    top: -60%;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    font-family: 'Courier New', ui-monospace, monospace;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: -.1em;
+    opacity: .28;
+    text-shadow: 0 0 6px currentColor;
+    -webkit-mask-image: linear-gradient(transparent, #000 35%, #000 70%, transparent);
+    mask-image: linear-gradient(transparent, #000 35%, #000 70%, transparent);
+    animation: tid-rain var(--d, 9s) linear var(--delay, 0s) infinite;
+    animation-play-state: paused;
+}
+.tid-playing .tid-binary { animation-play-state: running; }
+.tid-large .tid-binary { font-size: .85rem; }
+@keyframes tid-rain {
+    from { top: -60%; }
+    to { top: 105%; }
+}
+.tid-static .tid-binary { animation: none; top: 15%; }
