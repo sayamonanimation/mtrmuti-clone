@@ -190,10 +190,50 @@
         });
     }
 
+    // ---------- Scroll progress bar + back-to-top button ----------
+    function startScrollNav() {
+        var bar = document.createElement('div');
+        bar.className = 'scroll-progress';
+        bar.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(bar);
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'back-to-top';
+        btn.setAttribute('aria-label', document.documentElement.lang === 'en' ? 'Back to top' : 'กลับขึ้นด้านบน');
+        // Ring circumference for r=22: 2 * PI * 22 = 138.2
+        btn.innerHTML = '<svg viewBox="0 0 52 52" aria-hidden="true"><circle class="back-to-top-track" cx="26" cy="26" r="22"/>' +
+            '<circle class="back-to-top-ring" cx="26" cy="26" r="22"/></svg>' +
+            '<span class="back-to-top-arrow" aria-hidden="true">&uarr;</span>';
+        document.body.appendChild(btn);
+        var ring = btn.querySelector('.back-to-top-ring');
+        var RING = 138.2;
+
+        btn.addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+        });
+
+        var ticking = false;
+        function update() {
+            ticking = false;
+            var max = document.documentElement.scrollHeight - window.innerHeight;
+            var p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+            bar.style.transform = 'scaleX(' + p + ')';
+            ring.style.strokeDashoffset = (RING * (1 - p)).toFixed(1);
+            btn.classList.toggle('is-visible', window.scrollY > 400);
+        }
+        window.addEventListener('scroll', function () {
+            if (!ticking) { ticking = true; requestAnimationFrame(update); }
+        }, { passive: true });
+        window.addEventListener('resize', update);
+        update();
+    }
+
     function init() {
         startBackdrop();
         startTilt();
         startReveal();
+        startScrollNav();
     }
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
