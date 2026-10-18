@@ -83,46 +83,33 @@
 
     }
 
-    // ---------- WebGL photo ----------
-    // The teacher photo itself is drawn by a small shader: digital dissolve-in,
-    // theme-coloured rim light along the cut-out edge, a hologram band and
-    // scanlines, pointer parallax with a light RGB split on hover. The <img>
-    // stays in the page (layout, SEO, fallback) and is hidden once WebGL draws.
-    var VERT = 'attribute vec2 p;varying vec2 vUv;void main(){vUv=p*.5+.5;gl_Position=vec4(p,0.,1.);}';
-    var FRAG = [
-        'precision mediump float;',
-        'varying vec2 vUv;',
-        'uniform sampler2D uTex;',
-        'uniform vec2 uScale, uOffset;',   // object-fit: cover mapping
-        'uniform float uTime, uHover, uReveal;',
-        'uniform vec2 uMouse;',
-        'uniform vec3 uColor;',
-        'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
-        'vec4 tex(vec2 uv){ if(uv.x<0.||uv.x>1.||uv.y<0.||uv.y>1.) return vec4(0.); return texture2D(uTex,uv); }',
+    // ---------- WebGL particle photo ----------
+    // The teacher photo is rebuilt from thousands of points sampled from the
+    // image itself (each point keeps that pixel's colour). Points fly in to
+    // form the photo when it scrolls into view, scatter away from the pointer
+    // and drift back - the same feel as the particle titles in the headers.
+    // A tap (touch) blows the whole photo apart and lets it reassemble.
+    // The <img> stays in the page (layout, SEO, no-WebGL fallback).
+    var PVERT = [
+        'attribute vec2 aPos;',
+        'attribute vec4 aCol;',
+        'uniform vec2 uRes;',
+        'uniform float uSize;',
+        'varying vec4 vCol;',
         'void main(){',
-        '  vec2 uv = vec2(vUv.x, 1.-vUv.y) * uScale + uOffset;',
-        '  uv += uMouse * .012 * uHover;',                         // parallax
-        '  uv.x += sin(uv.y*28. + uTime*2.2) * .0012;',            // living shimmer
-        '  float split = .0015 + .004 * uHover;',
-        '  vec4 c = tex(uv);',
-        '  float r = tex(uv + vec2(split,0.)).r, b = tex(uv - vec2(split,0.)).b;',
-        '  vec3 col = vec3(mix(c.r, r, .8), c.g, mix(c.b, b, .8));',
-        '  float a = c.a;',
-        // rim light: alpha drops nearby -> we are on the silhouette edge
-        '  float e = .006;',
-        '  float n = min(min(tex(uv+vec2(e,0.)).a, tex(uv-vec2(e,0.)).a), min(tex(uv+vec2(0.,e)).a, tex(uv-vec2(0.,e)).a));',
-        '  float rim = clamp(a - n, 0., 1.);',
-        '  col += uColor * rim * (1.2 + .8*uHover);',
-        // hologram band sweeping down + faint scanlines
-        '  float band = smoothstep(.06, 0., abs(fract(vUv.y*.9 + uTime*.12) - .5));',
-        '  col += uColor * band * .22 * a;',
-        '  col *= .96 + .04 * sin(gl_FragCoord.y * 1.6);',
-        // digital dissolve-in on first view
-        '  float cell = hash(floor(vUv * vec2(42., 56.)));',
-        '  if (cell > uReveal) discard;',
-        '  float edgeGlow = smoothstep(uReveal - .08, uReveal, cell) * step(uReveal, 1.);',  // only while dissolving
-        '  col += uColor * edgeGlow * 1.5 * a;',
-        '  gl_FragColor = vec4(col * a, a);',
+        '  vec2 clip = (aPos / uRes) * 2. - 1.;',
+        '  gl_Position = vec4(clip.x, -clip.y, 0., 1.);',
+        '  gl_PointSize = uSize;',
+        '  vCol = aCol;',
+        '}'
+    ].join('\n');
+    var PFRAG = [
+        'precision mediump float;',
+        'varying vec4 vCol;',
+        'void main(){',
+        '  float d = length(gl_PointCoord - .5);',
+        '  float a = smoothstep(.5, .32, d);',
+        '  gl_FragColor = vec4(vCol.rgb * vCol.a * a, vCol.a * a);',
         '}'
     ].join('\n');
 
@@ -130,98 +117,148 @@
         var img = wrap.querySelector('img');
         if (!img || wrap._gl) return;
         function go() {
-            if (!img.naturalWidth) return;
+            if (!img.naturalWidth || !img.clientWidth) return;
             var canvas = document.createElement('canvas');
             canvas.className = 'tid-canvas';
             canvas.setAttribute('aria-hidden', 'true');
             var gl = canvas.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false });
             if (!gl) return;
             function sh(type, src) { var x = gl.createShader(type); gl.shaderSource(x, src); gl.compileShader(x); return gl.getShaderParameter(x, gl.COMPILE_STATUS) ? x : null; }
-            var vs = sh(gl.VERTEX_SHADER, VERT), fs = sh(gl.FRAGMENT_SHADER, FRAG);
+            var vs = sh(gl.VERTEX_SHADER, PVERT), fs = sh(gl.FRAGMENT_SHADER, PFRAG);
             if (!vs || !fs) return;
             var prog = gl.createProgram();
             gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
             if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
             gl.useProgram(prog);
-            var buf = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-            var loc = gl.getAttribLocation(prog, 'p');
-            gl.enableVertexAttribArray(loc);
-            gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-
-            var tex = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, tex);
-            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-            try {
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-            } catch (e) {
-                return; // cross-origin image without CORS: keep the plain <img>
-            }
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            var uRes = gl.getUniformLocation(prog, 'uRes');
+            var uSize = gl.getUniformLocation(prog, 'uSize');
+            var aPos = gl.getAttribLocation(prog, 'aPos');
+            var aCol = gl.getAttribLocation(prog, 'aCol');
+            var posBuf = gl.createBuffer(), colBuf = gl.createBuffer();
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-            var U = {};
-            ['uScale', 'uOffset', 'uTime', 'uHover', 'uReveal', 'uMouse', 'uColor'].forEach(function (n) { U[n] = gl.getUniformLocation(prog, n); });
-            var hex = getComputedStyle(wrap).getPropertyValue('--tid-color').trim() || '#ff9b7a';
-            var rgb = [1, 3, 5].map(function (i) { return parseInt(hex.substr(i, 2), 16) / 255; });
-            gl.uniform3f(U.uColor, rgb[0], rgb[1], rgb[2]);
+            var dpr = Math.min(window.devicePixelRatio || 1, 2);
+            var W = 0, H = 0, count = 0, home, pos, vel, step;
 
+            // Sample the photo (object-fit: cover, centred top) into points.
+            function build() {
+                W = img.clientWidth; H = img.clientHeight;
+                canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+                gl.viewport(0, 0, canvas.width, canvas.height);
+                step = W > 320 ? 3 : 2.6;   // CSS px between points
+                var cw = Math.round(W / step), ch = Math.round(H / step);
+                var c = document.createElement('canvas');
+                c.width = cw; c.height = ch;
+                var ctx = c.getContext('2d');
+                var boxA = cw / ch, imgA = img.naturalWidth / img.naturalHeight;
+                var dw = cw, dh = ch, dx = 0;
+                if (imgA > boxA) { dw = ch * imgA; dx = (cw - dw) / 2; } else { dh = cw / imgA; }
+                ctx.drawImage(img, dx, 0, dw, dh);
+                var data;
+                try { data = ctx.getImageData(0, 0, cw, ch).data; } catch (e) { return false; } // no CORS
+                var hs = [], cs = [];
+                for (var y = 0; y < ch; y++) {
+                    for (var x = 0; x < cw; x++) {
+                        var k = (y * cw + x) * 4;
+                        if (data[k + 3] < 90) continue;   // transparent background
+                        hs.push((x + .5) * step * dpr, (y + .5) * step * dpr);
+                        cs.push(data[k] / 255, data[k + 1] / 255, data[k + 2] / 255, data[k + 3] / 255);
+                    }
+                }
+                count = hs.length / 2;
+                home = new Float32Array(hs);
+                pos = new Float32Array(count * 2);
+                vel = new Float32Array(count * 2);
+                scatter(1);
+                gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cs), gl.STATIC_DRAW);
+                gl.enableVertexAttribArray(aCol);
+                gl.vertexAttribPointer(aCol, 4, gl.FLOAT, false, 0, 0);
+                gl.uniform2f(uRes, canvas.width, canvas.height);
+                gl.uniform1f(uSize, step * dpr * 1.25);
+                return true;
+            }
+            // Throw every point to a random spot (strength 1 = whole frame and beyond).
+            function scatter(strength) {
+                for (var i = 0; i < count; i++) {
+                    var ang = Math.random() * Math.PI * 2, r = (0.3 + Math.random()) * strength * Math.max(canvas.width, canvas.height) * 0.7;
+                    pos[i * 2] = home[i * 2] + Math.cos(ang) * r;
+                    pos[i * 2 + 1] = home[i * 2 + 1] + Math.sin(ang) * r;
+                    vel[i * 2] = vel[i * 2 + 1] = 0;
+                }
+            }
+            function blast() {
+                for (var i = 0; i < count; i++) {
+                    var dx = home[i * 2] - canvas.width / 2, dy = home[i * 2 + 1] - canvas.height / 2;
+                    var len = Math.sqrt(dx * dx + dy * dy) + 1;
+                    var f = 18 + Math.random() * 22;
+                    vel[i * 2] += dx / len * f; vel[i * 2 + 1] += dy / len * f;
+                }
+            }
+
+            if (!build()) return;
             wrap.insertBefore(canvas, img.nextSibling);
             wrap.classList.add('tid-gl');
             wrap._gl = true;
+            if (reduceMotion) { pos.set(home); }
 
-            var w = 0, h = 0;
-            function resize() {
-                var dpr = Math.min(window.devicePixelRatio || 1, 2);
-                w = img.clientWidth; h = img.clientHeight;
-                canvas.width = Math.max(1, Math.round(w * dpr));
-                canvas.height = Math.max(1, Math.round(h * dpr));
-                gl.viewport(0, 0, canvas.width, canvas.height);
-                // object-fit: cover, positioned centre-top like the <img>
-                var boxA = w / h, imgA = img.naturalWidth / img.naturalHeight;
-                var sx = 1, sy = 1;
-                if (imgA > boxA) sx = boxA / imgA; else sy = imgA / boxA;
-                gl.uniform2f(U.uScale, sx, sy);
-                gl.uniform2f(U.uOffset, (1 - sx) / 2, 0);
-            }
-            resize();
-            window.addEventListener('resize', resize);
-
-            var hover = 0, hoverTarget = 0, mouse = [0, 0], reveal = reduceMotion ? 1.01 : 0;
+            var mx = -9999, my = -9999;
             var host = wrap.closest('.card') || wrap;
             host.addEventListener('pointermove', function (e) {
-                var r = wrap.getBoundingClientRect();
-                mouse = [((e.clientX - r.left) / r.width - .5) * 2, ((e.clientY - r.top) / r.height - .5) * 2];
-                hoverTarget = 1;
+                var r = canvas.getBoundingClientRect();
+                mx = (e.clientX - r.left) * dpr; my = (e.clientY - r.top) * dpr;
             });
-            host.addEventListener('pointerleave', function () { hoverTarget = 0; mouse = [0, 0]; });
+            host.addEventListener('pointerleave', function () { mx = my = -9999; });
+            host.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse') blast(); });
 
-            var start = performance.now(), running = false, visible = false;
-            function frame(now) {
-                if (!visible || document.hidden) { running = false; return; }
-                var t = (now - start) / 1000;
-                hover += (hoverTarget - hover) * .08;
-                if (reveal < 1.01) reveal = Math.min(1.01, reveal + .018);
-                gl.uniform1f(U.uTime, t);
-                gl.uniform1f(U.uHover, hover);
-                gl.uniform1f(U.uReveal, reveal);
-                gl.uniform2f(U.uMouse, mouse[0], mouse[1]);
+            var R = 46 * dpr, R2 = R * R;
+            function stepPhysics() {
+                for (var i = 0; i < count; i++) {
+                    var ix = i * 2, iy = ix + 1;
+                    var dx = pos[ix] - mx, dy = pos[iy] - my, d2 = dx * dx + dy * dy;
+                    if (d2 < R2) {
+                        var f = (1 - d2 / R2) * 3.2, inv = 1 / Math.sqrt(d2 + 1);
+                        vel[ix] += dx * inv * f; vel[iy] += dy * inv * f;
+                    }
+                    vel[ix] += (home[ix] - pos[ix]) * 0.06;
+                    vel[iy] += (home[iy] - pos[iy]) * 0.06;
+                    vel[ix] *= 0.82; vel[iy] *= 0.82;
+                    pos[ix] += vel[ix]; pos[iy] += vel[iy];
+                }
+            }
+            function draw() {
+                gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+                gl.bufferData(gl.ARRAY_BUFFER, pos, gl.DYNAMIC_DRAW);
+                gl.enableVertexAttribArray(aPos);
+                gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
                 gl.clearColor(0, 0, 0, 0);
                 gl.clear(gl.COLOR_BUFFER_BIT);
-                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-                if (reduceMotion) { running = false; return; }
+                gl.drawArrays(gl.POINTS, 0, count);
+            }
+
+            var running = false, visible = false, firstView = true;
+            function frame() {
+                if (!visible || document.hidden) { running = false; return; }
+                stepPhysics();
+                draw();
                 requestAnimationFrame(frame);
             }
             function play() { if (!running) { running = true; requestAnimationFrame(frame); } }
+            if (reduceMotion) { draw(); return; }
             if ('IntersectionObserver' in window) {
-                new IntersectionObserver(function (en) { visible = en[0].isIntersecting; if (visible) play(); }, { rootMargin: '60px' }).observe(wrap);
+                new IntersectionObserver(function (en) {
+                    visible = en[0].isIntersecting;
+                    if (visible && firstView) { firstView = false; scatter(1); }
+                    if (visible) play();
+                }, { threshold: 0.15 }).observe(wrap);
             } else { visible = true; play(); }
             document.addEventListener('visibilitychange', function () { if (!document.hidden && visible) play(); });
+            var rt;
+            window.addEventListener('resize', function () {
+                clearTimeout(rt);
+                rt = setTimeout(function () { if (img.clientWidth !== W) { build(); pos.set(home); draw(); } }, 200);
+            });
         }
         if (img.complete && img.naturalWidth) go();
         else img.addEventListener('load', go, { once: true });
