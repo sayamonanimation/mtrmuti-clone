@@ -213,7 +213,16 @@
             host.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse') blast(); });
 
             var R = 46 * dpr, R2 = R * R;
+            // Once every point is home, show the real (sharp) photo instead of
+            // the dots; the first push from the pointer swaps the dots back in.
+            var settled = false, calmFrames = 0;
+            function setSettled(v) {
+                if (v === settled) return;
+                settled = v;
+                wrap.classList.toggle('tid-settled', v);
+            }
             function stepPhysics() {
+                var maxOff = 0;
                 for (var i = 0; i < count; i++) {
                     var ix = i * 2, iy = ix + 1;
                     var dx = pos[ix] - mx, dy = pos[iy] - my, d2 = dx * dx + dy * dy;
@@ -225,6 +234,14 @@
                     vel[iy] += (home[iy] - pos[iy]) * 0.06;
                     vel[ix] *= 0.82; vel[iy] *= 0.82;
                     pos[ix] += vel[ix]; pos[iy] += vel[iy];
+                    var off = Math.abs(pos[ix] - home[ix]) + Math.abs(pos[iy] - home[iy]);
+                    if (off > maxOff) maxOff = off;
+                }
+                if (maxOff < 1.2 * dpr) {
+                    if (++calmFrames > 6) setSettled(true);
+                } else {
+                    calmFrames = 0;
+                    setSettled(false);
                 }
             }
             function draw() {
@@ -241,11 +258,11 @@
             function frame() {
                 if (!visible || document.hidden) { running = false; return; }
                 stepPhysics();
-                draw();
+                if (!settled) draw();   // the sharp <img> is showing; skip drawing
                 requestAnimationFrame(frame);
             }
             function play() { if (!running) { running = true; requestAnimationFrame(frame); } }
-            if (reduceMotion) { draw(); return; }
+            if (reduceMotion) { setSettled(true); return; }
             if ('IntersectionObserver' in window) {
                 new IntersectionObserver(function (en) {
                     visible = en[0].isIntersecting;
