@@ -50,7 +50,7 @@ $heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?
             <?php if ($enrollUrl = get_setting('enroll_url')): ?>
             <a class="btn hero-fx-btn" href="<?= h($enrollUrl) ?>" target="_blank" rel="noopener"><?= h(t('topbar.enroll')) ?></a>
             <?php endif; ?>
-            <a class="btn hero-fx-btn hero-fx-btn-ghost" href="/student-works.php"><?= h(t('home.hero_works')) ?></a>
+            <a class="btn hero-fx-btn hero-fx-btn-ghost" href="<?= h(clean_public_url('/student-works')) ?>"><?= h(t('home.hero_works')) ?></a>
         </div>
     </div>
 </div>
@@ -143,9 +143,9 @@ $heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?
                     </div>
                 </div>
                 <div class="media-quick">
-                    <a class="media-quick-card" href="/course.php"><span class="media-quick-icon">🎓</span><span><strong><?= h(t('home.quick_course')) ?></strong><small><?= h(t('home.quick_course_sub')) ?></small></span></a>
-                    <a class="media-quick-card" href="/student-works.php"><span class="media-quick-icon">🎬</span><span><strong><?= h(t('home.quick_works')) ?></strong><small><?= h(t('home.quick_works_sub')) ?></small></span></a>
-                    <a class="media-quick-card" href="/contact.php"><span class="media-quick-icon">✉️</span><span><strong><?= h(t('home.quick_contact')) ?></strong><small><?= h(t('home.quick_contact_sub')) ?></small></span></a>
+                    <a class="media-quick-card" href="<?= h(clean_public_url('/course')) ?>"><span class="media-quick-icon">🎓</span><span><strong><?= h(t('home.quick_course')) ?></strong><small><?= h(t('home.quick_course_sub')) ?></small></span></a>
+                    <a class="media-quick-card" href="<?= h(clean_public_url('/student-works')) ?>"><span class="media-quick-icon">🎬</span><span><strong><?= h(t('home.quick_works')) ?></strong><small><?= h(t('home.quick_works_sub')) ?></small></span></a>
+                    <a class="media-quick-card" href="<?= h(clean_public_url('/contact')) ?>"><span class="media-quick-icon">✉️</span><span><strong><?= h(t('home.quick_contact')) ?></strong><small><?= h(t('home.quick_contact_sub')) ?></small></span></a>
                 </div>
             </div>
             <?php endif; ?>

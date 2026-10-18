@@ -9,7 +9,7 @@ if (!$teacher) {
     http_response_code(404);
     ?>
     <div class="page-header"><div class="container"><h1><?= h(t('teachers.not_found')) ?></h1></div></div>
-    <div class="page-content"><div class="container"><p><a href="/teachers.php">&larr; <?= h(t('teachers.back_to_list')) ?></a></p></div></div>
+    <div class="page-content"><div class="container"><p><a href="<?= h(clean_public_url('/teachers')) ?>">&larr; <?= h(t('teachers.back_to_list')) ?></a></p></div></div>
     <?php
     require_once __DIR__ . '/includes/footer.php';
     exit;
@@ -41,7 +41,7 @@ foreach (get_teacher_portfolio($teacher['id']) as $item) {
 </div>
 <div class="page-content">
     <div class="container">
-        <p><a href="/teachers.php">&larr; <?= h(t('teachers.back_to_list_all')) ?></a></p>
+        <p><a href="<?= h(clean_public_url('/teachers')) ?>">&larr; <?= h(t('teachers.back_to_list_all')) ?></a></p>
         <div class="teacher-profile">
             <div class="teacher-profile-photo">
                 <img src="<?= h($teacher['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="<?= h($teacher['name']) ?>">

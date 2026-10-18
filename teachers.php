@@ -17,7 +17,7 @@ $teachers = get_teachers();
         <?php if ($teachers): ?>
         <div class="card-grid">
             <?php foreach ($teachers as $t): ?>
-            <a class="card teacher-card card-link" href="/teacher-profile.php?id=<?= (int) $t['id'] ?>">
+            <a class="card teacher-card card-link" href="<?= h(clean_public_url('/teacher-profile?id=' . (int) $t['id'])) ?>">
                 <img src="<?= h($t['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="<?= h($t['name']) ?>">
                 <div class="card-body">
                     <div class="name"><?= h($t['name']) ?></div>

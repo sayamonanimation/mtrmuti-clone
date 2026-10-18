@@ -35,7 +35,7 @@ $mourningMode = get_setting('mourning_mode', '0') === '1';
 <header class="site-header">
     <div class="topbar">
         <div class="container topbar-inner">
-            <a class="brand" href="/index.php">
+            <a class="brand" href="/">
                 <?php if ($logoPath): ?>
                 <img class="brand-logo" src="<?= h($logoPath) ?>" alt="<?= h($siteName) ?>">
                 <?php else: ?>
