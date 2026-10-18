@@ -120,11 +120,16 @@ $heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?
 <?php endif; ?>
 
 <?php if ($homepageVideoId || $facebookEmbedUrl): ?>
-<section class="alt">
+<section class="alt media-section">
     <div class="container">
-        <div class="two-col-section">
+        <div class="section-title">
+            <h2><?= h(t('home.media_heading')) ?></h2>
+            <div class="bar"></div>
+        </div>
+        <div class="media-grid<?= ($homepageVideoId && $facebookEmbedUrl) ? '' : ' media-grid-single' ?>">
             <?php if ($homepageVideoId): ?>
-            <div class="two-col-item">
+            <div class="media-col media-col-video">
+                <div class="media-label"><span class="media-label-dot"></span><?= h(t('home.media_video_label')) ?></div>
                 <div class="video-banner">
                     <div class="video-banner-inner">
                         <iframe
@@ -137,15 +142,17 @@ $heroVideoFile = !$heroVideoId && preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?
                         ></iframe>
                     </div>
                 </div>
+                <div class="media-quick">
+                    <a class="media-quick-card" href="/course.php"><span class="media-quick-icon">🎓</span><span><strong><?= h(t('home.quick_course')) ?></strong><small><?= h(t('home.quick_course_sub')) ?></small></span></a>
+                    <a class="media-quick-card" href="/student-works.php"><span class="media-quick-icon">🎬</span><span><strong><?= h(t('home.quick_works')) ?></strong><small><?= h(t('home.quick_works_sub')) ?></small></span></a>
+                    <a class="media-quick-card" href="/contact.php"><span class="media-quick-icon">✉️</span><span><strong><?= h(t('home.quick_contact')) ?></strong><small><?= h(t('home.quick_contact_sub')) ?></small></span></a>
+                </div>
             </div>
             <?php endif; ?>
 
             <?php if ($facebookEmbedUrl): ?>
-            <div class="two-col-item">
-                <div class="section-title">
-                    <h2><?= h(t('home.facebook_heading')) ?></h2>
-                    <div class="bar"></div>
-                </div>
+            <div class="media-col media-col-facebook">
+                <div class="media-label"><span class="media-label-dot media-label-dot-fb"></span><?= h(t('home.media_facebook_label')) ?></div>
                 <?php
                 require_once __DIR__ . '/includes/facebook.php';
                 $fbGraph = facebook_graph_enabled() ? facebook_feed() : null;
