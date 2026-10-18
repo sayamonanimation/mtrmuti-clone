@@ -3,8 +3,8 @@
  *
  * Each .tid wrapper carries the themes detected from the teacher's
  * "identity" words (data-themes) and the words themselves (data-tags).
- * We add: themed glyphs that drift up around the photo, a themed "scanner"
- * accent (code lines, sort bars, waveform...), and glowing tag chips.
+ * We add a themed glow and glyphs drifting up *behind* the photo (seen
+ * through transparent PNG backgrounds) - nothing is drawn over the teacher.
  * Glyphs animate only while the card is on screen; reduced motion = static.
  */
 (function () {
@@ -45,16 +45,15 @@
         // Soft themed glow behind the photo
         wrap.insertBefore(el('span', 'tid-glow'), wrap.firstChild);
 
-        // Floating glyphs, mixed from all detected themes
+        // Floating glyphs behind the photo (visible through transparent PNG
+        // backgrounds), mixed from all detected themes.
         var layer = el('span', 'tid-glyphs');
         layer.setAttribute('aria-hidden', 'true');
-        var count = large ? 16 : 10;
+        var count = large ? 22 : 14;
         for (var i = 0; i < count; i++) {
             var th = THEMES[themeNames[i % themeNames.length]];
             var g = el('span', 'tid-glyph', th.glyphs[Math.floor(Math.random() * th.glyphs.length)]);
-            // Keep glyphs mostly at the sides so the face stays clear.
-            var side = i % 2 === 0 ? Math.random() * 26 : 74 + Math.random() * 22;
-            g.style.left = side + '%';
+            g.style.left = (4 + Math.random() * 86).toFixed(1) + '%';
             g.style.setProperty('--d', (6 + Math.random() * 6).toFixed(1) + 's');
             g.style.setProperty('--delay', (-Math.random() * 10).toFixed(1) + 's');
             g.style.setProperty('--size', (large ? 0.85 : 0.7) + Math.random() * 0.45 + 'rem');
@@ -62,50 +61,8 @@
             g.style.color = th.color;
             layer.appendChild(g);
         }
-        wrap.appendChild(layer);
+        wrap.insertBefore(layer, wrap.querySelector('img'));
 
-        // Themed accent strip along the bottom of the photo
-        var accent = el('span', 'tid-accent tid-accent-' + themeNames[0]);
-        accent.setAttribute('aria-hidden', 'true');
-        if (themeNames[0] === 'code' || themeNames[0] === 'web') {
-            var lines = themeNames[0] === 'code'
-                ? ['for (i = 0; i < n; i++)', '  learn(skill[i]);', 'return passion;']
-                : ['<section class="hero">', '  <h1>Hello</h1>', '</section>'];
-            lines.forEach(function (l) { accent.appendChild(el('span', 'tid-code-line', l)); });
-        } else if (themeNames[0] === 'algorithm' || themeNames[0] === 'sound') {
-            for (var b = 0; b < 14; b++) {
-                var bar = el('span', 'tid-bar');
-                bar.style.setProperty('--h', (20 + Math.random() * 80).toFixed(0) + '%');
-                bar.style.setProperty('--delay', (-Math.random() * 2).toFixed(2) + 's');
-                accent.appendChild(bar);
-            }
-        } else if (themeNames[0] === 'game') {
-            accent.appendChild(el('span', 'tid-hp', 'HP'));
-            var hp = el('span', 'tid-hp-bar');
-            hp.appendChild(el('span', 'tid-hp-fill'));
-            accent.appendChild(hp);
-            accent.appendChild(el('span', 'tid-hp', 'LV 99'));
-        } else if (themeNames[0] === 'film' || themeNames[0] === 'photo') {
-            accent.appendChild(el('span', 'tid-rec', themeNames[0] === 'film' ? '● REC' : '◉ f/1.8 · ISO 100'));
-        } else {
-            accent.appendChild(el('span', 'tid-spark', primary.icon));
-        }
-        wrap.appendChild(accent);
-
-        // Tag chips (what the teacher typed)
-        if (tags.length) {
-            var chips = el('span', 'tid-chips');
-            tags.slice(0, large ? 6 : 3).forEach(function (t, i) {
-                var c = el('span', 'tid-chip', t);
-                c.style.setProperty('--delay', (i * 0.12) + 's');
-                chips.appendChild(c);
-            });
-            wrap.appendChild(chips);
-        }
-        // Theme badge in the corner
-        var badge = el('span', 'tid-badge', themeNames.map(function (t) { return THEMES[t].icon; }).slice(0, 3).join(''));
-        badge.setAttribute('aria-hidden', 'true');
-        wrap.appendChild(badge);
     }
 
     function init() {

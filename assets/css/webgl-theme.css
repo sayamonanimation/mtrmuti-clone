@@ -1213,7 +1213,7 @@ section.alt { background: transparent; }
     transition: opacity .4s;
 }
 .card:hover .tid-glow, .tid-large .tid-glow { opacity: .45; }
-.tid-glyphs { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+.tid-glyphs { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 .tid-glyph {
     position: absolute;
     bottom: -10%;
@@ -1227,11 +1227,12 @@ section.alt { background: transparent; }
     animation-play-state: paused;
 }
 .tid-playing .tid-glyph { animation-play-state: running; }
+/* Rise through the whole frame (bottom is a % of the photo frame) */
 @keyframes tid-float {
-    0% { transform: translate(0, 0) scale(.8); opacity: 0; }
-    12% { opacity: .85; }
-    80% { opacity: .55; }
-    100% { transform: translate(var(--drift, 0), -115%) scale(1.05); opacity: 0; }
+    0% { bottom: -8%; transform: translateX(0) scale(.8); opacity: 0; }
+    12% { opacity: .75; }
+    80% { opacity: .5; }
+    100% { bottom: 102%; transform: translateX(var(--drift, 0)) scale(1.05); opacity: 0; }
 }
 .card:hover .tid-glyph { filter: brightness(1.3); }
 
