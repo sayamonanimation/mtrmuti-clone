@@ -44,7 +44,10 @@ foreach (get_teacher_portfolio($teacher['id']) as $item) {
         <p><a href="<?= h(clean_public_url('/teachers')) ?>">&larr; <?= h(t('teachers.back_to_list_all')) ?></a></p>
         <div class="teacher-profile">
             <div class="teacher-profile-photo">
-                <img src="<?= h($teacher['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="<?= h($teacher['name']) ?>">
+                <?php $identity = teacher_identity($teacher); ?>
+                <div class="tid tid-large" data-themes="<?= h(implode(',', $identity['themes'])) ?>" data-tags="<?= h(json_encode($identity['tags'], JSON_UNESCAPED_UNICODE)) ?>">
+                    <img src="<?= h($teacher['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="<?= h($teacher['name']) ?>">
+                </div>
                 <?php if ($teacher['phone'] || $teacher['email']): ?>
                 <div class="teacher-contact teacher-contact-profile">
                     <?php if ($teacher['phone']): ?><span><?= h(t('teachers.phone_prefix')) ?>: <?= h($teacher['phone']) ?></span><?php endif; ?>
@@ -96,4 +99,5 @@ foreach (get_teacher_portfolio($teacher['id']) as $item) {
         </div>
     </div>
 </div>
+<script src="/assets/js/teacher-fx.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/teacher-fx.js') ?>" defer></script>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

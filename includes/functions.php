@@ -238,13 +238,73 @@ function get_fields_of_study() {
     return $pdo->query('SELECT * FROM fields_of_study ORDER BY sort_order ASC')->fetchAll();
 }
 
+/**
+ * Teacher "identity" (free-text expertise keywords typed in the admin, e.g.
+ * "เขียนโปรแกรม, อัลกอริทึม, พัฒนาเกม") drives the themed effects on the
+ * teacher photo. The column is added on first use, so no manual migration.
+ */
+function ensure_teacher_identity_column() {
+    global $pdo;
+    static $done = false;
+    if ($done || get_setting('teacher_identity_ready') === '1') {
+        $done = true;
+        return;
+    }
+    try {
+        $pdo->exec('ALTER TABLE teachers ADD COLUMN identity_tags VARCHAR(255) DEFAULT NULL');
+    } catch (PDOException $e) {
+        // Column already exists.
+    }
+    set_setting('teacher_identity_ready', '1');
+    $done = true;
+}
+
+/** theme => keywords (Thai + English, matched case-insensitively inside each tag). */
+const TEACHER_IDENTITY_THEMES = [
+    'code' => ['โปรแกรม', 'โค้ด', 'โค๊ด', 'program', 'coding', 'code', 'developer', 'software', 'ซอฟต์แวร์', 'python', 'java', 'php', 'c++', 'javascript'],
+    'algorithm' => ['อัลกอริทึม', 'อัลกอริธึม', 'algorithm', 'โครงสร้างข้อมูล', 'data structure', 'ai', 'ปัญญาประดิษฐ์', 'machine learning', 'คณิต', 'math', 'ข้อมูล', 'data'],
+    'game' => ['เกม', 'game', 'unity', 'unreal', 'esport', 'gamification'],
+    'web' => ['เว็บ', 'web', 'html', 'css', 'ui', 'ux', 'แอป', 'app', 'mobile'],
+    'animation' => ['แอนิเมชัน', 'แอนิเมชั่น', 'อนิเมชั่น', 'animation', 'animate', 'motion', 'การ์ตูน', 'cartoon', '2d', 'character'],
+    'threed' => ['3d', '3 มิติ', 'สามมิติ', 'modeling', 'โมเดล', 'blender', 'maya', 'vr', 'ar', 'metaverse', 'xr'],
+    'film' => ['ภาพยนตร์', 'หนัง', 'film', 'video', 'วิดีโอ', 'วีดีโอ', 'ตัดต่อ', 'edit', 'cinema', 'กำกับ', 'director', 'โฆษณา', 'tvc', 'broadcast'],
+    'photo' => ['ถ่ายภาพ', 'ภาพถ่าย', 'photo', 'กล้อง', 'camera', 'lighting', 'แสง'],
+    'design' => ['ออกแบบ', 'design', 'กราฟิก', 'graphic', 'ศิลป', 'art', 'วาด', 'drawing', 'illustrat', 'typography', 'สี', 'branding', 'แบรนด์'],
+    'sound' => ['เสียง', 'sound', 'audio', 'ดนตรี', 'music', 'เพลง', 'podcast'],
+];
+
+/** ['tags' => [...], 'themes' => [...]] for a teacher row. */
+function teacher_identity($teacher) {
+    $raw = (string) ($teacher['identity_tags'] ?? '');
+    $tags = array_slice(array_values(array_filter(array_map('trim', preg_split('/[,،\n]+/u', $raw)))), 0, 6);
+    $themes = [];
+    foreach ($tags as $tag) {
+        $lower = mb_strtolower($tag, 'UTF-8');
+        foreach (TEACHER_IDENTITY_THEMES as $theme => $keywords) {
+            foreach ($keywords as $kw) {
+                // Short latin keywords (ai, ar, ui...) must match a whole word.
+                $hit = (strlen($kw) <= 3 && preg_match('/^[a-z0-9+]+$/', $kw))
+                    ? preg_match('/(^|[^a-z])' . preg_quote($kw, '/') . '([^a-z]|$)/', $lower)
+                    : mb_strpos($lower, $kw) !== false;
+                if ($hit) {
+                    $themes[$theme] = true;
+                    break;
+                }
+            }
+        }
+    }
+    return ['tags' => $tags, 'themes' => array_keys($themes)];
+}
+
 function get_teachers() {
     global $pdo;
+    ensure_teacher_identity_column();
     return $pdo->query('SELECT * FROM teachers ORDER BY sort_order ASC, name ASC')->fetchAll();
 }
 
 function get_teacher($id) {
     global $pdo;
+    ensure_teacher_identity_column();
     $stmt = $pdo->prepare('SELECT * FROM teachers WHERE id = ? LIMIT 1');
     $stmt->execute([$id]);
     return $stmt->fetch();

@@ -21,7 +21,7 @@ $profileFieldsEn = array_combine(
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $teacher = array_merge(
-    ['id' => null, 'name' => '', 'position' => '', 'position_en' => '', 'phone' => '', 'email' => '', 'photo_path' => '', 'bio' => '', 'bio_en' => '', 'classroom_online_url' => '', 'sort_order' => 0],
+    ['id' => null, 'name' => '', 'position' => '', 'position_en' => '', 'phone' => '', 'email' => '', 'photo_path' => '', 'bio' => '', 'bio_en' => '', 'classroom_online_url' => '', 'sort_order' => 0, 'identity_tags' => ''],
     array_fill_keys(array_keys($profileFields), ''),
     array_fill_keys(array_keys($profileFieldsEn), '')
 );
@@ -45,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bioEn = trim($_POST['bio_en'] ?? '');
     $classroomUrl = normalize_url($_POST['classroom_online_url'] ?? '');
     $sortOrder = (int) ($_POST['sort_order'] ?? 0);
+    $identityTags = mb_substr(trim($_POST['identity_tags'] ?? ''), 0, 255);
     $photoPath = $teacher['photo_path'];
 
     $profileValues = [];
@@ -60,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $photoPath = $uploaded;
     }
 
-    $columns = array_merge(['name', 'position', 'position_en', 'phone', 'email', 'bio', 'bio_en', 'classroom_online_url', 'sort_order', 'photo_path'], array_keys($profileFields), array_keys($profileFieldsEn));
-    $values = array_merge([$name, $position, $positionEn, $phone, $email, $bio, $bioEn, $classroomUrl, $sortOrder, $photoPath], array_values($profileValues));
+    $columns = array_merge(['name', 'position', 'position_en', 'phone', 'email', 'bio', 'bio_en', 'classroom_online_url', 'sort_order', 'photo_path', 'identity_tags'], array_keys($profileFields), array_keys($profileFieldsEn));
+    $values = array_merge([$name, $position, $positionEn, $phone, $email, $bio, $bioEn, $classroomUrl, $sortOrder, $photoPath, $identityTags], array_values($profileValues));
 
     if ($teacher['id']) {
         $setClause = implode(', ', array_map(fn($c) => "$c = ?", $columns));
@@ -79,6 +80,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $adminPageTitle = $teacher['id'] ? 'แก้ไขข้อมูลอาจารย์' : 'เพิ่มอาจารย์ใหม่';
+$identityThemeLabels = [
+    'code' => '💻 โปรแกรม', 'algorithm' => '🧠 อัลกอริทึม/ข้อมูล', 'game' => '🎮 เกม', 'web' => '🌐 เว็บ/แอป',
+    'animation' => '🎞️ แอนิเมชัน', 'threed' => '🧊 3D/VR', 'film' => '🎬 ภาพยนตร์/วิดีโอ', 'photo' => '📷 ถ่ายภาพ',
+    'design' => '🎨 ออกแบบ', 'sound' => '🎧 เสียง/ดนตรี',
+];
 require_once __DIR__ . '/includes/layout-top.php';
 ?>
 <form method="post" enctype="multipart/form-data">
@@ -125,6 +131,14 @@ require_once __DIR__ . '/includes/layout-top.php';
                 <img class="current-thumb" src="<?= h($teacher['photo_path']) ?>" alt="">
             <?php endif; ?>
             <input type="file" name="photo" accept="image/*">
+            <p class="field-hint">แนะนำรูปพื้นหลังสีเข้มหรือโปร่งใส (PNG) จะเข้ากับลูกเล่นรอบรูปได้ดีที่สุด</p>
+        </div>
+        <div class="form-group">
+            <label>ตัวตน / ความเชี่ยวชาญ (แสดงเป็นลูกเล่นรอบรูปอาจารย์)</label>
+            <p class="field-hint" style="margin-top:0;">พิมพ์คำที่บอกตัวตน คั่นด้วยเครื่องหมายจุลภาค ( , ) ไม่เกิน 6 คำ เช่น <em>เขียนโปรแกรม, อัลกอริทึม, พัฒนาเกม</em> ระบบจะเลือกลูกเล่นให้ตามคำที่กรอก</p>
+            <input type="text" name="identity_tags" id="identityTags" maxlength="255" value="<?= h($teacher['identity_tags'] ?? '') ?>" placeholder="เขียนโปรแกรม, อัลกอริทึม, พัฒนาเกม">
+            <div class="identity-preview" id="identityPreview"></div>
+            <p class="field-hint">ธีมที่รองรับ: โปรแกรม · อัลกอริทึม/AI/ข้อมูล · เกม · เว็บ/UI/แอป · แอนิเมชัน · 3D/VR/AR · ภาพยนตร์/วิดีโอ · ถ่ายภาพ · ออกแบบ/กราฟิก · เสียง/ดนตรี</p>
         </div>
     </div>
 
@@ -165,4 +179,36 @@ require_once __DIR__ . '/includes/layout-top.php';
 </div>
 <?php endif; ?>
 
+<script>
+// Live preview of which effect themes the typed identity words will trigger.
+(function () {
+    var input = document.getElementById('identityTags');
+    var out = document.getElementById('identityPreview');
+    if (!input || !out) return;
+    var themes = <?= json_encode(TEACHER_IDENTITY_THEMES, JSON_UNESCAPED_UNICODE) ?>;
+    var labels = <?= json_encode($identityThemeLabels, JSON_UNESCAPED_UNICODE) ?>;
+    function detect() {
+        var tags = input.value.split(/[,\n]+/).map(function (t) { return t.trim(); }).filter(Boolean).slice(0, 6);
+        var found = {};
+        tags.forEach(function (tag) {
+            var lower = tag.toLowerCase();
+            Object.keys(themes).forEach(function (th) {
+                themes[th].some(function (kw) {
+                    var hit = (kw.length <= 3 && /^[a-z0-9+]+$/.test(kw))
+                        ? new RegExp('(^|[^a-z])' + kw.replace(/[+]/g, '\\+') + '([^a-z]|$)').test(lower)
+                        : lower.indexOf(kw) !== -1;
+                    if (hit) found[th] = true;
+                    return hit;
+                });
+            });
+        });
+        var keys = Object.keys(found);
+        out.innerHTML = tags.length
+            ? '<span class="identity-preview-label">ลูกเล่นที่จะแสดง:</span> ' + (keys.length ? keys.map(function (k) { return '<span class="identity-chip">' + labels[k] + '</span>'; }).join(' ') : '<span class="identity-chip identity-chip-none">✨ ทั่วไป (ไม่พบคำที่ตรงกับธีม)</span>')
+            : '';
+    }
+    input.addEventListener('input', detect);
+    detect();
+})();
+</script>
 <?php require_once __DIR__ . '/includes/layout-bottom.php'; ?>

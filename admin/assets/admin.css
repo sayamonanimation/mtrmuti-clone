@@ -329,3 +329,9 @@ table.admin-table { width: 100%; border-collapse: collapse; }
     color: #a3222c;
     cursor: pointer;
 }
+
+/* Teacher identity preview (admin/teacher-form.php) */
+.identity-preview { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.identity-preview-label { font-size: .85rem; color: var(--gray); }
+.identity-chip { font-size: .82rem; padding: 3px 10px; border-radius: 12px; background: #fdecea; color: #a30d00; border: 1px solid #f4c3bb; }
+.identity-chip-none { background: #f2f2f2; color: #666; border-color: #e2e2e2; }
