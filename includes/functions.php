@@ -588,7 +588,7 @@ function get_nav_menu_tree($activeOnly = true) {
                 'id' => $row['id'],
                 'slug' => nav_slug_from_url($row['url']),
                 'label' => lang_field($row, 'label'),
-                'href' => $row['url'] ?: '#',
+                'href' => clean_public_url($row['url'] ?: '#'),
             ];
             if ($children) {
                 $item['children'] = $children;
@@ -618,6 +618,20 @@ function nav_items() {
 }
 
 /** Nested navigation for the header's main menu - groups related pages under a dropdown. */
+/** "/course.php?x=1" -> "/course?x=1", "/index.php" -> "/" when .htaccess rewriting is active. */
+function clean_public_url($url) {
+    if (!is_string($url) || $url === '' || $url[0] !== '/' || strpos($url, '/admin/') === 0) {
+        return $url;
+    }
+    // Only when .htaccess is active; otherwise make sure links point at the .php files.
+    $rewriteOn = !empty($_SERVER['CLEAN_URLS']) || !empty($_SERVER['REDIRECT_CLEAN_URLS']);
+    if (!$rewriteOn) {
+        return preg_replace('#^/(?!index$)([a-z0-9-]+)(?=$|[?\#])#i', '/$1.php', $url);
+    }
+    $url = preg_replace('#^/index\.php(?=$|[?\#])#', '/', $url);
+    return preg_replace('#^/([a-z0-9-]+)\.php(?=$|[?\#])#i', '/$1', $url);
+}
+
 function nav_tree() {
     return get_nav_menu_tree();
 }

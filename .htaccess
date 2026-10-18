@@ -1,0 +1,24 @@
+# Clean public URLs: /course instead of /course.php, / instead of /index.php.
+# The admin area, JSON/feed endpoints and form posts keep their .php URLs.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Tell PHP the rewrite rules are active, so it can print clean links
+    # (clean_public_url() falls back to .php links when this is missing).
+    RewriteRule ^ - [E=CLEAN_URLS:1]
+
+    # /index.php -> /  (visible redirect, GET only)
+    RewriteCond %{THE_REQUEST} ^GET\s/index\.php[\s?] [NC]
+    RewriteRule ^index\.php$ / [R=301,L]
+
+    # /page.php -> /page  for public top-level pages (GET only)
+    RewriteCond %{REQUEST_METHOD} GET
+    RewriteCond %{THE_REQUEST} \s/([a-z0-9-]+)\.php[\s?] [NC]
+    RewriteCond %1 !^(facebook-feed|chatbot)$ [NC]
+    RewriteRule ^([a-z0-9-]+)\.php$ /$1 [R=301,L,NC]
+
+    # /page -> page.php internally when that file exists
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{DOCUMENT_ROOT}/$1.php -f
+    RewriteRule ^([a-z0-9-]+)/?$ $1.php [L,NC]
+</IfModule>
