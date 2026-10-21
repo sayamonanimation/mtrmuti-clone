@@ -432,3 +432,8 @@ table.admin-table { width: 100%; border-collapse: collapse; }
 .toggle-switch input:checked + .toggle-switch-track { background: #1f9d55; }
 .toggle-switch input:checked + .toggle-switch-track::after { transform: translateX(18px); }
 .toggle-switch input:focus-visible + .toggle-switch-track { outline: 2px solid var(--red); outline-offset: 2px; }
+
+/* Student cohorts (admin/students.php) */
+.graduate-info { border-left: 4px solid #1f9d55; }
+.graduate-info p { margin: 6px 0 0; font-size: .9rem; color: #555; }
+.year-pill { display: inline-block; padding: 3px 12px; border-radius: 999px; background: #fdecea; color: #a30d00; font-weight: 600; font-size: .85rem; }

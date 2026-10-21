@@ -474,9 +474,110 @@ function get_gallery($limit = null) {
     return $pdo->query($sql)->fetchAll();
 }
 
+/** Month the Thai academic year starts (June); before it we're still in last year's. */
+const ACADEMIC_YEAR_START_MONTH = 6;
+
+/** Current academic year in the Buddhist calendar, e.g. 2569. */
+function current_academic_year() {
+    $now = new DateTime('now', new DateTimeZone('Asia/Bangkok'));
+    $year = (int) $now->format('Y');
+    if ((int) $now->format('n') < ACADEMIC_YEAR_START_MONTH) {
+        $year--;
+    }
+    return $year + 543;
+}
+
+/**
+ * student_batches.entry_year / course_years and alumni_batches.graduation_year,
+ * added on first use. With an entry year, a cohort's year level is computed
+ * and the cohort moves to the alumni list by itself once its course ends.
+ */
+function ensure_batch_year_columns() {
+    global $pdo;
+    static $done = false;
+    if ($done || get_setting('batch_years_ready') === '1') {
+        $done = true;
+        return;
+    }
+    foreach ([
+        'ALTER TABLE student_batches ADD COLUMN entry_year INT DEFAULT NULL',
+        'ALTER TABLE student_batches ADD COLUMN course_years INT NOT NULL DEFAULT 4',
+        'ALTER TABLE alumni_batches ADD COLUMN graduation_year INT DEFAULT NULL',
+    ] as $sql) {
+        try {
+            $pdo->exec($sql);
+        } catch (PDOException $e) {
+            // Column already exists.
+        }
+    }
+    set_setting('batch_years_ready', '1');
+    $done = true;
+}
+
+/** Year level (1..course_years) of a current-student cohort, or null without an entry year. */
+function batch_year_level($batch) {
+    if (empty($batch['entry_year'])) {
+        return null;
+    }
+    return current_academic_year() - (int) $batch['entry_year'] + 1;
+}
+
+/** Academic year in which the cohort graduates (last year of study). */
+function batch_graduation_year($batch) {
+    return empty($batch['entry_year']) ? null : (int) $batch['entry_year'] + (int) ($batch['course_years'] ?: 4) - 1;
+}
+
+/**
+ * Moves one current-student cohort (and its photos) to the alumni list.
+ * Returns the new alumni batch id.
+ */
+function move_batch_to_alumni($studentBatchId) {
+    global $pdo;
+    $batch = get_student_batch($studentBatchId);
+    if (!$batch) {
+        return null;
+    }
+    $gradYear = batch_graduation_year($batch) ?: current_academic_year();
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare('INSERT INTO alumni_batches (name, sort_order, graduation_year) VALUES (?, 0, ?)')
+            ->execute([$batch['name'], $gradYear]);
+        $alumniId = (int) $pdo->lastInsertId();
+        $pdo->prepare('INSERT INTO alumni_photos (batch_id, image_path, caption, sort_order, created_at)
+                       SELECT ?, image_path, caption, sort_order, created_at FROM student_photos WHERE batch_id = ?')
+            ->execute([$alumniId, $batch['id']]);
+        $pdo->prepare('DELETE FROM student_photos WHERE batch_id = ?')->execute([$batch['id']]);
+        $pdo->prepare('DELETE FROM student_batches WHERE id = ?')->execute([$batch['id']]);
+        $pdo->commit();
+        return $alumniId;
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        error_log('move_batch_to_alumni failed: ' . $e->getMessage());
+        return null;
+    }
+}
+
+/** Promotes every cohort whose course has ended. Returns the names moved. */
+function promote_graduated_batches() {
+    global $pdo;
+    ensure_batch_year_columns();
+    $stmt = $pdo->prepare('SELECT id, name FROM student_batches WHERE entry_year IS NOT NULL AND entry_year + course_years <= ?');
+    // Bind as an integer: some drivers compare a string parameter as text.
+    $stmt->bindValue(1, current_academic_year(), PDO::PARAM_INT);
+    $stmt->execute();
+    $moved = [];
+    foreach ($stmt->fetchAll() as $row) {
+        if (move_batch_to_alumni($row['id'])) {
+            $moved[] = $row['name'];
+        }
+    }
+    return $moved;
+}
+
 function get_alumni_batches() {
     global $pdo;
-    return $pdo->query('SELECT * FROM alumni_batches ORDER BY sort_order ASC, id ASC')->fetchAll();
+    promote_graduated_batches();
+    return $pdo->query('SELECT * FROM alumni_batches ORDER BY sort_order ASC, graduation_year IS NULL ASC, graduation_year DESC, id DESC')->fetchAll();
 }
 
 function get_alumni_batch($id) {
@@ -498,7 +599,9 @@ function get_alumni_photos($batchId = null) {
 
 function get_student_batches() {
     global $pdo;
-    return $pdo->query('SELECT * FROM student_batches ORDER BY sort_order ASC, id ASC')->fetchAll();
+    promote_graduated_batches();
+    // Year 1 first: newest entry year first, cohorts without a year last.
+    return $pdo->query('SELECT * FROM student_batches ORDER BY sort_order ASC, entry_year IS NULL ASC, entry_year DESC, id ASC')->fetchAll();
 }
 
 function get_student_batch($id) {

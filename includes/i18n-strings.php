@@ -39,6 +39,9 @@ return [
 
     // Homepage
     'home.hero_works' => ['th' => 'ดูผลงานนักศึกษา', 'en' => 'Student Works'],
+    'students.year_level' => ['th' => 'ชั้นปีที่', 'en' => 'Year'],
+    'students.entered' => ['th' => 'เข้าศึกษาปีการศึกษา', 'en' => 'Entered'],
+    'alumni.graduated' => ['th' => 'จบการศึกษาปีการศึกษา', 'en' => 'Class of'],
     'home.posts_heading' => ['th' => 'ข่าวประชาสัมพันธ์ & กิจกรรม', 'en' => 'News & Activities'],
     'home.read_more' => ['th' => 'อ่านเพิ่มเติม', 'en' => 'Read more'],
     'gallery.all_albums' => ['th' => 'ดูอัลบั้มทั้งหมด', 'en' => 'All albums'],

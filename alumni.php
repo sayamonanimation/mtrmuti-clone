@@ -28,7 +28,9 @@ foreach ($batches as $batch) {
                 <?php continue; ?>
             <?php endif; ?>
             <div class="batch-section">
-                <h2><?= h($batch['name']) ?></h2>
+                <h2><?= h($batch['name']) ?>
+                    <?php if (!empty($batch['graduation_year'])): ?><span class="batch-badge batch-badge-grad">🎓 <?= h(t('alumni.graduated')) ?> <?= (int) $batch['graduation_year'] ?></span><?php endif; ?>
+                </h2>
                 <div class="gallery-grid">
                     <?php foreach ($photos as $photo): ?>
                     <figure>

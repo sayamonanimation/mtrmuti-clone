@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
 
+ensure_batch_year_columns();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $action = $_POST['action'] ?? '';
@@ -14,10 +16,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name = trim($_POST['name'] ?? '');
         $sortOrder = (int) ($_POST['sort_order'] ?? 0);
         if ($name !== '') {
-            $stmt = $pdo->prepare('INSERT INTO alumni_batches (name, sort_order) VALUES (?, ?)');
-            $stmt->execute([$name, $sortOrder]);
+            $stmt = $pdo->prepare('INSERT INTO alumni_batches (name, sort_order, graduation_year) VALUES (?, ?, ?)');
+            $stmt->execute([$name, $sortOrder, (int) ($_POST['graduation_year'] ?? 0) ?: null]);
             set_flash('เพิ่มรุ่นศิษย์เก่าเรียบร้อยแล้ว');
         }
+    }
+    if ($action === 'edit') {
+        $stmt = $pdo->prepare('UPDATE alumni_batches SET name = ?, graduation_year = ? WHERE id = ?');
+        $stmt->execute([trim($_POST['name'] ?? ''), (int) ($_POST['graduation_year'] ?? 0) ?: null, (int) $_POST['id']]);
+        set_flash('บันทึกข้อมูลรุ่นแล้ว');
     }
     header('Location: /admin/alumni.php');
     exit;
@@ -42,6 +49,10 @@ foreach ($pdo->query('SELECT batch_id, COUNT(*) AS c FROM alumni_photos GROUP BY
             <input type="text" name="name" placeholder="เช่น รุ่นที่ 1 (ปีการศึกษา 2560)" required>
         </div>
         <div class="form-group">
+            <label>จบการศึกษาปีการศึกษา</label>
+            <input type="number" name="graduation_year" min="2500" max="2700" placeholder="เช่น 2568" style="max-width:160px;">
+        </div>
+        <div class="form-group">
             <label>ลำดับการแสดงผล</label>
             <input type="number" name="sort_order" value="0">
         </div>
@@ -51,11 +62,21 @@ foreach ($pdo->query('SELECT batch_id, COUNT(*) AS c FROM alumni_photos GROUP BY
 
 <div class="admin-card">
     <table class="admin-table">
-        <thead><tr><th>ชื่อรุ่น</th><th>จำนวนรูปภาพ</th><th>ลำดับ</th><th></th></tr></thead>
+        <thead><tr><th>ชื่อรุ่น / ปีที่จบ</th><th>จำนวนรูปภาพ</th><th>ลำดับ</th><th></th></tr></thead>
         <tbody>
             <?php foreach ($batches as $batch): ?>
             <tr>
-                <td><?= h($batch['name']) ?></td>
+                <td>
+                    <form method="post" class="inline-edit-form inline-edit-form-row">
+                        <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                        <input type="hidden" name="action" value="edit">
+                        <input type="hidden" name="id" value="<?= (int) $batch['id'] ?>">
+                        <input type="text" name="name" value="<?= h($batch['name']) ?>" style="width:170px;">
+                        <label class="field-hint">จบปี</label>
+                        <input type="number" name="graduation_year" value="<?= h($batch['graduation_year']) ?>" min="2500" max="2700" style="width:80px;">
+                        <button class="btn btn-sm btn-ghost" type="submit">บันทึก</button>
+                    </form>
+                </td>
                 <td><?= $photoCounts[$batch['id']] ?? 0 ?> รูป</td>
                 <td><?= h($batch['sort_order']) ?></td>
                 <td class="actions-row">
