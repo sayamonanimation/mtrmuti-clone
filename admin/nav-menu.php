@@ -25,7 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sortOrder = (int) ($_POST['sort_order'] ?? 0);
         if ($label !== '') {
             $stmt = $pdo->prepare('INSERT INTO nav_menu_items (parent_id, label, label_en, url, sort_order, new_tab) VALUES (?, ?, ?, ?, ?, ?)');
-            $stmt->execute([$parentId, $label, $labelEn, $url, $sortOrder, isset($_POST['new_tab']) ? 1 : 0]);
+            // Links to other websites open in a new tab unless switched off later.
+            $newTab = isset($_POST['new_tab']) || preg_match('#^https?://#i', $url);
+            $stmt->execute([$parentId, $label, $labelEn, $url, $sortOrder, $newTab ? 1 : 0]);
             set_flash('เพิ่มเมนูเรียบร้อยแล้ว');
         } else {
             set_flash('กรุณากรอกชื่อเมนู', 'error');

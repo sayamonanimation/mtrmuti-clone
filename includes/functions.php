@@ -916,12 +916,21 @@ function get_all_nav_menu_items() {
 /** Builds the nested tree used by the header's main menu from nav_menu_items. */
 /**
  * nav_menu_items.new_tab: open the menu link in a new browser tab. Added on
- * first use; the items under "บริการนักศึกษา" start switched on (requested).
+ * first use; the items under "บริการนักศึกษา" and every link to another
+ * website start switched on (requested). Admins can switch each one off.
  */
 function ensure_nav_new_tab_column() {
     global $pdo;
     static $done = false;
-    if ($done || get_setting('nav_new_tab_ready') === '1') {
+    if ($done) {
+        return;
+    }
+    if (get_setting('nav_new_tab_ready') === '1') {
+        // One-time: links to other websites already in the menu open in a new tab.
+        if (get_setting('nav_external_new_tab_ready') !== '1') {
+            $pdo->exec("UPDATE nav_menu_items SET new_tab = 1 WHERE url LIKE 'http://%' OR url LIKE 'https://%'");
+            set_setting('nav_external_new_tab_ready', '1');
+        }
         $done = true;
         return;
     }
@@ -934,7 +943,9 @@ function ensure_nav_new_tab_column() {
     } catch (PDOException $e) {
         // Column already exists.
     }
+    $pdo->exec("UPDATE nav_menu_items SET new_tab = 1 WHERE url LIKE 'http://%' OR url LIKE 'https://%'");
     set_setting('nav_new_tab_ready', '1');
+    set_setting('nav_external_new_tab_ready', '1');
     $done = true;
 }
 
