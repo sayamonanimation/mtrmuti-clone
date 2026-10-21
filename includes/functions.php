@@ -914,8 +914,33 @@ function get_all_nav_menu_items() {
 }
 
 /** Builds the nested tree used by the header's main menu from nav_menu_items. */
+/**
+ * nav_menu_items.new_tab: open the menu link in a new browser tab. Added on
+ * first use; the items under "บริการนักศึกษา" start switched on (requested).
+ */
+function ensure_nav_new_tab_column() {
+    global $pdo;
+    static $done = false;
+    if ($done || get_setting('nav_new_tab_ready') === '1') {
+        $done = true;
+        return;
+    }
+    try {
+        $pdo->exec('ALTER TABLE nav_menu_items ADD COLUMN new_tab TINYINT(1) NOT NULL DEFAULT 0');
+        $parent = $pdo->query("SELECT id FROM nav_menu_items WHERE parent_id IS NULL AND label = 'บริการนักศึกษา' LIMIT 1")->fetchColumn();
+        if ($parent) {
+            $pdo->prepare('UPDATE nav_menu_items SET new_tab = 1 WHERE parent_id = ?')->execute([$parent]);
+        }
+    } catch (PDOException $e) {
+        // Column already exists.
+    }
+    set_setting('nav_new_tab_ready', '1');
+    $done = true;
+}
+
 function get_nav_menu_tree($activeOnly = true) {
     global $pdo;
+    ensure_nav_new_tab_column();
     ensure_statistics_page();
     ensure_outstanding_alumni();
     ensure_alumni_hub();
@@ -940,6 +965,7 @@ function get_nav_menu_tree($activeOnly = true) {
                 'slug' => nav_slug_from_url($row['url']),
                 'label' => lang_field($row, 'label'),
                 'href' => clean_public_url($row['url'] ?: '#'),
+                'new_tab' => !empty($row['new_tab']),
             ];
             if ($children) {
                 $item['children'] = $children;

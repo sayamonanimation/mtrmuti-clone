@@ -87,7 +87,7 @@ $mourningMode = get_setting('mourning_mode', '0') === '1';
                 }
                 ?>
                 <li class="<?= $children ? 'has-dropdown' : '' ?>">
-                    <a href="<?= h($item['href']) ?>" class="<?= $isActive ? 'active' : '' ?>"<?= ($children && $item['href'] === '#') ? ' onclick="return false;"' : '' ?>>
+                    <a href="<?= h($item['href']) ?>" class="<?= $isActive ? 'active' : '' ?>"<?= ($children && $item['href'] === '#') ? ' onclick="return false;"' : '' ?><?= (!$children && !empty($item['new_tab'])) ? ' target="_blank" rel="noopener"' : '' ?>>
                         <?= h($item['label']) ?>
                     </a>
                     <?php if ($children): ?>
@@ -95,13 +95,13 @@ $mourningMode = get_setting('mourning_mode', '0') === '1';
                         <?php foreach ($children as $child): ?>
                         <?php $grandchildren = $child['children'] ?? []; ?>
                         <li class="<?= $grandchildren ? 'has-sub' : '' ?>">
-                            <a href="<?= h($child['href']) ?>" class="<?= $currentSlug === $child['slug'] ? 'active' : '' ?>">
+                            <a href="<?= h($child['href']) ?>" class="<?= $currentSlug === $child['slug'] ? 'active' : '' ?>"<?= !empty($child['new_tab']) ? ' target="_blank" rel="noopener"' : '' ?>>
                                 <?= h($child['label']) ?>
                             </a>
                             <?php if ($grandchildren): ?>
                             <ul class="dropdown-sub">
                                 <?php foreach ($grandchildren as $grand): ?>
-                                <li><a href="<?= h($grand['href']) ?>" class="<?= $currentSlug === $grand['slug'] ? 'active' : '' ?>"><?= h($grand['label']) ?></a></li>
+                                <li><a href="<?= h($grand['href']) ?>" class="<?= $currentSlug === $grand['slug'] ? 'active' : '' ?>"<?= !empty($grand['new_tab']) ? ' target="_blank" rel="noopener"' : '' ?>><?= h($grand['label']) ?></a></li>
                                 <?php endforeach; ?>
                             </ul>
                             <?php endif; ?>

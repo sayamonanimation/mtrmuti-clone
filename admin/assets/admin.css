@@ -452,3 +452,4 @@ table.admin-table { width: 100%; border-collapse: collapse; }
 .hub-admin-more summary { cursor: pointer; color: #888; }
 .hub-admin-more form { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; }
 @media (max-width: 860px) { .hub-admin-card { grid-template-columns: 56px 1fr; } .hub-admin-actions { grid-column: 1 / -1; justify-content: flex-start; } }
+.nav-newtab { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
