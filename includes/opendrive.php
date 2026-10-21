@@ -74,6 +74,7 @@ const OPENDRIVE_PATH_COLUMNS = [
     ['student_works', 'id', 'image_path'],
     ['classrooms', 'id', 'image_path'],
     ['classroom_photos', 'id', 'image_path'],
+    ['gallery_albums', 'id', 'cover_path'],
     ['site_settings', 'setting_key', 'setting_value'],
 ];
 

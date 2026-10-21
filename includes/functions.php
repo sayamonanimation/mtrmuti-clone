@@ -362,6 +362,79 @@ function get_teacher_portfolio($teacherId, $category = null) {
     return $stmt->fetchAll();
 }
 
+const GALLERY_ALBUM_MAX_PHOTOS = 80;
+
+/**
+ * Activity photos are grouped into albums (gallery_albums + gallery.album_id).
+ * Created on first use; photos uploaded before albums existed go into one
+ * "ภาพกิจกรรมทั่วไป" album so nothing disappears from the site.
+ */
+function ensure_gallery_albums() {
+    global $pdo;
+    static $done = false;
+    if ($done || get_setting('gallery_albums_ready') === '1') {
+        $done = true;
+        return;
+    }
+    $pdo->exec('CREATE TABLE IF NOT EXISTS gallery_albums (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        title_en VARCHAR(255) DEFAULT NULL,
+        description TEXT,
+        event_date DATE DEFAULT NULL,
+        cover_path VARCHAR(255) DEFAULT NULL,
+        sort_order INT DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+    try {
+        $pdo->exec('ALTER TABLE gallery ADD COLUMN album_id INT DEFAULT NULL');
+    } catch (PDOException $e) {
+        // Column already exists.
+    }
+    $orphans = (int) $pdo->query('SELECT COUNT(*) FROM gallery WHERE album_id IS NULL')->fetchColumn();
+    if ($orphans > 0) {
+        $pdo->prepare('INSERT INTO gallery_albums (title, title_en) VALUES (?, ?)')->execute(['ภาพกิจกรรมทั่วไป', 'General activities']);
+        $albumId = (int) $pdo->lastInsertId();
+        $pdo->prepare('UPDATE gallery SET album_id = ? WHERE album_id IS NULL')->execute([$albumId]);
+    }
+    set_setting('gallery_albums_ready', '1');
+    $done = true;
+}
+
+/** Albums with photo_count and a cover (chosen cover, else the first photo). */
+function get_gallery_albums($limit = null) {
+    global $pdo;
+    ensure_gallery_albums();
+    $sql = 'SELECT a.*, COUNT(g.id) AS photo_count,
+                   (SELECT g2.image_path FROM gallery g2 WHERE g2.album_id = a.id ORDER BY g2.sort_order ASC, g2.id ASC LIMIT 1) AS first_photo
+            FROM gallery_albums a LEFT JOIN gallery g ON g.album_id = a.id
+            GROUP BY a.id
+            ORDER BY a.sort_order ASC, COALESCE(a.event_date, a.created_at) DESC, a.id DESC';
+    if ($limit !== null) {
+        $sql .= ' LIMIT ' . (int) $limit;
+    }
+    $albums = $pdo->query($sql)->fetchAll();
+    foreach ($albums as &$album) {
+        $album['cover'] = $album['cover_path'] ?: $album['first_photo'];
+    }
+    return $albums;
+}
+
+function get_gallery_album($id) {
+    global $pdo;
+    ensure_gallery_albums();
+    $stmt = $pdo->prepare('SELECT * FROM gallery_albums WHERE id = ?');
+    $stmt->execute([(int) $id]);
+    return $stmt->fetch() ?: null;
+}
+
+function get_album_photos($albumId) {
+    global $pdo;
+    $stmt = $pdo->prepare('SELECT * FROM gallery WHERE album_id = ? ORDER BY sort_order ASC, id ASC');
+    $stmt->execute([(int) $albumId]);
+    return $stmt->fetchAll();
+}
+
 function get_gallery($limit = null) {
     global $pdo;
     $sql = 'SELECT * FROM gallery ORDER BY sort_order ASC, created_at DESC';
