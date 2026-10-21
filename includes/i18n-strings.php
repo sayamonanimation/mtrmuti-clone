@@ -59,6 +59,7 @@ return [
     'home.fields_heading' => ['th' => 'รายวิชาที่เปิดสอน', 'en' => 'Courses Offered'],
     'home.stats_heading' => ['th' => 'สถิติการรับนักศึกษา', 'en' => 'Admission Statistics'],
     'home.stats_year_prefix' => ['th' => 'ปี', 'en' => 'Year'],
+    'home.stats_empty' => ['th' => 'ยังไม่มีข้อมูลสถิติ', 'en' => 'No statistics yet'],
     'home.stats_latest' => ['th' => 'รับนักศึกษาล่าสุด', 'en' => 'Latest intake'],
     'home.stats_change' => ['th' => 'เปลี่ยนแปลงจากปีก่อน', 'en' => 'Change vs previous year'],
     'home.stats_average' => ['th' => 'เฉลี่ยต่อปี', 'en' => 'Average per year'],

@@ -228,6 +228,35 @@ function get_post($id) {
     return $stmt->fetch();
 }
 
+/**
+ * The statistics page (statistics.php) and its menu entry under
+ * "ฐานข้อมูลนักศึกษา" are created on first use, so the live site needs no
+ * manual SQL. Guarded by a setting so it runs once; admins can rename or
+ * move the menu item afterwards in "จัดการเมนูเว็บไซต์".
+ */
+function ensure_statistics_page() {
+    global $pdo;
+    if (get_setting('statistics_page_ready') === '1') {
+        return;
+    }
+    $exists = $pdo->prepare('SELECT COUNT(*) FROM pages WHERE slug = ?');
+    $exists->execute(['statistics']);
+    if (!$exists->fetchColumn()) {
+        $pdo->prepare('INSERT INTO pages (slug, title, title_en, subtitle, content) VALUES (?, ?, ?, ?, ?)')
+            ->execute(['statistics', 'สถิติการรับนักศึกษา', 'Admission Statistics', '', '']);
+    }
+    $hasItem = $pdo->query("SELECT COUNT(*) FROM nav_menu_items WHERE url IN ('/statistics.php', '/statistics')")->fetchColumn();
+    if (!$hasItem) {
+        $parent = $pdo->query("SELECT id FROM nav_menu_items WHERE parent_id IS NULL AND label = 'ฐานข้อมูลนักศึกษา' LIMIT 1")->fetchColumn();
+        if ($parent) {
+            $sort = (int) $pdo->query('SELECT COALESCE(MAX(sort_order), -1) + 1 FROM nav_menu_items WHERE parent_id = ' . (int) $parent)->fetchColumn();
+            $pdo->prepare('INSERT INTO nav_menu_items (parent_id, label, label_en, url, sort_order, is_active) VALUES (?, ?, ?, ?, ?, 1)')
+                ->execute([$parent, 'สถิติการรับนักศึกษา', 'Admission Statistics', '/statistics.php', $sort]);
+        }
+    }
+    set_setting('statistics_page_ready', '1');
+}
+
 function get_stats() {
     global $pdo;
     return $pdo->query('SELECT * FROM stats ORDER BY sort_order ASC, year ASC')->fetchAll();
@@ -628,6 +657,7 @@ function get_all_nav_menu_items() {
 /** Builds the nested tree used by the header's main menu from nav_menu_items. */
 function get_nav_menu_tree($activeOnly = true) {
     global $pdo;
+    ensure_statistics_page();
     $sql = 'SELECT * FROM nav_menu_items';
     if ($activeOnly) {
         $sql .= ' WHERE is_active = 1';
