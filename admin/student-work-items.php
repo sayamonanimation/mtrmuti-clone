@@ -21,6 +21,32 @@ if (isset($_GET['id'])) {
     }
 }
 
+/** Signature proving a photo path came from this admin's upload_photo request. */
+function student_work_upload_sig($path) {
+    return hash_hmac('sha256', (string) $path, csrf_token());
+}
+
+// One photo per request (admin/assets/work-photo-upload.js), so a form with
+// many photos never runs into the server's time limit while they are sent
+// to OpenDrive. Returns the stored path; the form then saves the paths.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'upload_photo') {
+    header('Content-Type: application/json; charset=utf-8');
+    csrf_check();
+    session_write_close();
+    $error = $_FILES['image']['error'] ?? UPLOAD_ERR_NO_FILE;
+    if ($error === UPLOAD_ERR_INI_SIZE || $error === UPLOAD_ERR_FORM_SIZE) {
+        echo json_encode(['ok' => false, 'error' => 'ไฟล์ใหญ่เกินที่เซิร์ฟเวอร์อนุญาต'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $path = handle_image_upload('image', 'student-works');
+    if (!$path) {
+        echo json_encode(['ok' => false, 'error' => 'ไม่ใช่ไฟล์ภาพที่รองรับ (jpg, png, webp, gif)'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    echo json_encode(['ok' => true, 'path' => $path, 'sig' => student_work_upload_sig($path)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     reject_oversized_upload($listUrl);
     csrf_check();
@@ -64,7 +90,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: ' . $backUrl);
             exit;
         }
-        $upload = handle_multi_image_upload('images', 'student-works', max(0, $room));
+        $preUploaded = [];
+        foreach ((array) ($_POST['uploaded_photos'] ?? []) as $i => $path) {
+            $sig = (string) ($_POST['uploaded_sigs'][$i] ?? '');
+            if (is_string($path) && $path !== '' && hash_equals(student_work_upload_sig($path), $sig)) {
+                $preUploaded[] = $path;
+            }
+        }
+        $skippedPre = max(0, count($preUploaded) - max(0, $room));
+        $preUploaded = array_slice($preUploaded, 0, max(0, $room));
+        $upload = handle_multi_image_upload('images', 'student-works', max(0, $room - count($preUploaded)));
+        $upload['paths'] = array_merge($preUploaded, $upload['paths']);
+        $upload['skipped'] += $skippedPre;
         if (!$keep && !$upload['paths']) {
             set_flash('ผลงานต้องมีรูปอย่างน้อย 1 รูป (jpg, png, webp, gif)', 'error');
             header('Location: ' . $backUrl);
@@ -120,7 +157,7 @@ $room = STUDENT_WORK_MAX_PHOTOS - count($photos);
 
 <div class="admin-card" id="workForm">
     <h3 style="margin-top:0;"><?= $editing ? 'แก้ไขผลงาน: ' . h($editing['title']) : 'เพิ่มผลงาน' ?></h3>
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" data-photo-upload>
         <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
         <input type="hidden" name="action" value="<?= $editing ? 'edit' : 'add' ?>">
         <input type="hidden" name="id" value="<?= (int) $e['id'] ?>">
@@ -226,4 +263,5 @@ $room = STUDENT_WORK_MAX_PHOTOS - count($photos);
 })();
 </script>
 <script src="/admin/assets/image-resize.js?v=<?= (int) @filemtime(__DIR__ . '/assets/image-resize.js') ?>"></script>
+<script src="/admin/assets/work-photo-upload.js?v=<?= (int) @filemtime(__DIR__ . '/assets/work-photo-upload.js') ?>"></script>
 <?php require_once __DIR__ . '/includes/layout-bottom.php'; ?>
