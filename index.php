@@ -8,7 +8,7 @@ $heroBanner = get_setting('hero_banner_path');
 $homepageVideoId = youtube_video_id(get_setting('homepage_video_url'));
 $posts = get_active_posts();
 $fields = get_fields_of_study();
-$gallery = get_gallery(8);
+$galleryAlbums = get_gallery_albums(6);
 $facebookUrl = get_setting('facebook_url');
 // Meta's Page Plugin expects the www.facebook.com domain even if the saved
 // link uses the web.facebook.com (mobile-web) host.
@@ -284,18 +284,15 @@ window.addEventListener('load', function () {
 <?php endif; ?>
 <?php endif; ?>
 
-<?php if ($gallery): ?>
+<?php if ($galleryAlbums): ?>
 <section class="alt">
     <div class="container">
         <div class="section-title">
             <h2><?= h(t('home.gallery_heading')) ?></h2>
             <div class="bar"></div>
         </div>
-        <div class="gallery-grid">
-            <?php foreach ($gallery as $g): ?>
-            <img src="<?= h($g['image_path']) ?>" alt="<?= h($g['caption']) ?>">
-            <?php endforeach; ?>
-        </div>
+        <?php $albums = $galleryAlbums; require __DIR__ . '/includes/album-grid.php'; ?>
+        <div class="album-more"><a class="btn" href="<?= h(clean_public_url('/gallery')) ?>"><?= h(t('gallery.all_albums')) ?> &rarr;</a></div>
     </div>
 </section>
 <?php endif; ?>

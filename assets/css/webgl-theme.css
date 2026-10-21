@@ -1388,3 +1388,103 @@ section.alt { background: transparent; }
 .tid-gl.tid-settled img { opacity: 1; transition: opacity .35s ease; }
 .tid-gl.tid-settled .tid-canvas { opacity: 0; transition: opacity .35s ease; }
 .card .tid-gl img, .card:hover .tid-gl img { transform: none; }
+
+/* Activity photo albums (includes/album-grid.php, album.php) */
+.album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 28px 22px; }
+.album-card { position: relative; display: block; color: var(--fx-text); padding-top: 10px; }
+/* two "pages" peeking behind the cover */
+.album-card-stack, .album-card-stack::before {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    top: 0;
+    height: 40px;
+    border-radius: 12px 12px 0 0;
+    background: rgba(255, 140, 120, .12);
+    border: 1px solid var(--fx-border);
+    content: '';
+}
+.album-card-stack::before { left: 14px; right: 14px; top: 5px; background: rgba(255, 140, 120, .2); }
+.album-card-stack { transition: transform .35s; }
+.album-card-cover {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--fx-surface);
+    border: 1px solid var(--fx-border);
+    box-shadow: var(--fx-glow);
+}
+.album-card-cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s ease; }
+.album-card-cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(8, 2, 3, .75)); }
+.album-card-count {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    z-index: 1;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: .8rem;
+    background: rgba(8, 2, 3, .6);
+    border: 1px solid var(--fx-border);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+.album-card-body { display: block; padding: 12px 4px 0; }
+.album-card-body strong { display: block; font-size: 1rem; line-height: 1.35; }
+.album-card-body small { color: var(--fx-muted); font-size: .85rem; }
+.album-card:hover .album-card-cover img { transform: scale(1.06); }
+.album-card:hover .album-card-stack { transform: translateY(-4px); }
+.album-card:hover .album-card-cover { border-color: var(--fx-border-hi); }
+.album-more { text-align: center; margin-top: 30px; }
+
+.album-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.album-photo {
+    padding: 0;
+    border: 1px solid var(--fx-border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--fx-surface);
+    cursor: zoom-in;
+    aspect-ratio: 1;
+}
+.album-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s, filter .3s; }
+.album-photo:hover img { transform: scale(1.06); filter: brightness(1.1); }
+.album-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 1, 2, .94);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+.album-lightbox[hidden] { display: none; }
+.album-lightbox figure { margin: 0; text-align: center; }
+.album-lightbox img { max-width: min(92vw, 1500px); max-height: 82vh; border-radius: 10px; box-shadow: 0 20px 60px rgba(0, 0, 0, .6); }
+.album-lightbox figcaption { color: var(--fx-muted); margin-top: 10px; font-size: .9rem; }
+.album-lightbox-close, .album-lightbox-nav {
+    position: absolute;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid var(--fx-border);
+    background: rgba(20, 5, 6, .6);
+    color: #fff;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.album-lightbox-close { top: 18px; right: 18px; }
+.album-lightbox-nav.prev { left: 18px; top: 50%; transform: translateY(-50%); }
+.album-lightbox-nav.next { right: 18px; top: 50%; transform: translateY(-50%); }
+.album-lightbox-close:hover, .album-lightbox-nav:hover { background: var(--fx-accent); }
+.album-lightbox-counter { position: absolute; top: 26px; left: 50%; transform: translateX(-50%); color: var(--fx-muted); font-size: .9rem; }
+@media (max-width: 600px) {
+    .album-photos { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+    .album-photo { border-radius: 4px; }
+    .album-lightbox-nav { display: none; }
+}

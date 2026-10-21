@@ -22,6 +22,8 @@
     var resizeBox = document.getElementById('bulkResize');
 
     var CONCURRENCY = 3;
+    var albumId = form.getAttribute('data-album');
+    var remaining = parseInt(form.getAttribute('data-remaining') || '0', 10) || Infinity;
     var MAX_SIDE = 2000;
     var queue = [];     // {file, li, state: 'waiting'|'uploading'|'done'|'failed'}
     var picked = [];
@@ -29,6 +31,11 @@
 
     function setPicked(files) {
         picked = Array.prototype.filter.call(files, function (f) { return /^image\//.test(f.type) || /\.(jpe?g|png|gif|webp)$/i.test(f.name); });
+        var room = remaining - queue.length;
+        if (picked.length > room) {
+            alert('อัลบั้มนี้เพิ่มได้อีก ' + Math.max(0, room) + ' รูป (อัลบั้มละไม่เกิน 80 รูป)\nเลือกมา ' + picked.length + ' รูป ระบบจะใช้ ' + Math.max(0, room) + ' รูปแรก');
+            picked = picked.slice(0, Math.max(0, room));
+        }
         drop.classList.toggle('has-files', picked.length > 0);
         drop.querySelector('strong').textContent = picked.length ? 'เลือกแล้ว ' + picked.length + ' รูป' : 'ลากรูปมาวางที่นี่';
         startBtn.textContent = picked.length ? 'อัพโหลด ' + picked.length + ' รูป' : 'อัพโหลด';
@@ -117,8 +124,10 @@
             var fd = new FormData();
             fd.append('csrf_token', form.querySelector('[name=csrf_token]').value);
             fd.append('action', 'upload_one');
+            if (albumId) fd.append('album_id', albumId);
             fd.append('caption', form.querySelector('[name=caption]').value);
-            fd.append('category', form.querySelector('[name=category]').value);
+            var cat = form.querySelector('[name=category]');
+            if (cat) fd.append('category', cat.value);
             fd.append('image', blob, blob.name || item.file.name);
             return fetch('/admin/gallery.php', { method: 'POST', body: fd, credentials: 'same-origin' });
         }).then(function (res) {
@@ -128,6 +137,10 @@
                 setState(item, 'done', data.notice ? '✓ (เก็บบนเซิร์ฟเวอร์)' : '✓');
             } else {
                 setState(item, 'failed', '✗ ' + (data.error || 'ไม่สำเร็จ'));
+                if (data.full) {
+                    // Album reached its limit: don't keep sending the rest.
+                    queue.forEach(function (q) { if (q.state === 'waiting') setState(q, 'failed', '✗ อัลบั้มเต็ม'); });
+                }
             }
         }).catch(function () {
             setState(item, 'failed', '✗ เชื่อมต่อไม่ได้');

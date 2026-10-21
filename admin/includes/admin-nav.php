@@ -14,7 +14,7 @@ function admin_nav_groups() {
                 ['href' => '/admin/page-edit.php?slug=home', 'label' => 'ข้อความหน้าหลัก', 'slug' => 'home'],
                 ['href' => '/admin/sliders.php', 'label' => 'สไลด์หน้าแรก'],
                 ['href' => '/admin/posts.php', 'label' => 'ข่าวประชาสัมพันธ์/กิจกรรม', 'match' => ['post-form.php']],
-                ['href' => '/admin/gallery.php', 'label' => 'แกลอรี่ภาพกิจกรรม'],
+                ['href' => '/admin/gallery.php', 'label' => 'อัลบั้มภาพกิจกรรม', 'public' => '/gallery'],
                 ['href' => '/admin/page-edit.php?slug=career-intro', 'label' => 'แนะนำอาชีพ', 'slug' => 'career-intro'],
             ],
         ],
