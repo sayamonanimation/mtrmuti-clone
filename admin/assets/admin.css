@@ -466,3 +466,9 @@ table.admin-table { width: 100%; border-collapse: collapse; }
 .work-links { display: grid; gap: 8px; margin-bottom: 8px; }
 .work-link-row { display: grid; grid-template-columns: minmax(120px, 1fr) 2fr auto; gap: 8px; align-items: center; }
 @media (max-width: 600px) { .work-link-row { grid-template-columns: 1fr auto; } .work-link-row input:first-child { grid-column: 1 / -1; } }
+
+/* Admin menu follows the site menu: breadcrumb + sub items */
+.admin-crumb { font-size: .78rem; color: #888; margin-bottom: 2px; }
+.dash-item-sub { padding-left: 14px; }
+.dash-group-muted { background: #fafafa; }
+.dash-group-muted h3 { color: #777; }
