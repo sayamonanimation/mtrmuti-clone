@@ -1491,3 +1491,17 @@ section.alt { background: transparent; }
 /* Teacher photos stay hidden until teacher-fx.js has re-framed them */
 .tid-js .tid:not(.tid-framed) img { opacity: 0; }
 .tid-framed img { transition: opacity .3s; }
+
+/* Student / alumni cohort headings */
+.batch-section h2 { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.batch-badge {
+    font-size: .8rem;
+    font-weight: 600;
+    padding: 3px 12px;
+    border-radius: 999px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--fx-accent), #b51200);
+    box-shadow: 0 0 12px rgba(255, 70, 40, .35);
+}
+.batch-badge-grad { background: linear-gradient(135deg, #c9a227, #8a6d10); box-shadow: 0 0 12px rgba(220, 180, 60, .35); }
+.batch-meta { font-size: .82rem; font-weight: 400; color: var(--fx-muted); }

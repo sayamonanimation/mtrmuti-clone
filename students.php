@@ -28,7 +28,10 @@ foreach ($batches as $batch) {
                 <?php continue; ?>
             <?php endif; ?>
             <div class="batch-section">
-                <h2><?= h($batch['name']) ?></h2>
+                <h2><?= h($batch['name']) ?>
+                    <?php if ($level = batch_year_level($batch)): ?><span class="batch-badge"><?= h(t('students.year_level')) ?> <?= $level ?></span><?php endif; ?>
+                    <?php if ($batch['entry_year']): ?><span class="batch-meta"><?= h(t('students.entered')) ?> <?= (int) $batch['entry_year'] ?></span><?php endif; ?>
+                </h2>
                 <div class="gallery-grid">
                     <?php foreach ($photos as $photo): ?>
                     <figure>
