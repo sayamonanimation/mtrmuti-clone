@@ -15,8 +15,6 @@ function admin_nav_groups() {
                 ['href' => '/admin/sliders.php', 'label' => 'สไลด์หน้าแรก'],
                 ['href' => '/admin/posts.php', 'label' => 'ข่าวประชาสัมพันธ์/กิจกรรม', 'match' => ['post-form.php']],
                 ['href' => '/admin/gallery.php', 'label' => 'แกลอรี่ภาพกิจกรรม'],
-                ['href' => '/admin/stats.php', 'label' => 'สถิติการรับนักศึกษา'],
-                ['href' => '/admin/student-year-stats.php', 'label' => 'สถิตินักศึกษาแยกชั้นปี'],
                 ['href' => '/admin/page-edit.php?slug=career-intro', 'label' => 'แนะนำอาชีพ', 'slug' => 'career-intro'],
             ],
         ],
@@ -35,6 +33,8 @@ function admin_nav_groups() {
             'items' => [
                 ['href' => '/admin/students.php', 'label' => 'นักศึกษาปัจจุบัน', 'match' => ['student-photos.php'], 'public' => '/students', 'page' => 'students'],
                 ['href' => '/admin/alumni.php', 'label' => 'ศิษย์เก่า', 'match' => ['alumni-photos.php'], 'public' => '/alumni', 'page' => 'alumni'],
+                ['href' => '/admin/stats.php', 'label' => 'สถิติการรับนักศึกษา', 'public' => '/statistics', 'page' => 'statistics'],
+                ['href' => '/admin/student-year-stats.php', 'label' => 'สถิตินักศึกษาแยกชั้นปี', 'public' => '/statistics'],
             ],
         ],
         [
