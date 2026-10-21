@@ -25,9 +25,10 @@ $teachers = get_teachers();
                 <div class="card-body">
                     <div class="name"><?= h($t['name']) ?></div>
                     <div class="position"><?= h(lang_field($t, 'position')) ?></div>
-                    <?php if ($t['phone'] || $t['email']): ?>
+                    <?php $publicPhone = teacher_public_phone($t); ?>
+                <?php if ($publicPhone || $t['email']): ?>
                     <div class="teacher-contact">
-                        <?php if ($t['phone']): ?><span><?= h(t('teachers.phone_prefix')) ?>: <?= h($t['phone']) ?></span><?php endif; ?>
+                        <?php if ($publicPhone): ?><span><?= h(t('teachers.phone_prefix')) ?>: <?= h($publicPhone) ?></span><?php endif; ?>
                         <?php if ($t['email']): ?><span><?= h($t['email']) ?></span><?php endif; ?>
                     </div>
                     <?php endif; ?>

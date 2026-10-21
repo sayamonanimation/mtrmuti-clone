@@ -21,7 +21,7 @@ $profileFieldsEn = array_combine(
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $teacher = array_merge(
-    ['id' => null, 'name' => '', 'position' => '', 'position_en' => '', 'phone' => '', 'email' => '', 'photo_path' => '', 'bio' => '', 'bio_en' => '', 'classroom_online_url' => '', 'sort_order' => 0, 'identity_tags' => ''],
+    ['id' => null, 'name' => '', 'position' => '', 'position_en' => '', 'phone' => '', 'email' => '', 'photo_path' => '', 'bio' => '', 'bio_en' => '', 'classroom_online_url' => '', 'sort_order' => 0, 'identity_tags' => '', 'show_phone' => 0],
     array_fill_keys(array_keys($profileFields), ''),
     array_fill_keys(array_keys($profileFieldsEn), '')
 );
@@ -46,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $classroomUrl = normalize_url($_POST['classroom_online_url'] ?? '');
     $sortOrder = (int) ($_POST['sort_order'] ?? 0);
     $identityTags = mb_substr(trim($_POST['identity_tags'] ?? ''), 0, 255);
+    $showPhone = isset($_POST['show_phone']) ? 1 : 0;
     $photoPath = $teacher['photo_path'];
 
     $profileValues = [];
@@ -61,8 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $photoPath = $uploaded;
     }
 
-    $columns = array_merge(['name', 'position', 'position_en', 'phone', 'email', 'bio', 'bio_en', 'classroom_online_url', 'sort_order', 'photo_path', 'identity_tags'], array_keys($profileFields), array_keys($profileFieldsEn));
-    $values = array_merge([$name, $position, $positionEn, $phone, $email, $bio, $bioEn, $classroomUrl, $sortOrder, $photoPath, $identityTags], array_values($profileValues));
+    $columns = array_merge(['name', 'position', 'position_en', 'phone', 'email', 'bio', 'bio_en', 'classroom_online_url', 'sort_order', 'photo_path', 'identity_tags', 'show_phone'], array_keys($profileFields), array_keys($profileFieldsEn));
+    $values = array_merge([$name, $position, $positionEn, $phone, $email, $bio, $bioEn, $classroomUrl, $sortOrder, $photoPath, $identityTags, $showPhone], array_values($profileValues));
 
     if ($teacher['id']) {
         $setClause = implode(', ', array_map(fn($c) => "$c = ?", $columns));
@@ -107,6 +108,12 @@ require_once __DIR__ . '/includes/layout-top.php';
         <div class="form-group">
             <label>เบอร์โทร</label>
             <input type="text" name="phone" value="<?= h($teacher['phone']) ?>" placeholder="044-233-000 ต่อ 1234">
+            <label class="toggle-switch">
+                <input type="checkbox" name="show_phone" value="1" <?= (int) ($teacher['show_phone'] ?? 0) === 1 ? 'checked' : '' ?>>
+                <span class="toggle-switch-track" aria-hidden="true"></span>
+                <span class="toggle-switch-label">แสดงเบอร์โทรบนหน้าเว็บไซต์</span>
+            </label>
+            <p class="field-hint" style="margin-top:2px;">ปิดไว้ถ้าไม่ต้องการให้เบอร์โทรแสดงต่อสาธารณะ (เบอร์ยังเก็บไว้ในระบบ เปิดกลับได้ทุกเมื่อ)</p>
         </div>
         <div class="form-group">
             <label>อีเมล</label>
