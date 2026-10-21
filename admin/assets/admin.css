@@ -335,3 +335,52 @@ table.admin-table { width: 100%; border-collapse: collapse; }
 .identity-preview-label { font-size: .85rem; color: var(--gray); }
 .identity-chip { font-size: .82rem; padding: 3px 10px; border-radius: 12px; background: #fdecea; color: #a30d00; border: 1px solid #f4c3bb; }
 .identity-chip-none { background: #f2f2f2; color: #666; border-color: #e2e2e2; }
+
+/* Grouped sidebar matching the public site's main menu (admin-nav.php) */
+.admin-sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.admin-nav { padding: 8px 0 16px; }
+.admin-nav a.admin-nav-home { margin: 4px 0 6px; font-weight: 600; }
+.admin-nav-group { border-top: 1px solid #333; }
+.admin-nav-group summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 16px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: .92rem;
+    color: #f2f2f2;
+    user-select: none;
+}
+.admin-nav-group summary::-webkit-details-marker { display: none; }
+.admin-nav-group summary::after {
+    content: '';
+    margin-left: auto;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid #888;
+    border-bottom: 2px solid #888;
+    transform: rotate(-45deg);
+    transition: transform .2s;
+}
+.admin-nav-group[open] summary::after { transform: rotate(45deg); }
+.admin-nav-group summary:hover { background: #262626; }
+.admin-nav-icon { width: 22px; text-align: center; }
+.admin-nav-group ul { padding: 0 0 8px; }
+.admin-nav-group li a { padding: 8px 16px 8px 46px; font-size: .88rem; }
+.admin-nav-system summary { color: #bbb; }
+@media (max-width: 860px) {
+    .admin-sidebar { position: static; height: auto; }
+    .admin-nav-group ul { display: block; }
+    .admin-nav-group li a { padding: 8px 16px 8px 40px; }
+}
+
+/* Dashboard grouped like the public menu */
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+.dash-group { margin: 0; }
+.dash-group h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 1.05rem; }
+.dash-group h3 a { margin-left: auto; font-size: .8rem; font-weight: 500; color: var(--red); }
+.dash-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; border-top: 1px solid #f0f0f0; font-size: .92rem; }
+.dash-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.dash-item small { color: #999; }
