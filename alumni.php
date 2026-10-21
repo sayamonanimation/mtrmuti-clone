@@ -17,10 +17,7 @@ foreach ($batches as $batch) {
 </div>
 <div class="page-content">
     <div class="container">
-        <div class="alumni-tabs">
-            <a class="active" href="<?= h(clean_public_url('/alumni')) ?>"><?= h(t('alumni.all')) ?></a>
-            <a href="<?= h(clean_public_url('/outstanding-alumni')) ?>">🏆 <?= h(t('alumni.outstanding')) ?></a>
-        </div>
+        <?php $alumniTab = 'all'; require __DIR__ . '/includes/alumni-tabs.php'; ?>
     </div>
     <div class="container prose">
         <?= lang_field($page, 'content') ?>

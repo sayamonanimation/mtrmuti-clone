@@ -34,6 +34,7 @@ function admin_nav_groups() {
                 ['href' => '/admin/students.php', 'label' => 'นักศึกษาปัจจุบัน', 'match' => ['student-photos.php'], 'public' => '/students', 'page' => 'students'],
                 ['href' => '/admin/alumni.php', 'label' => 'ศิษย์เก่า', 'match' => ['alumni-photos.php'], 'public' => '/alumni', 'page' => 'alumni'],
                 ['href' => '/admin/outstanding-alumni.php', 'label' => 'ศิษย์เก่าดีเด่น', 'sub' => true, 'public' => '/outstanding-alumni', 'page' => 'outstanding-alumni'],
+                ['href' => '/admin/alumni-hub.php', 'label' => 'ติดต่องานศิษย์เก่า', 'sub' => true, 'public' => '/alumni-hub', 'page' => 'alumni-hub', 'badge' => 'alumni_hub_pending'],
                 ['href' => '/admin/stats.php', 'label' => 'สถิติการรับนักศึกษา', 'public' => '/statistics', 'page' => 'statistics'],
                 ['href' => '/admin/student-year-stats.php', 'label' => 'สถิตินักศึกษาแยกชั้นปี', 'public' => '/statistics'],
             ],
@@ -81,6 +82,19 @@ function admin_nav_groups() {
             ],
         ],
     ];
+}
+
+/** Small counters shown next to menu items (e.g. profiles waiting for review). */
+function admin_nav_badge($key) {
+    global $pdo;
+    if ($key === 'alumni_hub_pending') {
+        try {
+            return (int) $pdo->query("SELECT COUNT(*) FROM alumni_members WHERE status = 'pending'")->fetchColumn();
+        } catch (PDOException $e) {
+            return 0; // table not created yet
+        }
+    }
+    return 0;
 }
 
 /** True when $item is the page currently open (incl. its sub-pages / page-edit slug). */
