@@ -23,6 +23,7 @@
 
     var CONCURRENCY = 3;
     var albumId = form.getAttribute('data-album');
+    var endpoint = form.getAttribute('data-endpoint') || '/admin/gallery.php';
     var remaining = parseInt(form.getAttribute('data-remaining') || '0', 10) || Infinity;
     var MAX_SIDE = 2000;
     var queue = [];     // {file, li, state: 'waiting'|'uploading'|'done'|'failed'}
@@ -33,7 +34,7 @@
         picked = Array.prototype.filter.call(files, function (f) { return /^image\//.test(f.type) || /\.(jpe?g|png|gif|webp)$/i.test(f.name); });
         var room = remaining - queue.length;
         if (picked.length > room) {
-            alert('อัลบั้มนี้เพิ่มได้อีก ' + Math.max(0, room) + ' รูป (อัลบั้มละไม่เกิน 80 รูป)\nเลือกมา ' + picked.length + ' รูป ระบบจะใช้ ' + Math.max(0, room) + ' รูปแรก');
+            alert('เพิ่มได้อีก ' + Math.max(0, room) + ' รูป\nเลือกมา ' + picked.length + ' รูป ระบบจะใช้ ' + Math.max(0, room) + ' รูปแรก');
             picked = picked.slice(0, Math.max(0, room));
         }
         drop.classList.toggle('has-files', picked.length > 0);
@@ -129,7 +130,7 @@
             var cat = form.querySelector('[name=category]');
             if (cat) fd.append('category', cat.value);
             fd.append('image', blob, blob.name || item.file.name);
-            return fetch('/admin/gallery.php', { method: 'POST', body: fd, credentials: 'same-origin' });
+            return fetch(endpoint, { method: 'POST', body: fd, credentials: 'same-origin' });
         }).then(function (res) {
             return res.json().catch(function () { return { ok: false, error: 'เซิร์ฟเวอร์ตอบกลับผิดพลาด (HTTP ' + res.status + ')' }; });
         }).then(function (data) {
