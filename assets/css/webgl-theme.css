@@ -1788,3 +1788,10 @@ section.alt { background: transparent; }
 .work-modal-desc { margin: 0 0 14px; color: var(--fx-muted); white-space: pre-line; }
 .work-modal-links { display: flex; flex-wrap: wrap; gap: 8px; }
 .work-modal-links .btn { font-size: .88rem; padding: 8px 14px; }
+
+/* บริการนักศึกษา › ข้อมูลทั่วไป: link groups under the intro text */
+.svc-page { padding-top: 0; }
+.svc-block { margin-bottom: 28px; }
+.svc-block .link-list { margin-bottom: 0; }
+.svc-block h2 { color: var(--fx-accent-2); font-size: 1.25rem; margin: 0 0 12px; }
+.svc-desc { display: block; margin-top: 3px; font-size: .84rem; color: var(--fx-muted); font-weight: 400; }

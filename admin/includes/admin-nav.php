@@ -31,7 +31,10 @@ function admin_nav_registry() {
             ['href' => '/admin/stats.php', 'label' => 'สถิติการรับนักศึกษา', 'page' => 'statistics'],
             ['href' => '/admin/student-year-stats.php', 'label' => 'สถิตินักศึกษาแยกชั้นปี'],
         ],
-        '/student-services' => [['href' => '/admin/page-edit.php?slug=student-services', 'label' => 'ข้อมูลทั่วไป', 'slug' => 'student-services']],
+        '/student-services' => [
+            ['href' => '/admin/student-service-links.php', 'label' => 'ข้อมูลทั่วไป', 'page' => 'student-services'],
+            ['href' => '/admin/page-edit.php?slug=student-services', 'label' => 'ข้อความแนะนำ (ข้อมูลทั่วไป)', 'slug' => 'student-services', 'sub' => true],
+        ],
         '/academic-calendar' => [['href' => '/admin/academic-calendar.php', 'label' => 'ปฏิทินการศึกษา']],
         '/activity-calendar' => [['href' => '/admin/activity-calendar.php', 'label' => 'ปฏิทินกิจกรรม']],
         '/student-works' => [['href' => '/admin/student-work-batches.php', 'label' => 'ผลงานนักศึกษา', 'match' => ['student-work-items.php']]],

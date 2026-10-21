@@ -472,3 +472,20 @@ table.admin-table { width: 100%; border-collapse: collapse; }
 .dash-item-sub { padding-left: 14px; }
 .dash-group-muted { background: #fafafa; }
 .dash-group-muted h3 { color: #777; }
+
+/* บริการนักศึกษา › ข้อมูลทั่วไป: headings with links */
+.svc-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.svc-row input[type=text] { flex: 1 1 200px; }
+.svc-row input[type=number], .svc-link-form input[type=number] { width: 70px; }
+.svc-section-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #eee; margin-bottom: 12px; }
+.svc-section-head form.svc-row { flex: 1 1 420px; }
+.svc-title { font-weight: 600; font-size: 1rem; }
+.svc-section.is-hidden { opacity: .65; }
+.svc-links { display: grid; gap: 8px; margin-bottom: 12px; }
+.svc-link { display: flex; gap: 6px; align-items: center; padding: 8px; border: 1px solid #eee; border-radius: 8px; background: #fcfcfc; }
+.svc-link .svc-link-form { flex: 1; }
+.svc-link-form { display: grid; grid-template-columns: 1.2fr 1.6fr 1.6fr 1fr 70px auto; gap: 6px; align-items: center; }
+.svc-add { padding: 10px; border: 1px dashed #d6d6d6; border-radius: 8px; }
+@media (max-width: 1100px) { .svc-link-form { grid-template-columns: 1fr 1fr; } .svc-link { flex-wrap: wrap; } }
+.svc-row input, .svc-link-form input { padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; font-size: .9rem; min-width: 0; background: #fff; }
+.svc-row input:focus, .svc-link-form input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px rgba(163, 34, 44, .12); }
