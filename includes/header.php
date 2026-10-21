@@ -79,6 +79,11 @@ $mourningMode = get_setting('mourning_mode', '0') === '1';
                     if ($currentSlug === $child['slug']) {
                         $isActive = true;
                     }
+                    foreach ($child['children'] ?? [] as $grand) {
+                        if ($currentSlug === $grand['slug']) {
+                            $isActive = true;
+                        }
+                    }
                 }
                 ?>
                 <li class="<?= $children ? 'has-dropdown' : '' ?>">
@@ -88,10 +93,18 @@ $mourningMode = get_setting('mourning_mode', '0') === '1';
                     <?php if ($children): ?>
                     <ul class="dropdown">
                         <?php foreach ($children as $child): ?>
-                        <li>
+                        <?php $grandchildren = $child['children'] ?? []; ?>
+                        <li class="<?= $grandchildren ? 'has-sub' : '' ?>">
                             <a href="<?= h($child['href']) ?>" class="<?= $currentSlug === $child['slug'] ? 'active' : '' ?>">
                                 <?= h($child['label']) ?>
                             </a>
+                            <?php if ($grandchildren): ?>
+                            <ul class="dropdown-sub">
+                                <?php foreach ($grandchildren as $grand): ?>
+                                <li><a href="<?= h($grand['href']) ?>" class="<?= $currentSlug === $grand['slug'] ? 'active' : '' ?>"><?= h($grand['label']) ?></a></li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <?php endif; ?>
                         </li>
                         <?php endforeach; ?>
                     </ul>

@@ -437,3 +437,4 @@ table.admin-table { width: 100%; border-collapse: collapse; }
 .graduate-info { border-left: 4px solid #1f9d55; }
 .graduate-info p { margin: 6px 0 0; font-size: .9rem; color: #555; }
 .year-pill { display: inline-block; padding: 3px 12px; border-radius: 999px; background: #fdecea; color: #a30d00; font-weight: 600; font-size: .85rem; }
+.admin-nav-group li a.admin-nav-sub { padding-left: 62px; font-size: .84rem; }

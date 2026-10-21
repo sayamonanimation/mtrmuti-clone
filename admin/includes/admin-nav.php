@@ -33,6 +33,7 @@ function admin_nav_groups() {
             'items' => [
                 ['href' => '/admin/students.php', 'label' => 'นักศึกษาปัจจุบัน', 'match' => ['student-photos.php'], 'public' => '/students', 'page' => 'students'],
                 ['href' => '/admin/alumni.php', 'label' => 'ศิษย์เก่า', 'match' => ['alumni-photos.php'], 'public' => '/alumni', 'page' => 'alumni'],
+                ['href' => '/admin/outstanding-alumni.php', 'label' => 'ศิษย์เก่าดีเด่น', 'sub' => true, 'public' => '/outstanding-alumni', 'page' => 'outstanding-alumni'],
                 ['href' => '/admin/stats.php', 'label' => 'สถิติการรับนักศึกษา', 'public' => '/statistics', 'page' => 'statistics'],
                 ['href' => '/admin/student-year-stats.php', 'label' => 'สถิตินักศึกษาแยกชั้นปี', 'public' => '/statistics'],
             ],
