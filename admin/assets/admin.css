@@ -453,3 +453,16 @@ table.admin-table { width: 100%; border-collapse: collapse; }
 .hub-admin-more form { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; }
 @media (max-width: 860px) { .hub-admin-card { grid-template-columns: 56px 1fr; } .hub-admin-actions { grid-column: 1 / -1; justify-content: flex-start; } }
 .nav-newtab { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+
+/* ผลงานนักศึกษา: photos and links of one work */
+.portfolio-thumb-item.is-editing { border-color: var(--red); box-shadow: 0 0 0 2px rgba(163, 34, 44, .15); }
+.portfolio-thumb-item .actions-row { justify-content: center; }
+.work-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-bottom: 8px; }
+.work-photo-item { border: 1px solid #e3e3e3; border-radius: 8px; padding: 6px; font-size: .8rem; background: #fff; }
+.work-photo-item img { width: 100%; height: 90px; object-fit: cover; border-radius: 5px; display: block; margin-bottom: 4px; }
+.work-photo-item label { display: flex; align-items: center; gap: 4px; margin: 2px 0; font-weight: 400; cursor: pointer; }
+.work-photo-remove { color: #a3222c; }
+.work-photo-item:has(.work-photo-remove input:checked) img { opacity: .3; }
+.work-links { display: grid; gap: 8px; margin-bottom: 8px; }
+.work-link-row { display: grid; grid-template-columns: minmax(120px, 1fr) 2fr auto; gap: 8px; align-items: center; }
+@media (max-width: 600px) { .work-link-row { grid-template-columns: 1fr auto; } .work-link-row input:first-child { grid-column: 1 / -1; } }
