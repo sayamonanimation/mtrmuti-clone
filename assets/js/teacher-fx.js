@@ -9,6 +9,7 @@
  */
 (function () {
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.documentElement.classList.add('tid-js');   // hide photos until re-framed (no flash)
 
     var THEMES = {
         code:      { color: '#5cf2a6', glyphs: ['</>', '{ }', '0101', '1010', '01101', '110', '#include', '#!/bin', 'int main()', '// code', 'print()', 'def', 'return', '0x1F', '=>', ';', 'if ()', '[ ]', '&&', '#'], icon: '💻', binary: true },
@@ -281,10 +282,75 @@
         else img.addEventListener('load', go, { once: true });
     }
 
+    // ---------- Uniform framing ----------
+    // Cut-out photos arrive with very different margins (some heads touch the
+    // top edge, others have lots of headroom), so the teachers look different
+    // sizes in identical cards. For transparent PNGs we find the person's
+    // bounding box and redraw it into a 3:4 frame with the same headroom and
+    // the same height for everyone, then use that as the image (and as the
+    // source for the particle effect).
+    var FRAME_W = 900, FRAME_H = 1200, HEADROOM = 0.07;
+
+    function normalizePhoto(img, done) {
+        function go() {
+            if (!img.naturalWidth || img.dataset.normalized) { done(); return; }
+            var sw = img.naturalWidth, sh = img.naturalHeight;
+            var k = Math.min(1, 400 / Math.max(sw, sh));          // small copy just to measure
+            var mw = Math.max(1, Math.round(sw * k)), mh = Math.max(1, Math.round(sh * k));
+            var m = document.createElement('canvas');
+            m.width = mw; m.height = mh;
+            var mctx = m.getContext('2d');
+            mctx.drawImage(img, 0, 0, mw, mh);
+            var data;
+            try { data = mctx.getImageData(0, 0, mw, mh).data; } catch (e) { done(); return; }
+            // Count clearly opaque pixels per row/column; faint haze, soft
+            // shadows and stray specks shouldn't count as the person.
+            var rows = new Uint16Array(mh), cols = new Uint16Array(mw);
+            for (var y = 0; y < mh; y++) {
+                for (var x = 0; x < mw; x++) {
+                    if (data[(y * mw + x) * 4 + 3] > 140) { rows[y]++; cols[x]++; }
+                }
+            }
+            var minRow = Math.max(2, mw * 0.02), minCol = Math.max(2, mh * 0.02);
+            var x0 = 0, x1 = mw - 1, y0 = 0, y1 = mh - 1;
+            while (y0 < mh && rows[y0] < minRow) y0++;
+            while (y1 > y0 && rows[y1] < minRow) y1--;
+            while (x0 < mw && cols[x0] < minCol) x0++;
+            while (x1 > x0 && cols[x1] < minCol) x1--;
+            if (y0 >= mh || x0 >= mw) { x1 = -1; }
+            // No transparency (ordinary photo) or nothing found: leave as is.
+            if (x1 < 0 || ((x1 - x0) > mw * 0.97 && (y1 - y0) > mh * 0.97)) { done(); return; }
+            var bx = x0 / k, by = y0 / k, bw = (x1 - x0 + 1) / k, bh = (y1 - y0 + 1) / k;
+            // Same height for every person; widen less if someone is very wide.
+            var scale = (FRAME_H * (1 - HEADROOM)) / bh;
+            if (bw * scale > FRAME_W * 1.25) scale = (FRAME_W * 1.25) / bw;
+            var c = document.createElement('canvas');
+            c.width = FRAME_W; c.height = FRAME_H;
+            var ctx = c.getContext('2d');
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, FRAME_W / 2 - (bx + bw / 2) * scale, FRAME_H * HEADROOM - by * scale, sw * scale, sh * scale);
+            c.toBlob(function (blob) {
+                if (!blob) { done(); return; }
+                img.dataset.normalized = '1';
+                img.addEventListener('load', function () { done(); }, { once: true });
+                img.src = URL.createObjectURL(blob);
+            }, 'image/png');
+        }
+        if (img.complete && img.naturalWidth) go();
+        else img.addEventListener('load', go, { once: true });
+    }
+
     function init() {
         var wraps = document.querySelectorAll('.tid');
         wraps.forEach(build);
-        wraps.forEach(function (w) { if (w.classList.contains('tid-on')) startPhotoGL(w); });
+        wraps.forEach(function (w) {
+            var img = w.querySelector('img');
+            if (!img) return;
+            normalizePhoto(img, function () {
+                w.classList.add('tid-framed');
+                if (w.classList.contains('tid-on')) startPhotoGL(w);
+            });
+        });
         if (reduceMotion) {
             document.documentElement.classList.add('tid-static');
             return;

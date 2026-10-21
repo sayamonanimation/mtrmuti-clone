@@ -1488,3 +1488,6 @@ section.alt { background: transparent; }
     .album-photo { border-radius: 4px; }
     .album-lightbox-nav { display: none; }
 }
+/* Teacher photos stay hidden until teacher-fx.js has re-framed them */
+.tid-js .tid:not(.tid-framed) img { opacity: 0; }
+.tid-framed img { transition: opacity .3s; }
