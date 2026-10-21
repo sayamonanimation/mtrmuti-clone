@@ -288,6 +288,34 @@ function ensure_teacher_identity_column() {
     $done = true;
 }
 
+/** show_phone (1 = show the teacher's phone on the public site, default hidden) - added on first use. */
+function ensure_teacher_show_phone_column() {
+    global $pdo;
+    static $done = false;
+    if ($done || get_setting('teacher_show_phone_ready') === '1') {
+        $done = true;
+        return;
+    }
+    try {
+        // Hidden by default (requested: all teacher phones hidden); admins
+        // switch individual numbers back on in the teacher form.
+        $pdo->exec('ALTER TABLE teachers ADD COLUMN show_phone TINYINT(1) NOT NULL DEFAULT 0');
+        $pdo->exec('UPDATE teachers SET show_phone = 0');
+    } catch (PDOException $e) {
+        // Column already exists.
+    }
+    set_setting('teacher_show_phone_ready', '1');
+    $done = true;
+}
+
+/** Phone number to print publicly, or '' when the teacher chose to hide it. */
+function teacher_public_phone($teacher) {
+    if (isset($teacher['show_phone']) && (int) $teacher['show_phone'] === 0) {
+        return '';
+    }
+    return (string) ($teacher['phone'] ?? '');
+}
+
 /** theme => keywords (Thai + English, matched case-insensitively inside each tag). */
 const TEACHER_IDENTITY_THEMES = [
     'code' => ['โปรแกรม', 'โค้ด', 'โค๊ด', 'program', 'coding', 'code', 'developer', 'software', 'ซอฟต์แวร์', 'python', 'java', 'php', 'c++', 'javascript'],
@@ -328,12 +356,14 @@ function teacher_identity($teacher) {
 function get_teachers() {
     global $pdo;
     ensure_teacher_identity_column();
+    ensure_teacher_show_phone_column();
     return $pdo->query('SELECT * FROM teachers ORDER BY sort_order ASC, name ASC')->fetchAll();
 }
 
 function get_teacher($id) {
     global $pdo;
     ensure_teacher_identity_column();
+    ensure_teacher_show_phone_column();
     $stmt = $pdo->prepare('SELECT * FROM teachers WHERE id = ? LIMIT 1');
     $stmt->execute([$id]);
     return $stmt->fetch();

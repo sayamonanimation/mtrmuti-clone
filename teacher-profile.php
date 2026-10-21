@@ -48,9 +48,10 @@ foreach (get_teacher_portfolio($teacher['id']) as $item) {
                 <div class="tid tid-large" data-themes="<?= h(implode(',', $identity['themes'])) ?>" data-tags="<?= h(json_encode($identity['tags'], JSON_UNESCAPED_UNICODE)) ?>">
                     <img src="<?= h($teacher['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="<?= h($teacher['name']) ?>" crossorigin="anonymous">
                 </div>
-                <?php if ($teacher['phone'] || $teacher['email']): ?>
+                <?php $publicPhone = teacher_public_phone($teacher); ?>
+                <?php if ($publicPhone || $teacher['email']): ?>
                 <div class="teacher-contact teacher-contact-profile">
-                    <?php if ($teacher['phone']): ?><span><?= h(t('teachers.phone_prefix')) ?>: <?= h($teacher['phone']) ?></span><?php endif; ?>
+                    <?php if ($publicPhone): ?><span><?= h(t('teachers.phone_prefix')) ?>: <?= h($publicPhone) ?></span><?php endif; ?>
                     <?php if ($teacher['email']): ?><span><a href="mailto:<?= h($teacher['email']) ?>"><?= h($teacher['email']) ?></a></span><?php endif; ?>
                 </div>
                 <?php endif; ?>
