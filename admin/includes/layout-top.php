@@ -1,26 +1,7 @@
 <?php
 /** Requires: $adminPageTitle, and admin/includes/auth.php already loaded. */
-$adminNav = [
-    ['href' => '/admin/dashboard.php', 'label' => 'แดชบอร์ด'],
-    ['href' => '/admin/teachers.php', 'label' => 'อาจารย์'],
-    ['href' => '/admin/classrooms.php', 'label' => 'ห้องเรียน'],
-    ['href' => '/admin/students.php', 'label' => 'นักศึกษาปัจจุบัน'],
-    ['href' => '/admin/alumni.php', 'label' => 'ศิษย์เก่า'],
-    ['href' => '/admin/nav-menu.php', 'label' => 'จัดการเมนูเว็บไซต์'],
-    ['href' => '/admin/student-work-batches.php', 'label' => 'ผลงานนักศึกษา'],
-    ['href' => '/admin/academic-calendar.php', 'label' => 'ปฏิทินการศึกษา'],
-    ['href' => '/admin/activity-calendar.php', 'label' => 'ปฏิทินกิจกรรม'],
-    ['href' => '/admin/gallery.php', 'label' => 'แกลอรี่ภาพ'],
-    ['href' => '/admin/sliders.php', 'label' => 'สไลด์หน้าแรก'],
-    ['href' => '/admin/posts.php', 'label' => 'ข่าวประชาสัมพันธ์/กิจกรรม'],
-    ['href' => '/admin/stats.php', 'label' => 'สถิติการรับนักศึกษา'],
-    ['href' => '/admin/student-year-stats.php', 'label' => 'สถิตินักศึกษาแยกชั้นปี'],
-    ['href' => '/admin/fields.php', 'label' => 'รายวิชาที่เปิดสอน'],
-    ['href' => '/admin/settings.php', 'label' => 'ตั้งค่าเว็บไซต์'],
-    ['href' => '/admin/opendrive.php', 'label' => 'ที่เก็บไฟล์ OpenDrive'],
-    ['href' => '/admin/admins.php', 'label' => 'ผู้ดูแลระบบ'],
-];
-$currentPath = $_SERVER['SCRIPT_NAME'];
+require_once __DIR__ . '/admin-nav.php';
+$adminNavGroups = admin_nav_groups();
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -36,12 +17,19 @@ $currentPath = $_SERVER['SCRIPT_NAME'];
 <div class="admin-shell">
     <aside class="admin-sidebar">
         <div class="admin-brand">ระบบหลังบ้าน</div>
-        <nav>
-            <ul>
-                <?php foreach ($adminNav as $item): ?>
-                <li><a href="<?= h($item['href']) ?>" class="<?= strpos($currentPath, $item['href']) === 0 ? 'active' : '' ?>"><?= h($item['label']) ?></a></li>
-                <?php endforeach; ?>
-            </ul>
+        <nav class="admin-nav">
+            <a href="/admin/dashboard.php" class="admin-nav-home<?= basename($_SERVER['SCRIPT_NAME']) === 'dashboard.php' ? ' active' : '' ?>">📊 แดชบอร์ด</a>
+            <?php foreach ($adminNavGroups as $group): ?>
+            <?php $groupActive = false; foreach ($group['items'] as $it) { if (admin_nav_is_active($it)) { $groupActive = true; } } ?>
+            <details class="admin-nav-group<?= !empty($group['system']) ? ' admin-nav-system' : '' ?>"<?= $groupActive ? ' open' : '' ?>>
+                <summary><span class="admin-nav-icon"><?= $group['icon'] ?></span><?= h($group['label']) ?></summary>
+                <ul>
+                    <?php foreach ($group['items'] as $it): ?>
+                    <li><a href="<?= h($it['href']) ?>" class="<?= admin_nav_is_active($it) ? 'active' : '' ?>"><?= h($it['label']) ?></a></li>
+                    <?php endforeach; ?>
+                </ul>
+            </details>
+            <?php endforeach; ?>
         </nav>
         <a class="admin-logout" href="/admin/logout.php">ออกจากระบบ</a>
     </aside>
