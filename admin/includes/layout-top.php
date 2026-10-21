@@ -25,7 +25,7 @@ $adminNavGroups = admin_nav_groups();
                 <summary><span class="admin-nav-icon"><?= $group['icon'] ?></span><?= h($group['label']) ?></summary>
                 <ul>
                     <?php foreach ($group['items'] as $it): ?>
-                    <li><a href="<?= h($it['href']) ?>" class="<?= admin_nav_is_active($it) ? 'active' : '' ?>"><?= h($it['label']) ?></a></li>
+                    <li><a href="<?= h($it['href']) ?>" class="<?= admin_nav_is_active($it) ? 'active' : '' ?><?= !empty($it['sub']) ? ' admin-nav-sub' : '' ?>"><?= !empty($it['sub']) ? '↳ ' : '' ?><?= h($it['label']) ?></a></li>
                     <?php endforeach; ?>
                 </ul>
             </details>

@@ -257,6 +257,59 @@ function ensure_statistics_page() {
     set_setting('statistics_page_ready', '1');
 }
 
+/**
+ * Outstanding alumni (outstanding_alumni table, outstanding-alumni.php):
+ * table, page row and a menu item nested under "ศิษย์เก่า" are created on
+ * first use, once (setting guard).
+ */
+function ensure_outstanding_alumni() {
+    global $pdo;
+    static $done = false;
+    if ($done || get_setting('outstanding_alumni_ready') === '1') {
+        $done = true;
+        return;
+    }
+    $pdo->exec('CREATE TABLE IF NOT EXISTS outstanding_alumni (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(150) NOT NULL,
+        photo_path VARCHAR(255) DEFAULT NULL,
+        batch_name VARCHAR(100) DEFAULT NULL,
+        graduation_year INT DEFAULT NULL,
+        position VARCHAR(255) DEFAULT NULL,
+        workplace VARCHAR(255) DEFAULT NULL,
+        achievement TEXT,
+        quote TEXT,
+        link_url VARCHAR(255) DEFAULT NULL,
+        sort_order INT DEFAULT 0,
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+    $exists = $pdo->prepare('SELECT COUNT(*) FROM pages WHERE slug = ?');
+    $exists->execute(['outstanding-alumni']);
+    if (!$exists->fetchColumn()) {
+        $pdo->prepare('INSERT INTO pages (slug, title, title_en, subtitle, content) VALUES (?, ?, ?, ?, ?)')
+            ->execute(['outstanding-alumni', 'ศิษย์เก่าดีเด่น', 'Outstanding Alumni', '', '']);
+    }
+    $hasItem = $pdo->query("SELECT COUNT(*) FROM nav_menu_items WHERE url IN ('/outstanding-alumni.php', '/outstanding-alumni')")->fetchColumn();
+    if (!$hasItem) {
+        $parent = $pdo->query("SELECT id FROM nav_menu_items WHERE url IN ('/alumni.php', '/alumni') ORDER BY id LIMIT 1")->fetchColumn();
+        if ($parent) {
+            $pdo->prepare('INSERT INTO nav_menu_items (parent_id, label, label_en, url, sort_order, is_active) VALUES (?, ?, ?, ?, 0, 1)')
+                ->execute([$parent, 'ศิษย์เก่าดีเด่น', 'Outstanding Alumni', '/outstanding-alumni.php']);
+        }
+    }
+    set_setting('outstanding_alumni_ready', '1');
+    $done = true;
+}
+
+function get_outstanding_alumni($activeOnly = true) {
+    global $pdo;
+    ensure_outstanding_alumni();
+    $sql = 'SELECT * FROM outstanding_alumni' . ($activeOnly ? ' WHERE is_active = 1' : '')
+         . ' ORDER BY sort_order ASC, graduation_year IS NULL ASC, graduation_year DESC, id DESC';
+    return $pdo->query($sql)->fetchAll();
+}
+
 function get_stats() {
     global $pdo;
     return $pdo->query('SELECT * FROM stats ORDER BY sort_order ASC, year ASC')->fetchAll();
@@ -864,6 +917,7 @@ function get_all_nav_menu_items() {
 function get_nav_menu_tree($activeOnly = true) {
     global $pdo;
     ensure_statistics_page();
+    ensure_outstanding_alumni();
     $sql = 'SELECT * FROM nav_menu_items';
     if ($activeOnly) {
         $sql .= ' WHERE is_active = 1';
