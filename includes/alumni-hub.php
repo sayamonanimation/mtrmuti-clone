@@ -144,3 +144,104 @@ function alumni_form_is_bot() {
     $started = (int) ($_POST['form_started'] ?? 0);
     return $started > 0 && time() - $started < 3;
 }
+
+// ---------- Self-service password reset ----------
+// A random token is e-mailed as a link; only its SHA-256 hash is stored, it
+// expires after an hour and works once. Passwords live only in the database
+// as password_hash() output.
+
+const ALUMNI_RESET_TTL = 3600;
+
+function ensure_alumni_password_resets() {
+    global $pdo;
+    static $done = false;
+    if ($done || get_setting('alumni_password_resets_ready') === '1') {
+        $done = true;
+        return;
+    }
+    $pdo->exec('CREATE TABLE IF NOT EXISTS alumni_password_resets (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        member_id INT NOT NULL,
+        token_hash CHAR(64) NOT NULL,
+        expires_at DATETIME NOT NULL,
+        used_at DATETIME DEFAULT NULL,
+        created_at DATETIME NOT NULL,
+        INDEX (token_hash),
+        INDEX (member_id),
+        FOREIGN KEY (member_id) REFERENCES alumni_members(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+    set_setting('alumni_password_resets_ready', '1');
+    $done = true;
+}
+
+function alumni_absolute_url($path) {
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+    $host = preg_replace('/[^a-z0-9.:-]/i', '', $_SERVER['HTTP_HOST'] ?? 'localhost');
+    return ($https ? 'https://' : 'http://') . $host . clean_public_url($path);
+}
+
+function alumni_send_mail($to, $subject, $body) {
+    $host = preg_replace('/^www\.|:\d+$/', '', preg_replace('/[^a-z0-9.:-]/i', '', $_SERVER['HTTP_HOST'] ?? 'localhost'));
+    $headers = implode("\r\n", [
+        'From: =?UTF-8?B?' . base64_encode(get_site_name()) . '?= <no-reply@' . $host . '>',
+        'MIME-Version: 1.0',
+        'Content-Type: text/plain; charset=UTF-8',
+        'Content-Transfer-Encoding: base64',
+    ]);
+    return @mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=', chunk_split(base64_encode($body)), $headers);
+}
+
+/** Creates a reset link for the e-mail if it belongs to a member. Silent otherwise. */
+function alumni_request_password_reset($email) {
+    global $pdo;
+    ensure_alumni_password_resets();
+    $stmt = $pdo->prepare('SELECT id, email, full_name FROM alumni_members WHERE email = ?');
+    $stmt->execute([mb_strtolower(trim($email))]);
+    $member = $stmt->fetch();
+    if (!$member) {
+        return;
+    }
+    // At most 3 links per member per 15 minutes.
+    $recent = $pdo->prepare('SELECT COUNT(*) FROM alumni_password_resets WHERE member_id = ? AND created_at > ?');
+    $recent->execute([$member['id'], date('Y-m-d H:i:s', time() - 900)]);
+    if ((int) $recent->fetchColumn() >= 3) {
+        return;
+    }
+    $token = bin2hex(random_bytes(32));
+    $pdo->prepare('INSERT INTO alumni_password_resets (member_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?)')
+        ->execute([$member['id'], hash('sha256', $token), date('Y-m-d H:i:s', time() + ALUMNI_RESET_TTL), date('Y-m-d H:i:s')]);
+    $link = alumni_absolute_url('/alumni-reset?token=' . $token);
+    alumni_send_mail($member['email'], 'ตั้งรหัสผ่านใหม่ - ' . get_site_name(),
+        "สวัสดีคุณ {$member['full_name']}\n\n"
+        . "มีการขอตั้งรหัสผ่านใหม่สำหรับบัญชีติดต่องานศิษย์เก่า กดลิงก์นี้เพื่อตั้งรหัสผ่านใหม่ (ใช้ได้ 1 ครั้ง ภายใน 1 ชั่วโมง):\n\n"
+        . "$link\n\n"
+        . "ถ้าคุณไม่ได้เป็นผู้ขอ ไม่ต้องทำอะไร รหัสผ่านเดิมยังใช้ได้ตามปกติ\n\n" . get_site_name());
+}
+
+/** Member row for a valid, unused, unexpired token, or null. */
+function alumni_find_reset($token) {
+    global $pdo;
+    ensure_alumni_password_resets();
+    if (!preg_match('/^[a-f0-9]{64}$/', (string) $token)) {
+        return null;
+    }
+    $stmt = $pdo->prepare('SELECT r.id AS reset_id, m.id, m.email, m.full_name FROM alumni_password_resets r
+        JOIN alumni_members m ON m.id = r.member_id
+        WHERE r.token_hash = ? AND r.used_at IS NULL AND r.expires_at > ?');
+    $stmt->execute([hash('sha256', $token), date('Y-m-d H:i:s')]);
+    return $stmt->fetch() ?: null;
+}
+
+/** Saves a new password hash, voids every open reset link and tells the member by e-mail. */
+function alumni_set_password($member, $newPassword) {
+    global $pdo;
+    ensure_alumni_password_resets();
+    $pdo->prepare('UPDATE alumni_members SET password_hash = ? WHERE id = ?')
+        ->execute([password_hash($newPassword, PASSWORD_DEFAULT), $member['id']]);
+    $pdo->prepare('UPDATE alumni_password_resets SET used_at = ? WHERE member_id = ? AND used_at IS NULL')
+        ->execute([date('Y-m-d H:i:s'), $member['id']]);
+    alumni_send_mail($member['email'], 'รหัสผ่านถูกเปลี่ยนแล้ว - ' . get_site_name(),
+        "สวัสดีคุณ {$member['full_name']}\n\n"
+        . 'รหัสผ่านบัญชีติดต่องานศิษย์เก่าของคุณถูกเปลี่ยนเมื่อ ' . date('d/m/Y H:i') . " น.\n\n"
+        . "ถ้าคุณไม่ได้เป็นผู้เปลี่ยน กรุณาตั้งรหัสผ่านใหม่ทันทีที่ " . alumni_absolute_url('/alumni-forgot') . " และแจ้งเจ้าหน้าที่สาขา\n\n" . get_site_name());
+}
