@@ -1757,3 +1757,34 @@ section.alt { background: transparent; }
     .hub-profile-side { position: static; }
     .hub-form-row { grid-template-columns: 1fr; }
 }
+
+/* ผลงานนักศึกษา: card with photo/link counts + detail popup */
+.work-card { cursor: pointer; text-align: left; }
+.work-card:focus-visible { outline: 2px solid var(--fx-accent); outline-offset: 3px; }
+.work-card-media { position: relative; }
+.work-card-badges { position: absolute; right: 10px; bottom: 10px; display: flex; gap: 6px; }
+.work-card-badges span { padding: 3px 9px; border-radius: 999px; font-size: .78rem; color: #fff; background: rgba(10, 2, 3, .72); border: 1px solid var(--fx-border); backdrop-filter: blur(4px); }
+.work-modal { position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(6, 1, 2, .9); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.work-modal[hidden] { display: none; }
+.work-modal-box { position: relative; width: min(960px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; background: var(--fx-surface-strong); border: 1px solid var(--fx-border); border-radius: var(--radius); box-shadow: var(--fx-glow); }
+.work-modal-close { position: absolute; top: 10px; right: 10px; z-index: 2; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--fx-border); background: rgba(20, 5, 6, .7); color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer; }
+.work-modal-stage { position: relative; background: #000; display: flex; align-items: center; justify-content: center; min-height: 240px; }
+.work-modal-stage img { display: block; max-width: 100%; max-height: 62vh; object-fit: contain; }
+.work-modal-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--fx-border); background: rgba(20, 5, 6, .6); color: #fff; font-size: 1.6rem; line-height: 1; cursor: pointer; }
+.work-modal-nav.prev { left: 10px; }
+.work-modal-nav.next { right: 10px; }
+.work-modal-nav[hidden] { display: none; }
+.work-modal-counter { position: absolute; left: 12px; bottom: 10px; color: #fff; font-size: .82rem; background: rgba(0, 0, 0, .5); padding: 2px 8px; border-radius: 999px; }
+.work-modal-counter:empty { display: none; }
+.work-modal-thumbs { display: flex; gap: 8px; padding: 10px 14px 0; overflow-x: auto; }
+.work-modal-thumbs[hidden] { display: none; }
+.work-modal-thumbs button { flex: 0 0 auto; width: 72px; height: 52px; padding: 0; border-radius: 8px; overflow: hidden; border: 2px solid transparent; background: none; cursor: pointer; opacity: .6; }
+.work-modal-thumbs button.is-active { border-color: var(--fx-accent); opacity: 1; }
+.work-modal-thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.work-modal-info { padding: 16px 20px 20px; }
+.work-modal-info h3 { margin: 0 0 4px; color: var(--fx-text); }
+.work-modal-info .student-work-author { margin: 0 0 8px; color: var(--fx-accent-2); font-size: .9rem; }
+.work-modal-info .student-work-author:empty, .work-modal-desc:empty { display: none; }
+.work-modal-desc { margin: 0 0 14px; color: var(--fx-muted); white-space: pre-line; }
+.work-modal-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.work-modal-links .btn { font-size: .88rem; padding: 8px 14px; }

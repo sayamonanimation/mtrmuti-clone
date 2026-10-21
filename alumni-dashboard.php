@@ -139,7 +139,7 @@ $statusClass = ['approved' => 'ok', 'pending' => 'wait', 'rejected' => 'bad', 'h
                     <?php if ($w['image_path']): ?><img src="<?= h($w['image_path']) ?>" alt="" loading="lazy"><?php endif; ?>
                     <figcaption>
                         <strong><?= h($w['title']) ?></strong>
-                        <form method="post" onsubmit="return confirm('ลบผลงานนี้?');">
+                        <form method="post" data-confirm="ลบผลงานนี้?">
                             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
                             <input type="hidden" name="action" value="delete_work">
                             <input type="hidden" name="work_id" value="<?= (int) $w['id'] ?>">
@@ -176,4 +176,5 @@ $statusClass = ['approved' => 'ok', 'pending' => 'wait', 'rejected' => 'bad', 'h
         </form>
     </div>
 </div>
+<script src="/assets/js/confirm-popup.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/confirm-popup.js') ?>"></script>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
