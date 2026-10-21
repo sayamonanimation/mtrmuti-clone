@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
 
+ensure_nav_new_tab_column();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $action = $_POST['action'] ?? '';
@@ -22,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $url = normalize_nav_url($_POST['url'] ?? '');
         $sortOrder = (int) ($_POST['sort_order'] ?? 0);
         if ($label !== '') {
-            $stmt = $pdo->prepare('INSERT INTO nav_menu_items (parent_id, label, label_en, url, sort_order) VALUES (?, ?, ?, ?, ?)');
-            $stmt->execute([$parentId, $label, $labelEn, $url, $sortOrder]);
+            $stmt = $pdo->prepare('INSERT INTO nav_menu_items (parent_id, label, label_en, url, sort_order, new_tab) VALUES (?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$parentId, $label, $labelEn, $url, $sortOrder, isset($_POST['new_tab']) ? 1 : 0]);
             set_flash('เพิ่มเมนูเรียบร้อยแล้ว');
         } else {
             set_flash('กรุณากรอกชื่อเมนู', 'error');
@@ -34,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $labelEn = trim($_POST['label_en'] ?? '');
         $url = normalize_nav_url($_POST['url'] ?? '');
         $sortOrder = (int) ($_POST['sort_order'] ?? 0);
-        $stmt = $pdo->prepare('UPDATE nav_menu_items SET label = ?, label_en = ?, url = ?, sort_order = ? WHERE id = ?');
-        $stmt->execute([$label, $labelEn, $url, $sortOrder, $id]);
+        $stmt = $pdo->prepare('UPDATE nav_menu_items SET label = ?, label_en = ?, url = ?, sort_order = ?, new_tab = ? WHERE id = ?');
+        $stmt->execute([$label, $labelEn, $url, $sortOrder, isset($_POST['new_tab']) ? 1 : 0, $id]);
         set_flash('บันทึกเมนูเรียบร้อยแล้ว');
     }
     header('Location: /admin/nav-menu.php');
@@ -65,6 +67,7 @@ foreach ($allItems as $i) {
         <div class="form-group"><label>ชื่อเมนู (English)</label><input type="text" name="label_en"></div>
         <div class="form-group"><label>URL</label><input type="text" name="url" placeholder="/example.php หรือ https://... หรือ # (ถ้าเป็นแค่เมนูเปิดเมนูย่อย)"></div>
         <div class="form-group"><label>ลำดับการแสดงผล</label><input type="number" name="sort_order" value="0"></div>
+        <div class="form-group"><label><input type="checkbox" name="new_tab" value="1"> เปิดลิงก์ในแท็บใหม่</label></div>
         <button class="btn" type="submit">เพิ่มเมนูหลัก</button>
     </form>
 </div>
@@ -84,6 +87,7 @@ foreach ($allItems as $i) {
             <input type="text" name="url" value="<?= h($top['url']) ?>" style="width:200px;">
             <label class="field-hint">ลำดับ</label>
             <input type="number" name="sort_order" value="<?= h($top['sort_order']) ?>" style="width:70px;">
+            <label class="field-hint nav-newtab"><input type="checkbox" name="new_tab" value="1" <?= !empty($top['new_tab']) ? 'checked' : '' ?>> เปิดแท็บใหม่</label>
             <button class="btn btn-sm btn-ghost" type="submit">บันทึก</button>
         </form>
         <div class="actions-row">
@@ -117,6 +121,7 @@ foreach ($allItems as $i) {
                         <input type="text" name="label_en" value="<?= h($child['label_en']) ?>" placeholder="English" style="width:150px;">
                         <input type="text" name="url" value="<?= h($child['url']) ?>" placeholder="URL" style="width:200px;">
                         <input type="number" name="sort_order" value="<?= h($child['sort_order']) ?>" style="width:70px;" title="ลำดับ">
+                        <label class="field-hint nav-newtab"><input type="checkbox" name="new_tab" value="1" <?= !empty($child['new_tab']) ? 'checked' : '' ?>> เปิดแท็บใหม่ ↗</label>
                         <button class="btn btn-sm btn-ghost" type="submit">บันทึก</button>
                     </form>
                 </td>
@@ -151,6 +156,7 @@ foreach ($allItems as $i) {
         <input type="text" name="label_en" placeholder="English" style="width:150px;">
         <input type="text" name="url" placeholder="URL" style="width:200px;">
         <input type="number" name="sort_order" value="0" style="width:70px;" title="ลำดับ">
+        <label class="field-hint nav-newtab"><input type="checkbox" name="new_tab" value="1"> เปิดแท็บใหม่</label>
         <button class="btn btn-sm" type="submit">+ เพิ่มเมนูย่อย</button>
     </form>
 </div>
