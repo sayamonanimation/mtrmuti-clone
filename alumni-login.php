@@ -37,7 +37,7 @@ require_once __DIR__ . '/includes/header.php';
             <label>รหัสผ่าน<input type="password" name="password" required autocomplete="current-password"></label>
             <button class="btn" type="submit">เข้าสู่ระบบ</button>
             <p class="hub-muted">ยังไม่มีบัญชี? <a href="<?= h(clean_public_url('/alumni-register')) ?>">สมัครฝากประวัติ</a></p>
-            <p class="hub-muted" style="font-size:.8rem;">ลืมรหัสผ่าน? ติดต่อเจ้าหน้าที่สาขาเพื่อรีเซ็ต</p>
+            <p class="hub-muted" style="font-size:.8rem;"><a href="<?= h(clean_public_url('/alumni-forgot')) ?>">ลืมรหัสผ่าน?</a></p>
         </form>
     </div>
 </div>

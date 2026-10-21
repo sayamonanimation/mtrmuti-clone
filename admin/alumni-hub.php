@@ -27,7 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (strlen($new) < 8) {
                 set_flash('รหัสผ่านใหม่ต้องยาวอย่างน้อย 8 ตัว', 'error');
             } else {
-                $pdo->prepare('UPDATE alumni_members SET password_hash = ? WHERE id = ?')->execute([password_hash($new, PASSWORD_DEFAULT), $id]);
+                if ($member = get_alumni_member($id)) {
+                    alumni_set_password($member, $new);
+                }
                 set_flash('ตั้งรหัสผ่านใหม่ให้ศิษย์เก่าแล้ว');
             }
         }
