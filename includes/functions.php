@@ -918,6 +918,7 @@ function get_nav_menu_tree($activeOnly = true) {
     global $pdo;
     ensure_statistics_page();
     ensure_outstanding_alumni();
+    ensure_alumni_hub();
     $sql = 'SELECT * FROM nav_menu_items';
     if ($activeOnly) {
         $sql .= ' WHERE is_active = 1';
@@ -1124,3 +1125,5 @@ function csrf_check() {
         die('Invalid CSRF token');
     }
 }
+
+require_once __DIR__ . '/alumni-hub.php';

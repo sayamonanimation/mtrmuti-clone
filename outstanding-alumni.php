@@ -14,10 +14,7 @@ $people = get_outstanding_alumni();
 </div>
 <div class="page-content">
     <div class="container">
-        <div class="alumni-tabs">
-            <a href="<?= h(clean_public_url('/alumni')) ?>"><?= h(t('alumni.all')) ?></a>
-            <a class="active" href="<?= h(clean_public_url('/outstanding-alumni')) ?>">🏆 <?= h(t('alumni.outstanding')) ?></a>
-        </div>
+        <?php $alumniTab = 'outstanding'; require __DIR__ . '/includes/alumni-tabs.php'; ?>
         <?php if (trim(strip_tags((string) lang_field($page, 'content'))) !== ''): ?>
         <div class="prose" style="margin-bottom:24px;"><?= lang_field($page, 'content') ?></div>
         <?php endif; ?>

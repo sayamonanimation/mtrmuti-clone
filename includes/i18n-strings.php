@@ -45,6 +45,7 @@ return [
     'alumni.outstanding' => ['th' => 'ศิษย์เก่าดีเด่น', 'en' => 'Outstanding Alumni'],
     'alumni.outstanding_empty' => ['th' => 'ยังไม่มีข้อมูลศิษย์เก่าดีเด่น', 'en' => 'No outstanding alumni yet'],
     'alumni.more' => ['th' => 'ดูผลงานเพิ่มเติม', 'en' => 'See more'],
+    'alumni.hub' => ['th' => 'ติดต่องานศิษย์เก่า', 'en' => 'Hire Our Alumni'],
     'alumni.graduated' => ['th' => 'จบการศึกษาปีการศึกษา', 'en' => 'Class of'],
     'home.posts_heading' => ['th' => 'ข่าวประชาสัมพันธ์ & กิจกรรม', 'en' => 'News & Activities'],
     'home.read_more' => ['th' => 'อ่านเพิ่มเติม', 'en' => 'Read more'],
