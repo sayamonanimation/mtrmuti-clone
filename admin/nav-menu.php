@@ -73,7 +73,7 @@ foreach ($allItems as $i) {
 </div>
 
 <?php foreach ($topLevel as $top): ?>
-<div class="admin-card">
+<div class="admin-card" id="nav-item-<?= (int) $top['id'] ?>">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
         <form method="post" class="inline-edit-form inline-edit-form-row">
             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
@@ -111,7 +111,7 @@ foreach ($allItems as $i) {
         <thead><tr><th>เมนูย่อย</th><th></th></tr></thead>
         <tbody>
             <?php foreach ($childrenByParent[$top['id']] ?? [] as $child): ?>
-            <tr>
+            <tr id="nav-item-<?= (int) $child['id'] ?>">
                 <td>
                     <form method="post" class="inline-edit-form inline-edit-form-row">
                         <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">

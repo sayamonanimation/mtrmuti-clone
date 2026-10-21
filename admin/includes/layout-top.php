@@ -2,6 +2,7 @@
 /** Requires: $adminPageTitle, and admin/includes/auth.php already loaded. */
 require_once __DIR__ . '/admin-nav.php';
 $adminNavGroups = admin_nav_groups();
+$adminNavCurrent = admin_nav_current();
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -25,7 +26,7 @@ $adminNavGroups = admin_nav_groups();
                 <summary><span class="admin-nav-icon"><?= $group['icon'] ?></span><?= h($group['label']) ?></summary>
                 <ul>
                     <?php foreach ($group['items'] as $it): ?>
-                    <li><a href="<?= h($it['href']) ?>" class="<?= admin_nav_is_active($it) ? 'active' : '' ?><?= !empty($it['sub']) ? ' admin-nav-sub' : '' ?>"><?= !empty($it['sub']) ? '↳ ' : '' ?><?= h($it['label']) ?><?php if (!empty($it['badge']) && ($n = admin_nav_badge($it['badge']))): ?> <span class="admin-nav-badge"><?= $n ?></span><?php endif; ?></a></li>
+                    <li><a href="<?= h($it['href']) ?>" class="<?= admin_nav_is_active($it) ? 'active' : '' ?><?= !empty($it['sub']) ? ' admin-nav-sub' : '' ?>"><?= !empty($it['sub']) ? '↳ ' : '' ?><?= h($it['label']) ?><?= !empty($it['external']) ? ' ↗' : '' ?><?php if (!empty($it['badge']) && ($n = admin_nav_badge($it['badge']))): ?> <span class="admin-nav-badge"><?= $n ?></span><?php endif; ?></a></li>
                     <?php endforeach; ?>
                 </ul>
             </details>
@@ -35,7 +36,10 @@ $adminNavGroups = admin_nav_groups();
     </aside>
     <main class="admin-main">
         <header class="admin-topbar">
-            <h1><?= h($adminPageTitle ?? '') ?></h1>
+            <div>
+                <?php if ($adminNavCurrent): ?><div class="admin-crumb">เมนูหน้าเว็บ: <?= h($adminNavCurrent[0]) ?> › <?= h($adminNavCurrent[1]) ?></div><?php endif; ?>
+                <h1><?= h($adminPageTitle ?? '') ?></h1>
+            </div>
             <div class="admin-topbar-actions">
                 <span class="admin-current-user">ผู้ใช้: <?= h($_SESSION['admin_username'] ?? '') ?></span>
                 <span class="presence-online" id="presenceOnline" hidden></span>
