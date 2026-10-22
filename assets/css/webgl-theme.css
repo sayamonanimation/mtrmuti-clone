@@ -759,7 +759,8 @@ section.alt { background: transparent; }
 .stats3d-ready .stats3d-canvas { display: block; }
 .stats3d-labels { position: absolute; inset: 0; pointer-events: none; }
 .stats3d-value,
-.stats3d-year {
+.stats3d-year,
+.stats3d-sub {
     position: absolute;
     left: 0;
     top: 0;
@@ -1832,3 +1833,6 @@ section.alt { background: transparent; }
 .adm-table .adm-pct { color: var(--fx-accent-2); font-weight: 600; }
 .adm-total-row th, .adm-total-row td { font-weight: 700; background: rgba(255, 90, 60, .07); border-bottom: 0; }
 .adm-note { margin: 10px 2px 0; font-size: .82rem; color: var(--fx-muted); }
+
+.stats3d-sub { font-size: .8rem; font-weight: 600; color: var(--fx-accent-2); padding: 1px 10px; border-radius: 999px; background: rgba(255, 90, 60, .12); border: 1px solid var(--fx-border); }
+.adm-table thead th { white-space: nowrap; }
