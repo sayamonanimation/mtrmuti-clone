@@ -29,7 +29,7 @@ return [
 
     // Topbar
     'topbar.login' => ['th' => 'เข้าสู่ระบบ', 'en' => 'Log In'],
-    'topbar.dashboard' => ['th' => 'หลังบ้าน', 'en' => 'Dashboard'],
+    'topbar.dashboard' => ['th' => 'ผู้ดูแลระบบ', 'en' => 'Admin'],
     'topbar.enroll' => ['th' => 'สมัครเรียน', 'en' => 'Apply Now'],
     'topbar.switch_to_en' => ['th' => 'EN', 'en' => 'EN'],
     'topbar.switch_to_th' => ['th' => 'ไทย', 'en' => 'ไทย'],
