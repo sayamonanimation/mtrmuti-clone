@@ -1836,3 +1836,85 @@ section.alt { background: transparent; }
 
 .stats3d-sub { font-size: .8rem; font-weight: 600; color: var(--fx-accent-2); padding: 1px 10px; border-radius: 999px; background: rgba(255, 90, 60, .12); border: 1px solid var(--fx-border); }
 .adm-table thead th { white-space: nowrap; }
+
+/* ===== ติดต่องานศิษย์เก่า: interactive WebGL (assets/js/alumni-fx.js) ===== */
+.hub-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 4px 0 18px; }
+.hub-stat { position: relative; overflow: hidden; padding: 14px 16px; border-radius: 14px; background: var(--fx-surface); border: 1px solid var(--fx-border); }
+.hub-stat::after { content: ''; position: absolute; inset: auto -30% -60% -30%; height: 80%; background: radial-gradient(ellipse at center, rgba(255, 90, 60, .22), transparent 70%); pointer-events: none; }
+.hub-stat-num { display: block; font-size: 1.7rem; font-weight: 700; line-height: 1.1; background: linear-gradient(90deg, #fff, var(--fx-accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hub-stat span:last-child { font-size: .82rem; color: var(--fx-muted); }
+@media (max-width: 640px) { .hub-stats { grid-template-columns: repeat(2, 1fr); } }
+
+.hub-galaxy { position: relative; margin: 0 0 22px; border-radius: var(--radius); border: 1px solid var(--fx-border); overflow: hidden;
+    background: radial-gradient(ellipse at 50% 55%, rgba(255, 70, 40, .16), transparent 62%), rgba(10, 2, 3, .55); }
+.hub-galaxy-hint { position: absolute; z-index: 3; left: 0; right: 0; bottom: 10px; margin: 0; text-align: center; font-size: .78rem; color: var(--fx-muted); pointer-events: none; padding: 0 12px; }
+.hub-galaxy:not(.fx3d-ready) { display: none; }
+.fx3d-stage { position: relative; height: clamp(360px, 52vw, 540px); cursor: grab; touch-action: pan-y; user-select: none; }
+.fx3d-stage:active { cursor: grabbing; }
+.fx3d-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.fx3d-layer { position: absolute; inset: 0; pointer-events: none; }
+.fx3d-layer > * { position: absolute; left: 0; top: 0; pointer-events: auto; will-change: transform, opacity; transition: opacity .25s; }
+.fx3d-person { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; }
+.fx3d-person img { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; background: #1a0606; border: 2px solid var(--fx-accent); box-shadow: 0 0 18px rgba(255, 90, 60, .55), 0 0 0 4px rgba(255, 90, 60, .12); transition: box-shadow .25s, border-color .25s; }
+.fx3d-person.is-available img { border-color: #5ee39a; box-shadow: 0 0 18px rgba(94, 227, 154, .5), 0 0 0 4px rgba(94, 227, 154, .12); }
+.fx3d-person span { font-size: .72rem; font-weight: 600; color: #fff; padding: 1px 8px; border-radius: 999px; background: rgba(10, 2, 3, .7); white-space: nowrap; }
+.fx3d-person:hover img, .fx3d-person:focus-visible img { box-shadow: 0 0 30px rgba(255, 160, 120, .9), 0 0 0 6px rgba(255, 140, 100, .25); }
+.fx3d-person.is-back span { opacity: 0; }
+.fx3d-skill { font: inherit; font-weight: 600; color: var(--fx-accent-2); background: rgba(255, 90, 60, .08); border: 1px solid rgba(255, 140, 120, .25); border-radius: 999px; padding: 2px 10px; white-space: nowrap; cursor: pointer; text-shadow: 0 0 10px rgba(255, 90, 60, .6); }
+.fx3d-skill:hover, .fx3d-skill:focus-visible { color: #fff; background: rgba(255, 90, 60, .3); border-color: var(--fx-accent); }
+.fx3d-tip { position: absolute; z-index: 3000; transform: translate(-50%, calc(-100% - 18px)); pointer-events: none; display: flex; flex-direction: column; gap: 2px; min-width: 160px; max-width: 260px; padding: 9px 13px; border-radius: 12px; background: rgba(18, 4, 5, .92); border: 1px solid var(--fx-border-hi); box-shadow: 0 12px 30px rgba(0, 0, 0, .5); text-align: center; }
+.fx3d-tip strong { color: #fff; font-size: .9rem; }
+.fx3d-tip em { font-style: normal; color: var(--fx-accent-2); font-size: .8rem; }
+.fx3d-tip em:empty { display: none; }
+.fx3d-tip small { color: var(--fx-muted); font-size: .74rem; }
+
+.hub-sphere { position: relative; margin: 0 0 12px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--fx-border);
+    background: radial-gradient(ellipse at 50% 50%, rgba(255, 70, 40, .14), transparent 65%), rgba(10, 2, 3, .45); }
+.hub-sphere:not(.fx3d-ready) { display: none; }
+.hub-sphere .fx3d-stage { height: 300px; }
+.fx3d-word { font-weight: 700; font-size: .95rem; color: #fff; white-space: nowrap; text-shadow: 0 0 12px rgba(255, 90, 60, .85); cursor: default; }
+.fx3d-word.is-hot { color: var(--fx-accent-2); }
+.fx3d-word.is-back { color: var(--fx-muted); text-shadow: none; }
+
+/* Cards: tilt with a moving glare + glowing edge */
+.hub-card, .hub-work { transform-style: preserve-3d; transition: transform .35s cubic-bezier(.2, .7, .2, 1), border-color .25s, box-shadow .3s; }
+.hub-card::after, .hub-work::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .3s;
+    background: radial-gradient(420px circle at var(--hmx, 50%) var(--hmy, 50%), rgba(255, 190, 160, .16), transparent 45%); }
+.hub-work { position: relative; }
+.hub-card.is-hub-tilt, .hub-work.is-hub-tilt { transform: perspective(900px) rotateX(var(--hrx, 0)) rotateY(var(--hry, 0)) translateY(-4px); border-color: var(--fx-border-hi); box-shadow: 0 18px 40px rgba(0, 0, 0, .45), 0 0 0 1px rgba(255, 120, 95, .25); transition-duration: .08s, .25s, .3s; }
+.hub-card.is-hub-tilt::after, .hub-work.is-hub-tilt::after { opacity: 1; }
+.hub-card .hub-card-cover { transition: transform .6s; }
+.hub-card:hover .hub-card-cover { transform: scale(1.06); }
+
+/* Work: the whole caption opens the work's link */
+.hub-work-link { display: flex; flex-direction: column; gap: 4px; color: inherit; text-decoration: none; margin: -10px -12px; padding: 10px 12px; border-radius: 0 0 12px 12px; transition: background .2s; }
+.page-content a.hub-work-link { color: var(--fx-muted); }
+.hub-work-link strong { color: #fff; font-size: .95rem; transition: color .2s; }
+.hub-work-link:hover, .hub-work-link:focus-visible { background: rgba(255, 90, 60, .1); }
+.hub-work-link:hover strong { color: var(--fx-accent-2); }
+.hub-work-go { font-style: normal; color: var(--fx-accent-2); font-weight: 600; margin-top: 2px; }
+.hub-work-go b { display: inline-block; transition: transform .2s; }
+.hub-work-link:hover .hub-work-go b { transform: translate(3px, -3px); }
+
+/* "พร้อมรับงาน": breathing glow */
+.hub-badge { animation: hub-pulse 2.4s ease-in-out infinite; }
+@keyframes hub-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(94, 227, 154, .45); } 50% { box-shadow: 0 0 0 7px rgba(94, 227, 154, 0); } }
+.hub-profile-photo { animation: hub-halo 5s ease-in-out infinite; }
+@keyframes hub-halo { 0%, 100% { box-shadow: 0 0 26px rgba(255, 70, 40, .25); } 50% { box-shadow: 0 0 44px rgba(255, 110, 70, .45); } }
+.hub-magnet { transition: transform .2s ease-out; }
+
+/* Scroll reveal */
+.hub-reveal { opacity: 0; transform: translateY(18px); }
+.hub-reveal.hub-in { opacity: 1; transform: none; transition: opacity .6s ease var(--hub-delay, 0ms), transform .6s cubic-bezier(.2, .7, .2, 1) var(--hub-delay, 0ms); }
+.hub-reveal.hub-in.is-hub-tilt { transition-delay: 0ms; }
+
+@media (prefers-reduced-motion: reduce) {
+    .hub-badge, .hub-profile-photo { animation: none; }
+}
+/* [hidden] must win over the display rules above (search filter, tooltip). */
+.hub-card[hidden], .fx3d-tip[hidden], .hub-galaxy[hidden], .hub-sphere[hidden] { display: none !important; }
+@media (max-width: 640px) {
+    .hub-galaxy .fx3d-stage { height: 460px; }
+    .hub-galaxy-hint { font-size: .7rem; bottom: 6px; }
+    .fx3d-person img { width: 44px; height: 44px; }
+}

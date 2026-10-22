@@ -40,6 +40,7 @@ $skills = $member ? alumni_skill_list($member['skills']) : [];
             <div class="hub-profile-main">
                 <?php if ($skills): ?>
                 <h2>ทักษะ</h2>
+                <div class="hub-sphere" data-skills="<?= h(json_encode(array_values($skills), JSON_UNESCAPED_UNICODE)) ?>" aria-hidden="true"></div>
                 <div class="hub-skills hub-skills-lg"><?php foreach ($skills as $s): ?><i><?= h($s) ?></i><?php endforeach; ?></div>
                 <?php endif; ?>
                 <?php if ($member['bio']): ?>
@@ -54,11 +55,20 @@ $skills = $member ? alumni_skill_list($member['skills']) : [];
                         <?php if ($w['image_path']): ?>
                         <button type="button" class="hub-work-img album-photo" data-src="<?= h($w['image_path']) ?>" data-caption="<?= h($w['title']) ?>"><img src="<?= h($w['image_path']) ?>" alt="<?= h($w['title']) ?>" loading="lazy"></button>
                         <?php endif; ?>
+                        <?php if ($w['link_url']): ?>
+                        <figcaption>
+                            <a class="hub-work-link" href="<?= h($w['link_url']) ?>" target="_blank" rel="noopener" title="เปิดผลงาน: <?= h($w['title']) ?>">
+                                <strong><?= h($w['title']) ?></strong>
+                                <?php if ($w['description']): ?><span><?= nl2br(h($w['description'])) ?></span><?php endif; ?>
+                                <em class="hub-work-go">ดูผลงาน <b aria-hidden="true">↗</b></em>
+                            </a>
+                        </figcaption>
+                        <?php else: ?>
                         <figcaption>
                             <strong><?= h($w['title']) ?></strong>
                             <?php if ($w['description']): ?><span><?= nl2br(h($w['description'])) ?></span><?php endif; ?>
-                            <?php if ($w['link_url']): ?><a href="<?= h($w['link_url']) ?>" target="_blank" rel="noopener">ดูผลงาน ↗</a><?php endif; ?>
                         </figcaption>
+                        <?php endif; ?>
                     </figure>
                     <?php endforeach; ?>
                 </div>
@@ -95,4 +105,5 @@ $skills = $member ? alumni_skill_list($member['skills']) : [];
     document.addEventListener('keydown', function (e) { if (box.hidden) return; if (e.key === 'Escape') close(); if (e.key === 'ArrowLeft') show(index - 1); if (e.key === 'ArrowRight') show(index + 1); });
 })();
 </script>
+<script src="/assets/js/alumni-fx.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/alumni-fx.js') ?>" defer></script>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
