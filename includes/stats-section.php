@@ -49,6 +49,8 @@ $admGroups = [
              data-stats="<?= h(json_encode($admChart)) ?>"
              data-colors="<?= h(json_encode($admColors)) ?>"
              data-series-labels="<?= h(json_encode($admSeries, JSON_UNESCAPED_UNICODE)) ?>"
+             data-split="2"
+             data-subgroup-labels="<?= h(json_encode(['ม.6', 'ปวช.'], JSON_UNESCAPED_UNICODE)) ?>"
              data-year-label="<?= h(t('home.student_stats_academic_year')) ?>"
              data-unit="<?= h(t('home.student_stats_people')) ?>">
             <div class="stats3d-chips stats3d-chips-4">

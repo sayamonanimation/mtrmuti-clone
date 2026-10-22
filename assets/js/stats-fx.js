@@ -18,6 +18,10 @@
     var seriesLabels = JSON.parse(root.getAttribute('data-series-labels') || '[]');
     var yearLabel = root.getAttribute('data-year-label') || '';
     var unit = root.getAttribute('data-unit') || '';
+    // data-split="2": bars come in sub-groups of 2 (e.g. ม.6 pair, ปวช. pair) with a
+    // wider gap between them; data-subgroup-labels names each sub-group under the bars.
+    var split = parseInt(root.getAttribute('data-split') || '0', 10) || 0;
+    var subLabels = JSON.parse(root.getAttribute('data-subgroup-labels') || '[]');
 
     // ---------- Count-up chips ----------
     function countUp() {
@@ -62,7 +66,10 @@
         var levels = Math.max.apply(null, data.map(function (d) { return d.counts.length; }));
         var single = levels === 1;
         var BAR = single ? 1.1 : 0.8, GAP = 0.18, GROUP_GAP = single ? 0.6 : 1.1, MAX_H = 4.2;
-        var groupW = levels * BAR + (levels - 1) * GAP;
+        var SPLIT_GAP = 0.75;
+        var subCount = split ? Math.ceil(levels / split) : 1;
+        function barX(li) { return li * (BAR + GAP) + (split ? Math.floor(li / split) * SPLIT_GAP : 0); }
+        var groupW = levels * BAR + (levels - 1) * GAP + (subCount - 1) * SPLIT_GAP;
         var totalW = data.length * groupW + (data.length - 1) * GROUP_GAP;
         var maxVal = Math.max(1, Math.max.apply(null, data.map(function (d) { return Math.max.apply(null, d.counts); })));
 
@@ -104,7 +111,7 @@
                 var mesh = new THREE.Mesh(unitBox, mat);
                 var edges = new THREE.LineSegments(edgeGeo, new THREE.LineBasicMaterial({ color: 0xffd2c4, transparent: true, opacity: 0.55 }));
                 mesh.add(edges);
-                mesh.position.set(gx + li * (BAR + GAP) + BAR / 2, 0, 0);
+                mesh.position.set(gx + barX(li) + BAR / 2, 0, 0);
                 mesh.scale.y = 0.001;
                 mesh.userData = { year: d.year, series: d.label || seriesLabels[li] || '', count: count, target: Math.max(0.02, count / maxVal * MAX_H), delay: gi * 0.12 + li * 0.08 };
                 scene.add(mesh);
@@ -122,6 +129,17 @@
             labelLayer.appendChild(yl);
             d.anchor = new THREE.Vector3(gx + groupW / 2, 0, BAR * 0.9);
             d.labelEl = yl;
+            d.subs = [];
+            if (split && subLabels.length) {
+                for (var si = 0; si < subCount; si++) {
+                    var first = si * split, last = Math.min(levels, first + split) - 1;
+                    var sub = document.createElement('span');
+                    sub.className = 'stats3d-sub';
+                    sub.textContent = subLabels[si] || '';
+                    labelLayer.appendChild(sub);
+                    d.subs.push({ el: sub, anchor: new THREE.Vector3(gx + (barX(first) + barX(last) + BAR) / 2, 0, BAR * 0.9) });
+                }
+            }
         });
 
         // ---------- Camera fit ----------
@@ -184,8 +202,12 @@
                 el.classList.toggle('is-hover', m === hovered);
             });
             data.forEach(function (d) {
+                d.subs.forEach(function (sub) {
+                    v.copy(sub.anchor).project(camera);
+                    sub.el.style.transform = 'translate(-50%, 0) translate(' + ((v.x + 1) / 2 * w) + 'px,' + ((1 - v.y) / 2 * h + 6) + 'px)';
+                });
                 v.copy(d.anchor).project(camera);
-                d.labelEl.style.transform = 'translate(-50%, 0) translate(' + ((v.x + 1) / 2 * w) + 'px,' + ((1 - v.y) / 2 * h + 6) + 'px)';
+                d.labelEl.style.transform = 'translate(-50%, 0) translate(' + ((v.x + 1) / 2 * w) + 'px,' + ((1 - v.y) / 2 * h + (d.subs.length ? 34 : 6)) + 'px)';
             });
         }
 
