@@ -136,7 +136,7 @@ $num = function () use (&$sectionNo) { return sprintf('%02d', ++$sectionNo); };
     // QR code to the online profile (scannable from the printed PDF too).
     var box = document.querySelector('.pf-qr');
     if (box && window.QRCode) {
-        new QRCode(box, { text: box.getAttribute('data-url'), width: 96, height: 96, colorDark: '#0b0d16', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+        new QRCode(box, { text: box.getAttribute('data-url'), width: 96, height: 96, colorDark: '#1a0607', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
     } else if (box) {
         box.parentNode.hidden = true;
     }
