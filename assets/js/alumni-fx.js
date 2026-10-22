@@ -285,7 +285,7 @@
                 tip.innerHTML = '<strong></strong><em></em><small></small>';
                 tip.querySelector('strong').textContent = n.data.name;
                 tip.querySelector('em').textContent = n.data.headline || '';
-                tip.querySelector('small').textContent = (n.data.available ? '● พร้อมรับงาน · ' : '') + 'คลิกเพื่อดูโปรไฟล์';
+                tip.querySelector('small').textContent = (n.data.type ? n.data.type + ' · ' : '') + (n.data.available ? '● พร้อมรับงาน · ' : '') + 'คลิกเพื่อดูโปรไฟล์';
             } else {
                 var who = Object.keys(keep).filter(function (k) { return nodes[k].kind === 'person'; }).length;
                 tip.innerHTML = '<strong></strong><small></small>';

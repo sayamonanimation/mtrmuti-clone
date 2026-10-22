@@ -1,0 +1,61 @@
+/* Printable portfolio (alumni-portfolio.php): light A4 document. */
+:root { --ink: #1d1416; --muted: #6b5d5f; --accent: #b3261e; --line: #ead9d6; --paper: #fff; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #ece7e6; color: var(--ink); font-family: 'Sarabun', 'Kanit', sans-serif; font-size: 15px; line-height: 1.65; }
+a { color: var(--accent); }
+h1, h2, h3, .pf-kicker { font-family: 'Kanit', sans-serif; }
+
+.pf-toolbar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 12px 20px; background: #1d0a0b; color: #f3e6e4; }
+.pf-toolbar a { color: #ffb7a6; text-decoration: none; }
+.pf-toolbar-actions { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+.pf-toolbar button, .pf-btn { font: 600 14px 'Kanit', sans-serif; border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; background: #e2483a; color: #fff !important; text-decoration: none; }
+.pf-btn { background: #3a1a1b; border: 1px solid #6a3533; }
+.pf-toolbar small { flex-basis: 100%; color: #c9b2ae; font-size: 12px; }
+
+.pf-page { width: 210mm; min-height: 297mm; margin: 24px auto; padding: 18mm 18mm 14mm; background: var(--paper); box-shadow: 0 10px 40px rgba(0, 0, 0, .15); }
+.pf-cover { display: grid; grid-template-columns: 42mm 1fr; gap: 10mm; align-items: center; padding-bottom: 8mm; margin-bottom: 8mm; border-bottom: 3px solid var(--accent); }
+.pf-photo { width: 42mm; height: 42mm; border-radius: 50%; object-fit: cover; border: 3px solid var(--line); }
+.pf-kicker { margin: 0; letter-spacing: .35em; font-size: 12px; color: var(--accent); font-weight: 600; }
+.pf-cover h1 { margin: 2px 0 2px; font-size: 30px; line-height: 1.2; }
+.pf-headline { margin: 0; font-size: 17px; color: var(--accent); font-weight: 600; }
+.pf-meta { margin: 2px 0 8px; color: var(--muted); font-size: 14px; }
+.pf-contact { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13.5px; }
+
+.pf-section { margin-bottom: 7mm; break-inside: avoid-page; }
+.pf-section h2 { margin: 0 0 3mm; font-size: 18px; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+.pf-section h2::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.pf-text { margin: 0; white-space: normal; }
+.pf-skills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pf-skills span { padding: 2px 12px; border-radius: 999px; background: #f7eeec; border: 1px solid var(--line); font-size: 13.5px; }
+.pf-item-body { display: block; }
+.pf-item.has-image .pf-item-body { display: grid; grid-template-columns: 60mm 1fr; gap: 6mm; align-items: start; }
+.pf-item-body img { width: 100%; border-radius: 6px; border: 1px solid var(--line); }
+.pf-link { margin: 2mm 0 0; font-size: 13.5px; word-break: break-all; }
+.pf-link small { color: var(--muted); }
+.pf-works { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+.pf-work { break-inside: avoid; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.pf-work img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+.pf-work h3 { margin: 3mm 4mm 1mm; font-size: 15px; line-height: 1.35; }
+.pf-work p { margin: 0 4mm 3mm; font-size: 13.5px; color: var(--muted); }
+.pf-work .pf-link { color: var(--ink); }
+.pf-footer { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 10mm; padding-top: 3mm; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--muted); word-break: break-all; }
+
+@media (max-width: 860px) {
+    .pf-page { width: auto; min-height: 0; margin: 0; padding: 22px 18px; box-shadow: none; }
+    .pf-cover { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+    .pf-contact { justify-content: center; }
+    .pf-item.has-image .pf-item-body, .pf-works { grid-template-columns: 1fr; }
+}
+
+@page { size: A4; margin: 12mm; }
+@media print {
+    body { background: #fff; font-size: 12.5pt; }
+    .pf-toolbar { display: none; }
+    .pf-page { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+    .pf-cover { grid-template-columns: 38mm 1fr; text-align: left; justify-items: stretch; }
+    .pf-contact { justify-content: flex-start; }
+    .pf-item.has-image .pf-item-body { grid-template-columns: 55mm 1fr; }
+    .pf-works { grid-template-columns: 1fr 1fr; }
+    a { color: var(--ink); text-decoration: none; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

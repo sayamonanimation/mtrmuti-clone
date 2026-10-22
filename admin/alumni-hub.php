@@ -65,7 +65,7 @@ require_once __DIR__ . '/includes/layout-top.php';
 <div class="admin-card hub-admin-card">
     <img src="<?= h($m['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="">
     <div class="hub-admin-info">
-        <strong><?= h($m['full_name']) ?></strong> <span class="field-hint"><?= h($m['email']) ?></span><br>
+        <strong><?= h($m['full_name']) ?></strong> <span class="field-hint"><?= h($m['email']) ?> · <?= h(alumni_member_type_label($m['member_type'] ?? 'alumni')) ?></span><br>
         <span><?= h(trim($m['batch_name'] . ($m['graduation_year'] ? ' · จบปี ' . $m['graduation_year'] : ''), ' ·')) ?></span>
         <?php if ($m['headline']): ?> · <span><?= h($m['headline']) ?></span><?php endif; ?><br>
         <span class="field-hint">ผลงาน <?= (int) $m['work_count'] ?> ชิ้น · สมัคร <?= h($m['created_at']) ?><?= $m['updated_at'] ? ' · แก้ไขล่าสุด ' . h($m['updated_at']) : '' ?></span>

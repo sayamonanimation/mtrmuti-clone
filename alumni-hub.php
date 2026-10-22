@@ -20,6 +20,7 @@ $galaxyPeople = array_map(fn($m) => [
     'photo' => $m['photo_path'] ?: '/assets/img/placeholder-avatar.svg',
     'skills' => array_slice(alumni_skill_list($m['skills']), 0, 8),
     'available' => (int) $m['available_for_work'] === 1,
+    'type' => alumni_member_type_label($m['member_type'] ?? 'alumni'),
     'url' => clean_public_url('/alumni-profile?id=' . (int) $m['id']),
 ], $members);
 ?>
@@ -68,6 +69,12 @@ $galaxyPeople = array_map(fn($m) => [
             <input type="search" id="hubSearch" placeholder="ค้นหาชื่อ ทักษะ หรือตำแหน่ง เช่น Animation, Unity, ตัดต่อ" aria-label="ค้นหา">
             <label class="hub-available"><input type="checkbox" id="hubAvailable"> เฉพาะคนที่พร้อมรับงาน</label>
         </div>
+        <div class="hub-type-tabs" id="hubTypes" role="group" aria-label="กรองตามสถานะ">
+            <button type="button" class="hub-chip is-active" data-type="">ทั้งหมด</button>
+            <?php foreach (alumni_member_types() as $key => $label): ?>
+            <button type="button" class="hub-chip" data-type="<?= $key ?>"><?= h($label) ?></button>
+            <?php endforeach; ?>
+        </div>
         <?php if ($allSkills): ?>
         <div class="hub-skill-chips" id="hubChips">
             <?php foreach (array_slice($allSkills, 0, 18) as $skill): ?>
@@ -81,14 +88,15 @@ $galaxyPeople = array_map(fn($m) => [
             <?php $skills = alumni_skill_list($m['skills']); ?>
             <a class="hub-card" data-id="<?= (int) $m['id'] ?>" href="<?= h(clean_public_url('/alumni-profile?id=' . (int) $m['id'])) ?>"
                data-search="<?= h(mb_strtolower($m['full_name'] . ' ' . $m['headline'] . ' ' . $m['skills'] . ' ' . $m['batch_name'])) ?>"
-               data-available="<?= (int) $m['available_for_work'] ?>">
+               data-available="<?= (int) $m['available_for_work'] ?>" data-type="<?= h($m['member_type'] ?? 'alumni') ?>">
                 <span class="hub-card-cover"<?php if ($m['cover_work']): ?> style="background-image:url('<?= h($m['cover_work']) ?>')"<?php endif; ?>></span>
                 <span class="hub-card-avatar"><img src="<?= h($m['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="" loading="lazy"></span>
                 <?php if ($m['available_for_work']): ?><span class="hub-badge">● พร้อมรับงาน</span><?php endif; ?>
                 <span class="hub-card-body">
                     <strong><?= h($m['full_name']) ?></strong>
                     <?php if ($m['headline']): ?><span class="hub-headline"><?= h($m['headline']) ?></span><?php endif; ?>
-                    <span class="hub-class"><?= h(trim($m['batch_name'] . ($m['graduation_year'] ? ' · จบปี ' . $m['graduation_year'] : ''), ' ·')) ?></span>
+                    <span class="hub-type-pill hub-type-<?= h($m['member_type'] ?? 'alumni') ?>"><?= h(alumni_member_type_label($m['member_type'] ?? 'alumni')) ?></span>
+                    <?php if (alumni_class_line($m) !== ''): ?><span class="hub-class"><?= h(alumni_class_line($m)) ?></span><?php endif; ?>
                     <?php if ($skills): ?>
                     <span class="hub-skills"><?php foreach (array_slice($skills, 0, 5) as $s): ?><i><?= h($s) ?></i><?php endforeach; ?></span>
                     <?php endif; ?>
@@ -108,13 +116,15 @@ $galaxyPeople = array_map(fn($m) => [
     var grid = document.getElementById('hubGrid');
     if (!grid) return;
     var search = document.getElementById('hubSearch'), avail = document.getElementById('hubAvailable');
-    var chips = document.querySelectorAll('.hub-chip'), empty = document.getElementById('hubEmpty');
-    var activeSkill = '';
+    var chips = document.querySelectorAll('#hubChips .hub-chip'), empty = document.getElementById('hubEmpty');
+    var typeBtns = document.querySelectorAll('#hubTypes .hub-chip');
+    var activeSkill = '', activeType = '';
     function apply() {
         var q = (search.value || '').trim().toLowerCase(), shown = 0, ids = {};
         grid.querySelectorAll('.hub-card').forEach(function (card) {
             var hay = card.getAttribute('data-search');
-            var ok = (!q || hay.indexOf(q) !== -1) && (!activeSkill || hay.indexOf(activeSkill) !== -1) && (!avail.checked || card.getAttribute('data-available') === '1');
+            var ok = (!q || hay.indexOf(q) !== -1) && (!activeSkill || hay.indexOf(activeSkill) !== -1) && (!avail.checked || card.getAttribute('data-available') === '1')
+                && (!activeType || card.getAttribute('data-type') === activeType);
             card.hidden = !ok;
             if (ok) { shown++; ids[card.getAttribute('data-id')] = true; }
         });
@@ -128,6 +138,13 @@ $galaxyPeople = array_map(fn($m) => [
         chip.addEventListener('click', function () {
             activeSkill = activeSkill === chip.getAttribute('data-skill') ? '' : chip.getAttribute('data-skill');
             chips.forEach(function (c) { c.classList.toggle('is-active', c.getAttribute('data-skill') === activeSkill); });
+            apply();
+        });
+    });
+    typeBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            activeType = btn.getAttribute('data-type');
+            typeBtns.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
             apply();
         });
     });

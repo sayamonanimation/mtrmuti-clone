@@ -3,12 +3,8 @@ $currentSlug = 'alumni-hub';
 require_once __DIR__ . '/includes/header.php';
 
 ensure_alumni_hub();
-$member = get_alumni_member((int) ($_GET['id'] ?? 0));
 // Only approved profiles are public; the owner can preview their own.
-$isOwner = $member && alumni_member_id() === (int) $member['id'];
-if ($member && $member['status'] !== 'approved' && !$isOwner && !is_admin_logged_in()) {
-    $member = null;
-}
+$member = alumni_viewable_member($_GET['id'] ?? 0);
 $works = $member ? get_alumni_works($member['id']) : [];
 $skills = $member ? alumni_skill_list($member['skills']) : [];
 ?>
@@ -29,12 +25,14 @@ $skills = $member ? alumni_skill_list($member['skills']) : [];
             <aside class="hub-profile-side">
                 <img class="hub-profile-photo" src="<?= h($member['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="<?= h($member['full_name']) ?>">
                 <?php if ($member['available_for_work']): ?><div class="hub-badge hub-badge-static">● พร้อมรับงาน</div><?php endif; ?>
-                <div class="hub-class"><?= h(trim($member['batch_name'] . ($member['graduation_year'] ? ' · จบปีการศึกษา ' . $member['graduation_year'] : ''), ' ·')) ?></div>
+                <div class="hub-type-pill hub-type-<?= h($member['member_type'] ?? 'alumni') ?>"><?= h(alumni_member_type_label($member['member_type'] ?? 'alumni')) ?></div>
+                <?php if (alumni_class_line($member, false) !== ''): ?><div class="hub-class"><?= h(alumni_class_line($member, false)) ?></div><?php endif; ?>
                 <div class="hub-contact">
                     <?php if ($member['contact_email']): ?><a class="btn" href="mailto:<?= h($member['contact_email']) ?>">✉️ ส่งอีเมล</a><?php endif; ?>
                     <?php if ($member['contact_phone']): ?><a class="btn hero-fx-btn-ghost" href="tel:<?= h(preg_replace('/[^0-9+]/', '', $member['contact_phone'])) ?>">📞 <?= h($member['contact_phone']) ?></a><?php endif; ?>
                     <?php if ($member['line_id']): ?><a class="btn hero-fx-btn-ghost" href="https://line.me/ti/p/~<?= h(rawurlencode($member['line_id'])) ?>" target="_blank" rel="noopener">💬 LINE: <?= h($member['line_id']) ?></a><?php endif; ?>
-                    <?php if ($member['website_url']): ?><a class="btn hero-fx-btn-ghost" href="<?= h($member['website_url']) ?>" target="_blank" rel="noopener">🌐 Portfolio / เว็บไซต์</a><?php endif; ?>
+                    <?php if ($member['website_url']): ?><a class="btn hero-fx-btn-ghost" href="<?= h($member['website_url']) ?>" target="_blank" rel="noopener">🌐 เว็บไซต์</a><?php endif; ?>
+                    <a class="btn hero-fx-btn-ghost" href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $member['id'])) ?>" target="_blank" rel="noopener">📄 Portfolio (PDF / E-book)</a>
                 </div>
             </aside>
             <div class="hub-profile-main">
