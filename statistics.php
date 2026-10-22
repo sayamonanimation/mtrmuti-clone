@@ -4,6 +4,8 @@ require_once __DIR__ . '/includes/header.php';
 
 ensure_statistics_page();
 $page = get_page('statistics');
+require_once __DIR__ . '/includes/admission-stats.php';
+$admission = get_admission_stats();
 $stats = get_stats();
 $studentYearStats = get_student_year_stats();
 ?>
@@ -18,7 +20,7 @@ $studentYearStats = get_student_year_stats();
     <div class="container prose" style="margin-bottom:10px;"><?= lang_field($page, 'content') ?></div>
     <?php endif; ?>
     <?php require __DIR__ . '/includes/stats-section.php'; ?>
-    <?php if (!$stats && !$studentYearStats): ?>
+    <?php if (!$admission && !$stats && !$studentYearStats): ?>
     <div class="container"><p><?= h(t('home.stats_empty')) ?></p></div>
     <?php endif; ?>
 </div>
