@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'line_id' => mb_substr(trim($_POST['line_id'] ?? ''), 0, 100),
             'website_url' => normalize_url($_POST['website_url'] ?? '') ?: null,
             'available_for_work' => isset($_POST['available_for_work']) ? 1 : 0,
+            'member_type' => alumni_member_type_from_post($_POST['member_type'] ?? ''),
         ];
         if ($photo = handle_image_upload('photo', 'alumni-hub')) {
             $f['photo_path'] = $photo;
@@ -54,6 +55,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'delete_work') {
         $pdo->prepare('DELETE FROM alumni_works WHERE id = ? AND member_id = ?')->execute([(int) $_POST['work_id'], $me['id']]);
         $flash = 'ลบผลงานแล้ว';
+    } elseif ($action === 'add_item' || $action === 'edit_item') {
+        $itemId = (int) ($_POST['item_id'] ?? 0);
+        $heading = mb_substr(trim($_POST['heading'] ?? ''), 0, 255);
+        $count = count(get_alumni_portfolio_items($me['id']));
+        if ($heading === '') {
+            $flash = 'กรุณาใส่หัวข้อ';
+        } elseif ($action === 'add_item' && $count >= ALUMNI_PORTFOLIO_MAX_ITEMS) {
+            $flash = 'เพิ่มหัวข้อ Portfolio ได้สูงสุด ' . ALUMNI_PORTFOLIO_MAX_ITEMS . ' หัวข้อ';
+        } else {
+            $fields = [
+                'heading' => $heading,
+                'body' => mb_substr(trim($_POST['body'] ?? ''), 0, 6000),
+                'link_url' => mb_substr(normalize_url($_POST['link_url'] ?? ''), 0, 500) ?: null,
+                'link_label' => mb_substr(trim($_POST['link_label'] ?? ''), 0, 150) ?: null,
+                'sort_order' => (int) ($_POST['sort_order'] ?? $count),
+            ];
+            if ($image = handle_image_upload('image', 'alumni-hub')) {
+                $fields['image_path'] = $image;
+            } elseif (!empty($_POST['remove_image'])) {
+                $fields['image_path'] = null;
+            }
+            if ($action === 'add_item') {
+                $cols = implode(', ', array_keys($fields));
+                $marks = implode(', ', array_fill(0, count($fields), '?'));
+                $pdo->prepare("INSERT INTO alumni_portfolio_items (member_id, $cols) VALUES (?, $marks)")->execute([$me['id'], ...array_values($fields)]);
+                $flash = 'เพิ่มหัวข้อใน Portfolio แล้ว';
+            } else {
+                $set = implode(', ', array_map(fn($c) => "$c = ?", array_keys($fields)));
+                $pdo->prepare("UPDATE alumni_portfolio_items SET $set WHERE id = ? AND member_id = ?")->execute([...array_values($fields), $itemId, $me['id']]);
+                $flash = 'บันทึกหัวข้อแล้ว';
+            }
+            $pdo->prepare('UPDATE alumni_members SET updated_at = CURRENT_TIMESTAMP WHERE id = ?')->execute([$me['id']]);
+        }
+    } elseif ($action === 'delete_item') {
+        $pdo->prepare('DELETE FROM alumni_portfolio_items WHERE id = ? AND member_id = ?')->execute([(int) $_POST['item_id'], $me['id']]);
+        $flash = 'ลบหัวข้อแล้ว';
     } elseif ($action === 'password') {
         $new = $_POST['new_password'] ?? '';
         if (!password_verify($_POST['current_password'] ?? '', $me['password_hash'])) {
@@ -71,6 +108,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $works = get_alumni_works($me['id']);
+$portfolioItems = get_alumni_portfolio_items($me['id']);
+$myType = $me['member_type'] ?? 'alumni';
 $flash = $_SESSION['alumni_flash'] ?? '';
 unset($_SESSION['alumni_flash']);
 
@@ -109,10 +148,16 @@ $statusClass = ['approved' => 'ok', 'pending' => 'wait', 'rejected' => 'bad', 'h
                 <img src="<?= h($me['photo_path'] ?: '/assets/img/placeholder-avatar.svg') ?>" alt="" class="hub-dash-photo">
                 <label>รูปโปรไฟล์<input type="file" name="photo" accept="image/*"></label>
             </div>
+            <fieldset class="hub-type">
+                <legend>สถานะของคุณ (เปลี่ยนได้ตลอด)</legend>
+                <?php foreach (alumni_member_types() as $key => $label): ?>
+                <label><input type="radio" name="member_type" value="<?= $key ?>"<?= $myType === $key ? ' checked' : '' ?>><span><?= h($label) ?></span></label>
+                <?php endforeach; ?>
+            </fieldset>
             <label>ชื่อ - นามสกุล<input type="text" name="full_name" required maxlength="150" value="<?= h($me['full_name']) ?>"></label>
-            <div class="hub-form-row">
+            <div class="hub-form-row hub-class-fields">
                 <label>รุ่น<input type="text" name="batch_name" maxlength="100" value="<?= h($me['batch_name']) ?>"></label>
-                <label>จบปีการศึกษา<input type="number" name="graduation_year" min="2500" max="2700" value="<?= h($me['graduation_year']) ?>"></label>
+                <label><span class="hub-year-label">จบปีการศึกษา</span><input type="number" name="graduation_year" min="2500" max="2700" value="<?= h($me['graduation_year']) ?>"></label>
             </div>
             <label>ตำแหน่ง / ความถนัดหลัก<input type="text" name="headline" maxlength="255" placeholder="เช่น 3D Animator · Freelance" value="<?= h($me['headline']) ?>"></label>
             <label>ทักษะ (คั่นด้วยจุลภาค)<input type="text" name="skills" maxlength="500" placeholder="Animation, Unity, Blender, ตัดต่อวิดีโอ" value="<?= h($me['skills']) ?>"></label>
@@ -164,6 +209,66 @@ $statusClass = ['approved' => 'ok', 'pending' => 'wait', 'rejected' => 'bad', 'h
             <?php endif; ?>
         </div>
 
+        <div class="content-card hub-form" id="portfolio">
+            <h2>📄 Portfolio — ส่งออกเป็น PDF / E-book</h2>
+            <p class="hub-muted" style="margin:0;">Portfolio รวมข้อมูลส่วนตัว ทักษะ ผลงาน และหัวข้อที่คุณเพิ่มด้านล่าง (เช่น การศึกษา ประสบการณ์ทำงาน รางวัล) ในรูปแบบเอกสารพร้อมพิมพ์</p>
+            <div class="hub-status-actions">
+                <a class="btn" href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $me['id'])) ?>" target="_blank" rel="noopener">👁 ดู Portfolio</a>
+                <a class="btn hero-fx-btn-ghost" href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $me['id'] . '&print=1')) ?>" target="_blank" rel="noopener">⬇️ บันทึกเป็น PDF</a>
+                <a class="btn hero-fx-btn-ghost" href="<?= h(clean_public_url('/alumni-portfolio-epub?id=' . (int) $me['id'])) ?>">📚 ดาวน์โหลด E-book (EPUB)</a>
+            </div>
+            <?php foreach ($portfolioItems as $it): ?>
+            <form method="post" enctype="multipart/form-data" class="hub-pf-item">
+                <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                <input type="hidden" name="action" value="edit_item">
+                <input type="hidden" name="item_id" value="<?= (int) $it['id'] ?>">
+                <div class="hub-pf-grid">
+                    <?php if ($it['image_path']): ?><img src="<?= h($it['image_path']) ?>" alt="" class="hub-pf-thumb"><?php endif; ?>
+                    <div class="hub-pf-fields">
+                        <div class="hub-form-row">
+                            <label>หัวข้อ<input type="text" name="heading" required maxlength="255" value="<?= h($it['heading']) ?>"></label>
+                            <label>ลำดับ<input type="number" name="sort_order" value="<?= (int) $it['sort_order'] ?>"></label>
+                        </div>
+                        <label>รายละเอียด<textarea name="body" rows="3" maxlength="6000"><?= h($it['body']) ?></textarea></label>
+                        <div class="hub-form-row">
+                            <label>ลิงก์<input type="text" name="link_url" maxlength="500" placeholder="https://..." value="<?= h($it['link_url']) ?>"></label>
+                            <label>ข้อความลิงก์<input type="text" name="link_label" maxlength="150" placeholder="เช่น ดูวิดีโอ" value="<?= h($it['link_label']) ?>"></label>
+                        </div>
+                        <div class="hub-form-row">
+                            <label><?= $it['image_path'] ? 'เปลี่ยนรูป' : 'รูปภาพ (ไม่บังคับ)' ?><input type="file" name="image" accept="image/*"></label>
+                            <?php if ($it['image_path']): ?><label class="hub-check"><input type="checkbox" name="remove_image" value="1"> เอารูปออก</label><?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="hub-status-actions">
+                    <button class="btn" type="submit">บันทึก</button>
+                    <button class="btn hero-fx-btn-ghost" type="submit" form="del-item-<?= (int) $it['id'] ?>">ลบหัวข้อนี้</button>
+                </div>
+            </form>
+            <form method="post" id="del-item-<?= (int) $it['id'] ?>" data-confirm="ลบหัวข้อ &quot;<?= h($it['heading']) ?>&quot;?" hidden>
+                <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                <input type="hidden" name="action" value="delete_item">
+                <input type="hidden" name="item_id" value="<?= (int) $it['id'] ?>">
+            </form>
+            <?php endforeach; ?>
+            <?php if (count($portfolioItems) < ALUMNI_PORTFOLIO_MAX_ITEMS): ?>
+            <form method="post" enctype="multipart/form-data" class="hub-add-work">
+                <h3>เพิ่มหัวข้อใน Portfolio</h3>
+                <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                <input type="hidden" name="action" value="add_item">
+                <input type="hidden" name="sort_order" value="<?= count($portfolioItems) ?>">
+                <label>หัวข้อ<input type="text" name="heading" required maxlength="255" placeholder="เช่น การศึกษา, ประสบการณ์ทำงาน, รางวัลที่ได้รับ"></label>
+                <label>รายละเอียด<textarea name="body" rows="4" maxlength="6000" placeholder="ขึ้นบรรทัดใหม่ได้ตามต้องการ"></textarea></label>
+                <label>รูปภาพ (ไม่บังคับ)<input type="file" name="image" accept="image/*"></label>
+                <div class="hub-form-row">
+                    <label>ลิงก์ (ไม่บังคับ)<input type="text" name="link_url" maxlength="500" placeholder="https://..."></label>
+                    <label>ข้อความลิงก์<input type="text" name="link_label" maxlength="150" placeholder="เช่น ดูใบประกาศ"></label>
+                </div>
+                <button class="btn" type="submit">+ เพิ่มหัวข้อ</button>
+            </form>
+            <?php endif; ?>
+        </div>
+
         <form method="post" class="content-card hub-form">
             <h2>เปลี่ยนรหัสผ่าน</h2>
             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
@@ -176,5 +281,6 @@ $statusClass = ['approved' => 'ok', 'pending' => 'wait', 'rejected' => 'bad', 'h
         </form>
     </div>
 </div>
+<script src="/assets/js/hub-type.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/hub-type.js') ?>"></script>
 <script src="/assets/js/confirm-popup.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/confirm-popup.js') ?>"></script>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

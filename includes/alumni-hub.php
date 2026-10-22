@@ -17,6 +17,7 @@ function ensure_alumni_hub() {
     static $done = false;
     if ($done || get_setting('alumni_hub_ready') === '1') {
         $done = true;
+        ensure_alumni_portfolio();
         return;
     }
     $pdo->exec('CREATE TABLE IF NOT EXISTS alumni_members (
@@ -70,6 +71,7 @@ function ensure_alumni_hub() {
     }
     set_setting('alumni_hub_ready', '1');
     $done = true;
+    ensure_alumni_portfolio();
 }
 
 // ---------- Consent to publish personal data (PDPA) ----------
@@ -269,3 +271,5 @@ function alumni_set_password($member, $newPassword) {
         . 'รหัสผ่านบัญชีติดต่องานศิษย์เก่าของคุณถูกเปลี่ยนเมื่อ ' . date('d/m/Y H:i') . " น.\n\n"
         . "ถ้าคุณไม่ได้เป็นผู้เปลี่ยน กรุณาตั้งรหัสผ่านใหม่ทันทีที่ " . alumni_absolute_url('/alumni-forgot') . " และแจ้งเจ้าหน้าที่สาขา\n\n" . get_site_name());
 }
+
+require_once __DIR__ . '/hub-portfolio.php';

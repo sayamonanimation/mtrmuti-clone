@@ -5,7 +5,7 @@ ensure_alumni_hub();
 ensure_alumni_consent_columns();
 
 $error = '';
-$old = ['full_name' => '', 'email' => '', 'batch_name' => '', 'graduation_year' => ''];
+$old = ['full_name' => '', 'email' => '', 'batch_name' => '', 'graduation_year' => '', 'member_type' => 'alumni'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $old = array_map('trim', array_intersect_key($_POST, $old)) + $old;
@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->fetchColumn()) {
             $error = 'อีเมลนี้สมัครไว้แล้ว — เข้าสู่ระบบได้เลย';
         } else {
-            $stmt = $pdo->prepare('INSERT INTO alumni_members (email, password_hash, full_name, batch_name, graduation_year, contact_email, status, consent_at, consent_version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-            $stmt->execute([mb_strtolower($old['email']), password_hash($password, PASSWORD_DEFAULT), $old['full_name'], $old['batch_name'], (int) $old['graduation_year'] ?: null, mb_strtolower($old['email']), 'pending', date('Y-m-d H:i:s'), ALUMNI_CONSENT_VERSION]);
+            $stmt = $pdo->prepare('INSERT INTO alumni_members (email, password_hash, full_name, batch_name, graduation_year, contact_email, status, consent_at, consent_version, member_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([mb_strtolower($old['email']), password_hash($password, PASSWORD_DEFAULT), $old['full_name'], $old['batch_name'], (int) $old['graduation_year'] ?: null, mb_strtolower($old['email']), 'pending', date('Y-m-d H:i:s'), ALUMNI_CONSENT_VERSION, alumni_member_type_from_post($old['member_type'])]);
             session_regenerate_id(true);
             $_SESSION['alumni_member_id'] = (int) $pdo->lastInsertId();
             $_SESSION['alumni_flash'] = 'สมัครสำเร็จ! กรอกโปรไฟล์และเพิ่มผลงานได้เลย แล้วกด "ส่งให้ตรวจสอบ" เพื่อแสดงบนหน้าเว็บ';
@@ -49,11 +49,17 @@ require_once __DIR__ . '/includes/header.php';
             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
             <input type="hidden" name="form_started" value="<?= time() ?>">
             <input type="text" name="website_confirm" value="" tabindex="-1" autocomplete="off" class="hub-hp" aria-hidden="true">
+            <fieldset class="hub-type">
+                <legend>สถานะของคุณ</legend>
+                <?php foreach (alumni_member_types() as $key => $label): ?>
+                <label><input type="radio" name="member_type" value="<?= $key ?>"<?= $old['member_type'] === $key ? ' checked' : '' ?>><span><?= h($label) ?></span></label>
+                <?php endforeach; ?>
+            </fieldset>
             <label>ชื่อ - นามสกุล<input type="text" name="full_name" required maxlength="150" value="<?= h($old['full_name']) ?>"></label>
             <label>อีเมล (ใช้เข้าสู่ระบบ)<input type="email" name="email" required maxlength="190" value="<?= h($old['email']) ?>" autocomplete="email"></label>
-            <div class="hub-form-row">
+            <div class="hub-form-row hub-class-fields">
                 <label>รุ่น<input type="text" name="batch_name" maxlength="100" placeholder="เช่น MT10" value="<?= h($old['batch_name']) ?>"></label>
-                <label>จบปีการศึกษา<input type="number" name="graduation_year" min="2500" max="2700" placeholder="เช่น 2565" value="<?= h($old['graduation_year']) ?>"></label>
+                <label><span class="hub-year-label">จบปีการศึกษา</span><input type="number" name="graduation_year" min="2500" max="2700" placeholder="เช่น 2565" value="<?= h($old['graduation_year']) ?>"></label>
             </div>
             <label>รหัสผ่าน (อย่างน้อย 8 ตัว)<input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
             <label>ยืนยันรหัสผ่าน<input type="password" name="password_confirm" required minlength="8" autocomplete="new-password"></label>
@@ -95,6 +101,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </form>
 </dialog>
+<script src="/assets/js/hub-type.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/hub-type.js') ?>"></script>
 <script>
 (function () {
     var dialog = document.getElementById('consentDialog');

@@ -1918,3 +1918,27 @@ section.alt { background: transparent; }
     .hub-galaxy-hint { font-size: .7rem; bottom: 6px; }
     .fx3d-person img { width: 44px; height: 44px; }
 }
+
+/* Hub member type (ศิษย์เก่า / นักศึกษาปัจจุบัน / บุคคลทั่วไป) */
+.hub-type { display: flex; flex-wrap: wrap; gap: 8px; border: 0; padding: 0; margin: 0; }
+.hub-type legend { width: 100%; padding: 0; margin-bottom: 6px; font-size: .9rem; color: var(--fx-muted); }
+.hub-form .hub-type label { flex-direction: row; align-items: center; gap: 0; cursor: pointer; }
+.hub-type input { position: absolute; opacity: 0; pointer-events: none; }
+.hub-type span { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--fx-border-hi); color: var(--fx-text); background: rgba(255, 255, 255, .03); transition: background .2s, border-color .2s; }
+.hub-type input:checked + span { background: rgba(255, 90, 60, .22); border-color: var(--fx-accent); color: #fff; box-shadow: 0 0 0 3px rgba(255, 90, 60, .15); }
+.hub-type input:focus-visible + span { outline: 2px solid var(--fx-accent); outline-offset: 2px; }
+.hub-class-fields[hidden] { display: none !important; }
+.hub-type-pill { display: inline-block; align-self: flex-start; font-size: .74rem; font-weight: 600; padding: 1px 10px; border-radius: 999px; border: 1px solid; margin: 2px 0; }
+.hub-profile-side .hub-type-pill { align-self: center; margin: 4px 0; }
+.hub-type-alumni { color: #ffb199; border-color: rgba(255, 140, 110, .45); background: rgba(255, 90, 60, .1); }
+.hub-type-student { color: #8fd0ff; border-color: rgba(120, 190, 255, .45); background: rgba(80, 160, 255, .1); }
+.hub-type-general { color: #d9c7ff; border-color: rgba(190, 160, 255, .45); background: rgba(160, 120, 255, .1); }
+.hub-type-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+
+/* Portfolio sections in the member dashboard */
+.hub-pf-item { padding: 14px; border: 1px solid var(--fx-border); border-radius: 12px; background: rgba(255, 255, 255, .02); display: flex; flex-direction: column; gap: 10px; }
+.hub-pf-grid { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }
+.hub-pf-thumb { width: 110px; height: 82px; object-fit: cover; border-radius: 8px; border: 1px solid var(--fx-border); }
+.hub-pf-fields { display: flex; flex-direction: column; gap: 10px; grid-column: 2; }
+.hub-pf-grid > .hub-pf-fields:only-child { grid-column: 1 / -1; }
+@media (max-width: 600px) { .hub-pf-grid { grid-template-columns: 1fr; } .hub-pf-fields { grid-column: 1; } }
