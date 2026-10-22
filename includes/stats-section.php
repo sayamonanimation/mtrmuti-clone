@@ -2,10 +2,107 @@
 /**
  * Admission statistics + students by year level as WebGL 3D charts
  * (assets/js/stats-fx.js). Used by statistics.php.
- * Expects $stats (get_stats()) and $studentYearStats (get_student_year_stats()).
+ * Expects $admission (get_admission_stats()), $stats (old flat get_stats(),
+ * shown only until the new admission data exists) and $studentYearStats.
  */
 ?>
-<?php if ($stats): ?>
+<?php if ($admission): ?>
+<?php
+// Comparison window: ADMISSION_COMPARE_YEARS years ending at the chosen year (?y=).
+$admYears = array_column($admission, 'academic_year');
+$admEnd = in_array((int) ($_GET['y'] ?? 0), $admYears, true) ? (int) $_GET['y'] : end($admYears);
+$admWindow = array_values(array_filter($admission, fn($r) => $r['academic_year'] <= $admEnd && $r['academic_year'] > $admEnd - ADMISSION_COMPARE_YEARS));
+$admLatest = end($admWindow);
+$admPrevRow = null;
+foreach ($admission as $r) {
+    if ($r['academic_year'] < $admLatest['academic_year']) {
+        $admPrevRow = $r;
+    }
+}
+$admChange = $admPrevRow && $admPrevRow['reg_total'] > 0 ? round(($admLatest['reg_total'] - $admPrevRow['reg_total']) / $admPrevRow['reg_total'] * 100) : null;
+$admColors = ['#8f4a3f', '#ff5a3c', '#7d6a66', '#ffb199'];
+$admSeries = ['แผนรับ ม.6', 'ขึ้นทะเบียน ม.6', 'แผนรับ ปวช.', 'ขึ้นทะเบียน ปวช.'];
+$admChart = array_map(fn($r) => ['year' => (string) $r['academic_year'], 'counts' => [$r['plan_m6'], $r['reg_m6'], $r['plan_voc'], $r['reg_voc']]], $admWindow);
+$admGroups = [
+    ['label' => 'ม.6', 'plan' => 'plan_m6', 'reg' => 'reg_m6', 'pct' => 'pct_m6'],
+    ['label' => 'ปวช.', 'plan' => 'plan_voc', 'reg' => 'reg_voc', 'pct' => 'pct_voc'],
+    ['label' => 'รวม', 'plan' => 'plan_total', 'reg' => 'reg_total', 'pct' => 'pct_total', 'total' => true],
+];
+?>
+<section class="adm-section" id="admission">
+    <div class="container">
+        <div class="section-title">
+            <h2><?= h(t('home.stats_heading')) ?></h2>
+            <div class="bar"></div>
+        </div>
+        <?php if (count($admYears) > 1): ?>
+        <form method="get" action="#admission" class="adm-picker">
+            <label>เปรียบเทียบ <?= ADMISSION_COMPARE_YEARS ?> ปี ถึงปีการศึกษา
+                <select name="y" onchange="this.form.submit()">
+                    <?php foreach (array_reverse($admYears) as $y): ?><option value="<?= $y ?>"<?= $y === $admEnd ? ' selected' : '' ?>><?= $y ?></option><?php endforeach; ?>
+                </select>
+            </label>
+            <noscript><button class="btn" type="submit">แสดง</button></noscript>
+        </form>
+        <?php endif; ?>
+        <div class="stats3d" id="admissionStats3d"
+             data-stats="<?= h(json_encode($admChart)) ?>"
+             data-colors="<?= h(json_encode($admColors)) ?>"
+             data-series-labels="<?= h(json_encode($admSeries, JSON_UNESCAPED_UNICODE)) ?>"
+             data-year-label="<?= h(t('home.student_stats_academic_year')) ?>"
+             data-unit="<?= h(t('home.student_stats_people')) ?>">
+            <div class="stats3d-chips stats3d-chips-4">
+                <div class="stats3d-chip stats3d-chip-total">
+                    <span class="stats3d-chip-label">ขึ้นทะเบียน (ปีการศึกษา <?= $admLatest['academic_year'] ?>)</span>
+                    <span class="stats3d-chip-num" data-count="<?= $admLatest['reg_total'] ?>"><?= $admLatest['reg_total'] ?></span>
+                </div>
+                <div class="stats3d-chip">
+                    <span class="stats3d-chip-label">แผนรับ</span>
+                    <span class="stats3d-chip-num" data-count="<?= $admLatest['plan_total'] ?>"><?= $admLatest['plan_total'] ?></span>
+                </div>
+                <div class="stats3d-chip">
+                    <span class="stats3d-chip-label">ร้อยละเทียบแผนรับ</span>
+                    <span class="stats3d-chip-num"><?= admission_pct_text($admLatest['pct_total']) ?></span>
+                </div>
+                <?php if ($admChange !== null): ?>
+                <div class="stats3d-chip">
+                    <span class="stats3d-chip-label">เทียบปี <?= $admPrevRow['academic_year'] ?></span>
+                    <span class="stats3d-chip-num <?= $admChange >= 0 ? 'is-up' : 'is-down' ?>" data-count="<?= $admChange ?>" data-suffix="%" data-signed><?= ($admChange > 0 ? '+' : '') . $admChange ?>%</span>
+                </div>
+                <?php endif; ?>
+            </div>
+            <div class="adm-legend"><?php foreach ($admSeries as $i => $label): ?><span><i style="background:<?= $admColors[$i] ?>"></i><?= h($label) ?></span><?php endforeach; ?></div>
+            <div class="stats3d-stage">
+                <canvas class="stats3d-canvas" aria-hidden="true"></canvas>
+                <div class="stats3d-labels" aria-hidden="true"></div>
+                <div class="stats3d-tip" hidden></div>
+            </div>
+        </div>
+        <div class="adm-table-wrap">
+            <table class="adm-table">
+                <caption>เปรียบเทียบแผนรับและนักศึกษาที่ขึ้นทะเบียน ปีการศึกษา <?= $admWindow[0]['academic_year'] ?><?= count($admWindow) > 1 ? '–' . $admLatest['academic_year'] : '' ?></caption>
+                <thead>
+                    <tr><th rowspan="2">พื้นฐาน</th><?php foreach ($admWindow as $r): ?><th colspan="3">ปีการศึกษา <?= $r['academic_year'] ?></th><?php endforeach; ?></tr>
+                    <tr><?php foreach ($admWindow as $r): ?><th>แผนรับ</th><th>ขึ้นทะเบียน</th><th>ร้อยละ</th><?php endforeach; ?></tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($admGroups as $g): ?>
+                    <tr<?= !empty($g['total']) ? ' class="adm-total-row"' : '' ?>>
+                        <th><?= h($g['label']) ?></th>
+                        <?php foreach ($admWindow as $r): ?>
+                        <td><?= number_format($r[$g['plan']]) ?></td>
+                        <td><?= number_format($r[$g['reg']]) ?></td>
+                        <td class="adm-pct"><?= admission_pct_text($r[$g['pct']]) ?></td>
+                        <?php endforeach; ?>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <p class="adm-note">ร้อยละ = จำนวนนักศึกษาที่ขึ้นทะเบียน ÷ แผนรับนักศึกษา × 100</p>
+    </div>
+</section>
+<?php elseif ($stats): ?>
 <?php
 $admissionData = array_map(function ($row) {
     return ['year' => (string) $row['year'], 'counts' => [(int) $row['count']], 'label' => (string) $row['label']];
@@ -117,6 +214,6 @@ $levelColors = ['#ff5a3c', '#c81e0c', '#ffa07f', '#8f7d7a'];
     </div>
 </section>
 <?php endif; ?>
-<?php if ($stats || $studentYearStats): ?>
+<?php if ($admission || $stats || $studentYearStats): ?>
 <script src="/assets/js/stats-fx.js?v=<?= (int) @filemtime(__DIR__ . '/../assets/js/stats-fx.js') ?>" defer></script>
 <?php endif; ?>

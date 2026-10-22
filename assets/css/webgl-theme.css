@@ -1814,3 +1814,21 @@ section.alt { background: transparent; }
 .consent-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px 20px; border-top: 1px solid var(--fx-border); }
 .consent-actions .btn-ghost { background: transparent; border: 1px solid var(--fx-border-hi); color: var(--fx-text); box-shadow: none; }
 .consent-actions .btn-ghost:hover { background: rgba(255, 255, 255, .06); }
+
+/* สถิติการรับนักศึกษา: plan vs registered, ม.6 / ปวช., 3-year comparison */
+.adm-picker { display: flex; justify-content: center; margin: -6px 0 18px; }
+.adm-picker label { display: flex; align-items: center; gap: 10px; color: var(--fx-muted); font-size: .95rem; }
+.adm-picker select { padding: 7px 12px; border-radius: 10px; border: 1px solid var(--fx-border-hi); background: var(--fx-surface-strong); color: var(--fx-text); font: inherit; }
+.adm-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 4px 0 6px; font-size: .88rem; color: var(--fx-muted); }
+.adm-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.adm-table-wrap { overflow-x: auto; margin-top: 22px; border: 1px solid var(--fx-border); border-radius: var(--radius); background: var(--fx-surface); }
+.adm-table { width: 100%; border-collapse: collapse; font-size: .95rem; min-width: 560px; }
+.adm-table caption { caption-side: top; text-align: left; padding: 14px 16px 6px; color: var(--fx-accent-2); font-weight: 600; }
+.adm-table th, .adm-table td { padding: 10px 12px; text-align: center; border-bottom: 1px solid var(--fx-border); }
+.adm-table thead th { color: var(--fx-muted); font-weight: 500; font-size: .86rem; }
+.adm-table thead tr:first-child th { color: var(--fx-text); font-weight: 600; font-size: .95rem; }
+.adm-table tbody th { text-align: left; color: var(--fx-text); }
+.adm-table td:nth-child(3n+1), .adm-table thead tr:first-child th:not(:first-child) { border-left: 1px solid var(--fx-border); }
+.adm-table .adm-pct { color: var(--fx-accent-2); font-weight: 600; }
+.adm-total-row th, .adm-total-row td { font-weight: 700; background: rgba(255, 90, 60, .07); border-bottom: 0; }
+.adm-note { margin: 10px 2px 0; font-size: .82rem; color: var(--fx-muted); }
