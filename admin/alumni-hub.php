@@ -2,6 +2,7 @@
 require_once __DIR__ . '/includes/auth.php';
 
 ensure_alumni_hub();
+ensure_alumni_consent_columns();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
@@ -69,6 +70,7 @@ require_once __DIR__ . '/includes/layout-top.php';
         <?php if ($m['headline']): ?> · <span><?= h($m['headline']) ?></span><?php endif; ?><br>
         <span class="field-hint">ผลงาน <?= (int) $m['work_count'] ?> ชิ้น · สมัคร <?= h($m['created_at']) ?><?= $m['updated_at'] ? ' · แก้ไขล่าสุด ' . h($m['updated_at']) : '' ?></span>
         <?php if ($m['admin_note']): ?><br><span class="field-hint">เหตุผลที่ตีกลับ: <?= h($m['admin_note']) ?></span><?php endif; ?>
+        <br><span class="field-hint"><?= !empty($m['consent_at']) ? '✅ ยินยอมเผยแพร่ข้อมูลเมื่อ ' . h($m['consent_at']) : '⚠️ ยังไม่มีบันทึกการยินยอมเผยแพร่ข้อมูล (สมัครก่อนมีระบบยินยอม)' ?></span>
     </div>
     <div class="hub-admin-actions">
         <a class="btn btn-sm btn-ghost" href="<?= h(clean_public_url('/alumni-profile?id=' . (int) $m['id'])) ?>" target="_blank">ดูโปรไฟล์</a>

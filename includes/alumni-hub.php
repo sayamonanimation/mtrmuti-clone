@@ -72,6 +72,30 @@ function ensure_alumni_hub() {
     $done = true;
 }
 
+// ---------- Consent to publish personal data (PDPA) ----------
+
+/** Bump when the consent text on alumni-register.php changes. */
+const ALUMNI_CONSENT_VERSION = '1';
+
+/** alumni_members.consent_at / consent_version: when and to which text the member agreed. */
+function ensure_alumni_consent_columns() {
+    global $pdo;
+    static $done = false;
+    if ($done || get_setting('alumni_consent_ready') === '1') {
+        $done = true;
+        return;
+    }
+    foreach (['consent_at DATETIME DEFAULT NULL', 'consent_version VARCHAR(20) DEFAULT NULL'] as $column) {
+        try {
+            $pdo->exec('ALTER TABLE alumni_members ADD COLUMN ' . $column);
+        } catch (PDOException $e) {
+            // Column already exists.
+        }
+    }
+    set_setting('alumni_consent_ready', '1');
+    $done = true;
+}
+
 // ---------- Member session (separate from the admin session) ----------
 
 function alumni_member_id() {
