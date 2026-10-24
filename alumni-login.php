@@ -24,10 +24,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $currentSlug = 'alumni-hub';
-$pageTitleOverride = 'เข้าสู่ระบบศิษย์เก่า';
+$pageTitleOverride = 'เข้าสู่ระบบ Portfolio';
 require_once __DIR__ . '/includes/header.php';
 ?>
-<div class="page-header"><div class="container"><h1>เข้าสู่ระบบศิษย์เก่า</h1></div></div>
+<div class="page-header"><div class="container"><h1>เข้าสู่ระบบ Portfolio</h1></div></div>
 <div class="page-content">
     <div class="container hub-auth">
         <form method="post" class="hub-form content-card">
