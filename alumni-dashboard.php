@@ -91,8 +91,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($action === 'portfolio_theme') {
         $theme = alumni_portfolio_theme($_POST['portfolio_theme'] ?? '');
-        $pdo->prepare('UPDATE alumni_members SET portfolio_theme = ? WHERE id = ?')->execute([$theme, $me['id']]);
-        $flash = 'เปลี่ยนธีม Portfolio เป็น ' . alumni_portfolio_themes()[$theme]['label'] . ' แล้ว';
+        $layout = alumni_portfolio_layout($_POST['portfolio_layout'] ?? '');
+        $pdo->prepare('UPDATE alumni_members SET portfolio_theme = ?, portfolio_layout = ? WHERE id = ?')->execute([$theme, $layout, $me['id']]);
+        $flash = 'ใช้รูปแบบ ' . alumni_portfolio_layouts()[$layout]['label'] . ' + สี ' . alumni_portfolio_themes()[$theme]['label'] . ' แล้ว';
     } elseif ($action === 'delete_item') {
         $pdo->prepare('DELETE FROM alumni_portfolio_items WHERE id = ? AND member_id = ?')->execute([(int) $_POST['item_id'], $me['id']]);
         $flash = 'ลบหัวข้อแล้ว';
@@ -227,20 +228,33 @@ $statusClass = ['approved' => 'ok', 'pending' => 'wait', 'rejected' => 'bad', 'h
             <form method="post" class="hub-pf-themes">
                 <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
                 <input type="hidden" name="action" value="portfolio_theme">
-                <h3>ธีมของ Portfolio</h3>
+                <?php $myTheme = alumni_portfolio_theme($me['portfolio_theme'] ?? 'red'); $myLayout = alumni_portfolio_layout($me['portfolio_layout'] ?? 'classic'); ?>
+                <h3>1. รูปแบบการนำเสนอ (เลือกตามลักษณะงานของคุณ)</h3>
+                <div class="hub-theme-grid hub-layout-grid">
+                    <?php foreach (alumni_portfolio_layouts() as $key => $lay): ?>
+                    <label class="hub-theme-card hub-layout-card">
+                        <input type="radio" name="portfolio_layout" value="<?= $key ?>"<?= $myLayout === $key ? ' checked' : '' ?>>
+                        <span class="hub-layout-icon" aria-hidden="true"><?= $lay['icon'] ?></span>
+                        <strong><?= h($lay['label']) ?></strong>
+                        <em><?= h($lay['for']) ?></em>
+                        <small><?= h($lay['desc']) ?></small>
+                        <a href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $me['id'] . '&layout=' . $key . '&theme=' . $myTheme)) ?>" target="_blank" rel="noopener">ดูตัวอย่าง ↗</a>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+                <h3>2. โทนสี</h3>
                 <div class="hub-theme-grid">
-                    <?php $myTheme = alumni_portfolio_theme($me['portfolio_theme'] ?? 'red'); ?>
                     <?php foreach (alumni_portfolio_themes() as $key => $th): ?>
                     <label class="hub-theme-card">
                         <input type="radio" name="portfolio_theme" value="<?= $key ?>"<?= $myTheme === $key ? ' checked' : '' ?>>
                         <span class="hub-theme-swatch" style="background:<?= $th['swatch'][0] ?>"><i style="background:<?= $th['swatch'][1] ?>"></i><i style="background:<?= $th['swatch'][2] ?>"></i></span>
                         <strong><?= h($th['label']) ?></strong>
                         <small><?= h($th['desc']) ?></small>
-                        <a href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $me['id'] . '&theme=' . $key)) ?>" target="_blank" rel="noopener">ดูตัวอย่าง ↗</a>
+                        <a href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $me['id'] . '&theme=' . $key . '&layout=' . $myLayout)) ?>" target="_blank" rel="noopener">ดูตัวอย่าง ↗</a>
                     </label>
                     <?php endforeach; ?>
                 </div>
-                <button class="btn" type="submit">ใช้ธีมที่เลือก</button>
+                <button class="btn" type="submit">ใช้รูปแบบและสีที่เลือก</button>
             </form>
             <?php foreach ($portfolioItems as $it): ?>
             <form method="post" enctype="multipart/form-data" class="hub-pf-item">

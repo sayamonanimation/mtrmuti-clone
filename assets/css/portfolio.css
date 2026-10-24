@@ -167,6 +167,125 @@ h1, h2, h3 { font-family: 'Kanit', sans-serif; }
 .pf-theme-minimal .pf-btn { color: var(--ink) !important; }
 .pf-theme-minimal .pf-live { color: #1d7a45; border-color: rgba(29, 122, 69, .4); background: rgba(29, 122, 69, .08); }
 
+
+/* ===================== Presentation layouts (portfolio_layout) ===================== */
+.pf-deco { display: none; }
+
+/* ---------- Cinema: video editing / film ---------- */
+.pf-layout-cinema .pf-deco-rec, .pf-layout-cinema .pf-deco-tc { display: inline-block; }
+.pf-deco-rec { margin-left: 10px; color: #ff3b3b; font-weight: 600; animation: pf-rec 1.2s steps(2) infinite; }
+@keyframes pf-rec { 50% { opacity: .25; } }
+.pf-deco-tc { margin-right: 12px; padding: 1px 8px; border-radius: 4px; background: rgba(0, 0, 0, .55); color: #fff; letter-spacing: .08em; }
+.pf-layout-cinema .pf-cover { padding-top: 40px; padding-bottom: 36px; box-shadow: inset 0 22px 0 #000, inset 0 -22px 0 #000, 0 30px 80px rgba(var(--shadow-rgb), .45); }
+.pf-layout-cinema .pf-avatar img { border-radius: 12px; width: 132px; height: 132px; }
+.pf-layout-cinema .pf-ring { border-radius: 16px; animation: none; }
+.pf-layout-cinema .pf-ring::after { border-radius: 12px; }
+.pf-layout-cinema .pf-ident h1 { text-transform: uppercase; letter-spacing: .04em; }
+.pf-layout-cinema .pf-section h2 em::before { content: 'SC '; }
+.pf-layout-cinema .pf-section h2 { text-transform: uppercase; letter-spacing: .05em; }
+.pf-layout-cinema .pf-works { grid-template-columns: 1fr; }
+.pf-layout-cinema .pf-work { display: grid; grid-template-columns: 1.4fr 1fr; align-items: center; }
+.pf-layout-cinema .pf-work .pf-frame { padding: 12px 0; background: #000; }
+.pf-layout-cinema .pf-work .pf-frame::before, .pf-layout-cinema .pf-work .pf-frame::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 6px; inset-inline: 0; pointer-events: none;
+    background: repeating-linear-gradient(90deg, transparent 0 8px, rgba(255, 255, 255, .7) 8px 16px); }
+.pf-layout-cinema .pf-work .pf-frame::before { top: 3px; }
+.pf-layout-cinema .pf-work .pf-frame::after { bottom: 3px; top: auto; }
+.pf-layout-cinema .pf-work .pf-frame img { aspect-ratio: 2.39 / 1; }
+.pf-layout-cinema .pf-work-no { bottom: 18px; font-size: 18px; -webkit-text-stroke: 0; color: #fff; font-family: 'JetBrains Mono', monospace; background: rgba(0, 0, 0, .6); padding: 2px 8px; border-radius: 4px; }
+.pf-layout-cinema .pf-work-no::before { content: 'TAKE '; }
+
+/* ---------- Developer: programmer / systems / apps ---------- */
+.pf-layout-code body { font-size: 14.5px; }
+.pf-layout-code .pf-cover-top { display: none; }
+.pf-layout-code .pf-deco-term { display: flex; align-items: center; gap: 7px; margin: -22px -26px 18px; padding: 10px 16px; background: rgba(0, 0, 0, .35); border-bottom: 1px solid var(--line); }
+.pf-deco-term i, .pf-browser i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; flex-shrink: 0; }
+.pf-deco-term i:nth-child(2), .pf-browser i:nth-child(2) { background: #febc2e; }
+.pf-deco-term i:nth-child(3), .pf-browser i:nth-child(3) { background: #28c840; }
+.pf-deco-term span { margin-left: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
+.pf-layout-code .pf-hud::before, .pf-layout-code .pf-hud::after { display: none; }
+.pf-layout-code .pf-kicker, .pf-layout-code .pf-ident h1, .pf-layout-code .pf-section h2, .pf-layout-code .pf-work h3 { font-family: 'JetBrains Mono', 'Kanit', monospace; }
+.pf-layout-code .pf-kicker { letter-spacing: .2em; }
+.pf-layout-code .pf-kicker::before { content: '$ whoami  # '; color: var(--muted); -webkit-text-fill-color: var(--muted); }
+.pf-layout-code .pf-ident h1 { font-size: 32px; }
+.pf-layout-code .pf-ident h1::before { content: '> '; color: var(--cyan); -webkit-text-fill-color: var(--cyan); }
+.pf-layout-code .pf-ident h1::after { content: '_'; color: var(--cyan); -webkit-text-fill-color: var(--cyan); animation: pf-rec 1s steps(2) infinite; }
+.pf-layout-code .pf-panel, .pf-layout-code .pf-block-works { position: relative; padding-top: 42px; }
+.pf-layout-code .pf-block-works { padding: 42px 22px 18px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); }
+.pf-layout-code [data-file]::before { content: attr(data-file); position: absolute; top: 0; left: 18px; padding: 6px 14px; border-radius: 0 0 8px 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--on-panel); background: rgba(var(--hl-rgb), .14); border: 1px solid var(--line); border-top: 0; }
+.pf-layout-code .pf-section h2 em { display: none; }
+.pf-layout-code .pf-section h2::before { content: '## '; color: var(--cyan); }
+.pf-layout-code .pf-text { border-left: 2px solid var(--line-hi); padding-left: 12px; }
+.pf-layout-code .pf-skills { font-family: 'JetBrains Mono', monospace; gap: 4px 10px; }
+.pf-layout-code .pf-skills::before { content: 'const skills = ['; width: 100%; color: var(--muted); font-size: 13px; }
+.pf-layout-code .pf-skills::after { content: '];'; width: 100%; color: var(--muted); font-size: 13px; }
+.pf-layout-code .pf-skills span { border: 0; background: none; box-shadow: none; padding: 0 0 0 14px; color: var(--cyan); font-weight: 400; }
+.pf-layout-code .pf-skills span::before { content: '"'; color: var(--cyan); margin: 0; }
+.pf-layout-code .pf-skills span::after { content: '",'; color: var(--muted); }
+.pf-layout-code .pf-browser { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: rgba(0, 0, 0, .45); border-bottom: 1px solid var(--line); }
+.pf-layout-code .pf-browser b { flex: 1; margin-left: 8px; padding: 2px 10px; border-radius: 6px; background: rgba(255, 255, 255, .08); font: 400 11px 'JetBrains Mono', monospace; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-layout-code .pf-work { border: 1px solid var(--line-hi); }
+.pf-layout-code .pf-work-no { display: none; }
+.pf-layout-code .pf-footer .pf-mono:first-child::before { content: '$ exit  '; color: var(--cyan); }
+
+/* ---------- Studio: graphic / 2D / 3D / motion (works first, gallery) ---------- */
+.pf-layout-studio .pf-cover { order: -2; }
+.pf-layout-studio .pf-block-works { order: -1; }
+.pf-layout-studio .pf-cover-main { grid-template-columns: 170px 1fr auto; }
+.pf-layout-studio .pf-avatar { width: 160px; height: 160px; transform: rotate(-4deg); }
+.pf-layout-studio .pf-avatar img { width: 150px; height: 150px; border-radius: 22px; }
+.pf-layout-studio .pf-ring { border-radius: 28px; transform: translate(10px, 10px); animation: none; background: var(--grad); }
+.pf-layout-studio .pf-ring::after { display: none; }
+.pf-layout-studio .pf-ident h1 { font-size: 48px; line-height: 1.05; }
+.pf-layout-studio .pf-section h2 { font-size: 24px; }
+.pf-layout-studio .pf-section h2 em { display: none; }
+.pf-layout-studio .pf-section h2::before { content: ''; width: 34px; height: 6px; border-radius: 3px; background: var(--grad); align-self: center; }
+.pf-layout-studio .pf-works { display: block; columns: 2; column-gap: 16px; }
+.pf-layout-studio .pf-work { margin-bottom: 16px; display: flex; width: 100%; border-radius: 18px; break-inside: avoid; }
+.pf-layout-studio .pf-work .pf-frame img { aspect-ratio: auto; }
+.pf-layout-studio .pf-work:first-child { column-span: all; }
+.pf-layout-studio .pf-work:first-child .pf-frame img { aspect-ratio: 16 / 8; object-fit: cover; }
+.pf-layout-studio .pf-work-no { font-size: 40px; }
+.pf-layout-studio .pf-skills span { border-radius: 999px; border: 0; color: #fff; background: var(--grad); filter: hue-rotate(calc(var(--i, 0) * 22deg)); }
+.pf-layout-studio .pf-skills span::before { content: none; }
+
+/* ---------- Production: crew / shoots / events ---------- */
+.pf-layout-production .pf-cover-top { display: none; }
+.pf-layout-production .pf-deco-slate { display: block; margin: -22px -26px 18px; }
+.pf-slate-stripes { height: 26px; background: repeating-linear-gradient(-45deg, #111 0 22px, #f2f2f2 22px 44px); border-bottom: 2px solid #111; }
+.pf-deco-slate dl { margin: 0; display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--line); }
+.pf-deco-slate dl div { padding: 8px 14px; border-right: 1px solid var(--line); min-width: 0; }
+.pf-deco-slate dl div:last-child { border-right: 0; }
+.pf-deco-slate dt { font: 600 10px 'JetBrains Mono', monospace; letter-spacing: .16em; color: var(--muted); }
+.pf-deco-slate dd { margin: 0; font: 600 14px 'Kanit', sans-serif; color: var(--on-panel); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-layout-production .pf-hud::before, .pf-layout-production .pf-hud::after { display: none; }
+.pf-layout-production .pf-section h2 { text-transform: uppercase; letter-spacing: .06em; }
+.pf-layout-production .pf-section h2 em::before { content: 'SCENE '; }
+.pf-layout-production .pf-panel { border-left: 5px solid var(--red); border-radius: 6px; }
+.pf-layout-production .pf-works { grid-template-columns: 1fr; gap: 0; border-top: 2px solid var(--line-hi); }
+.pf-layout-production .pf-work { display: grid; grid-template-columns: 150px 1fr; gap: 16px; align-items: center; border: 0; border-bottom: 1px dashed var(--line-hi); border-radius: 0; background: none; padding: 12px 0; }
+.pf-layout-production .pf-work .pf-frame { border-radius: 6px; }
+.pf-layout-production .pf-work .pf-frame img { aspect-ratio: 16 / 9; }
+.pf-layout-production .pf-work-no { font-size: 16px; -webkit-text-stroke: 0; color: #fff; font-family: 'JetBrains Mono', monospace; }
+.pf-layout-production .pf-work-body { padding: 0; }
+.pf-layout-production .pf-work h3 { text-transform: uppercase; letter-spacing: .03em; }
+
+@media (max-width: 760px) {
+    .pf-layout-cinema .pf-work, .pf-layout-production .pf-work { grid-template-columns: 1fr; }
+    .pf-layout-studio .pf-works { columns: 1; }
+    .pf-layout-studio .pf-cover-main { grid-template-columns: 1fr; }
+    .pf-layout-studio .pf-ident h1 { font-size: 34px; }
+    .pf-deco-slate dl { grid-template-columns: 1fr 1fr; }
+}
+@media print {
+    .pf-layout-studio .pf-cover-main { grid-template-columns: 38mm 1fr auto; }
+    .pf-layout-studio .pf-works { columns: 2; }
+    .pf-layout-cinema .pf-work, .pf-layout-production .pf-work { grid-template-columns: 1.4fr 1fr; }
+    .pf-layout-production .pf-work { grid-template-columns: 40mm 1fr; }
+    .pf-deco-rec, .pf-layout-code .pf-ident h1::after { animation: none; }
+}
+
 /* ---------- PDF / print ---------- */
 @page { size: A4; margin: 0; }
 @media print {

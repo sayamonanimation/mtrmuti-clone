@@ -1976,3 +1976,7 @@ section.alt { background: transparent; }
 .level-tag-th { color: #ffb199; border: 1px solid rgba(255, 140, 110, .45); background: rgba(255, 90, 60, .12); }
 .classroom-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
 .classroom-btns .btn { display: block; text-align: center; }
+.hub-layout-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.hub-layout-icon { font-size: 1.8rem; line-height: 1; }
+.hub-layout-card em { font-style: normal; font-size: .8rem; font-weight: 600; color: var(--fx-accent-2); }
+.hub-pf-themes h3 { font-size: 1rem; }

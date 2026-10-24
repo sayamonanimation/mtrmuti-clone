@@ -52,6 +52,21 @@ function alumni_portfolio_theme($value) {
     return array_key_exists((string) $value, alumni_portfolio_themes()) ? (string) $value : 'red';
 }
 
+/** Presentation layouts by kind of work; combine freely with the colour themes. */
+function alumni_portfolio_layouts() {
+    return [
+        'classic' => ['label' => 'Classic', 'icon' => '📐', 'for' => 'ทุกสาขา', 'desc' => 'แผงข้อมูลเรียบร้อย อ่านง่าย เหมาะกับทุกงาน'],
+        'cinema' => ['label' => 'Cinema', 'icon' => '🎬', 'for' => 'ตัดต่อ / ภาพยนตร์ / วิดีโอ', 'desc' => 'จอไวด์สกรีน แถบฟิล์ม ไทม์โค้ด SCENE / TAKE'],
+        'code' => ['label' => 'Developer', 'icon' => '💻', 'for' => 'Programmer / ระบบ / แอป / เว็บ', 'desc' => 'หน้าต่างเทอร์มินัล ไฟล์โค้ด ผลงานในกรอบเบราว์เซอร์'],
+        'studio' => ['label' => 'Studio', 'icon' => '🎨', 'for' => 'กราฟิก / 2D / 3D / Motion', 'desc' => 'ผลงานขึ้นก่อน แกลเลอรีภาพใหญ่ ตัวอักษรเด่น'],
+        'production' => ['label' => 'Production', 'icon' => '🎥', 'for' => 'โปรดักชัน / กองถ่าย / อีเวนต์', 'desc' => 'สเลตกองถ่าย รายการผลงานแบบเครดิตภาพยนตร์'],
+    ];
+}
+
+function alumni_portfolio_layout($value) {
+    return array_key_exists((string) $value, alumni_portfolio_layouts()) ? (string) $value : 'classic';
+}
+
 function ensure_alumni_portfolio() {
     global $pdo;
     static $done = false;
@@ -65,6 +80,14 @@ function ensure_alumni_portfolio() {
             // Column already exists, or alumni_members is created below first.
         }
         set_setting('alumni_nickname_ready', '1');
+    }
+    if (get_setting('alumni_portfolio_layout_ready') !== '1') {
+        try {
+            $pdo->exec("ALTER TABLE alumni_members ADD COLUMN portfolio_layout VARCHAR(20) NOT NULL DEFAULT 'classic'");
+        } catch (PDOException $e) {
+            // Column already exists, or alumni_members is created below first.
+        }
+        set_setting('alumni_portfolio_layout_ready', '1');
     }
     if (get_setting('alumni_portfolio_theme_ready') !== '1') {
         try {
