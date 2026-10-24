@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
+require_admin_unlocked();   // only the dashboard needs the edit code
 $adminPageTitle = 'แดชบอร์ด';
 require_once __DIR__ . '/includes/layout-top.php';
 

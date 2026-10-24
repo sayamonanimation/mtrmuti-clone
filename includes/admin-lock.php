@@ -1,8 +1,8 @@
 <?php
 /**
- * Second lock on the back office: after signing in with their own account,
- * an admin must also enter the shared "edit code" (รหัสแก้ไขหลังบ้าน) before
- * any admin page opens. Only the password_hash() of the code is stored
+ * Second lock on the admin dashboard (admin/dashboard.php only, as requested;
+ * the other admin pages need just the normal login): an admin must also
+ * enter the shared "edit code" (รหัสแก้ไขหลังบ้าน) before the dashboard opens. Only the password_hash() of the code is stored
  * (site_settings.admin_edit_code_hash); the first admin to arrive sets it.
  *
  * Forgotten code: a one-time link is e-mailed to the recovery address saved
@@ -123,8 +123,8 @@ function admin_send_edit_code_reset($requestedBy) {
     $token = bin2hex(random_bytes(32));
     set_setting('admin_edit_code_reset', json_encode(['hash' => hash('sha256', $token), 'expires' => time() + ADMIN_LOCK_RESET_TTL, 'created' => time()]));
     $link = alumni_absolute_url('/admin/edit-code-reset.php?token=' . $token);
-    alumni_send_mail($email, 'ตั้งรหัสแก้ไขหลังบ้านใหม่ - ' . get_site_name(),
-        "มีการขอตั้งรหัสแก้ไขหลังบ้านใหม่ โดยผู้ดูแลระบบ: {$requestedBy}\n\n"
+    alumni_send_mail($email, 'ตั้งรหัสแก้ไขแดชบอร์ดใหม่ - ' . get_site_name(),
+        "มีการขอตั้งรหัสแก้ไขแดชบอร์ดใหม่ โดยผู้ดูแลระบบ: {$requestedBy}\n\n"
         . "กดลิงก์นี้เพื่อตั้งรหัสใหม่ (ใช้ได้ 1 ครั้ง ภายใน 1 ชั่วโมง ต้องล็อกอินหลังบ้านก่อน):\n\n{$link}\n\n"
         . "ถ้าไม่ได้ขอเอง ไม่ต้องทำอะไร รหัสเดิมยังใช้ได้ตามปกติ\n\n" . get_site_name());
     return true;

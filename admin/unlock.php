@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$error) {
             admin_set_edit_code($code, mb_strtolower($email));
             admin_mark_unlocked();
-            set_flash('ตั้งรหัสแก้ไขหลังบ้านเรียบร้อยแล้ว ผู้ดูแลทุกคนต้องใช้รหัสนี้ก่อนแก้ไขข้อมูล');
+            set_flash('ตั้งรหัสแก้ไขแดชบอร์ดเรียบร้อยแล้ว');
             unset($_SESSION['admin_unlock_back']);
             header('Location: ' . $back);
             exit;
@@ -47,14 +47,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$lockTitle = $firstTime ? 'ตั้งรหัสแก้ไขหลังบ้าน' : 'ใส่รหัสเพื่อแก้ไขหลังบ้าน';
-require __DIR__ . '/includes/lock-layout.php';
+$adminPageTitle = $firstTime ? 'ตั้งรหัสแก้ไขแดชบอร์ด' : 'แดชบอร์ด (ล็อกอยู่)';
+require __DIR__ . '/includes/layout-top.php';
 ?>
+<div class="admin-card lock-card">
+        <div class="lock-icon" aria-hidden="true">🔒</div>
+        <h2 class="lock-title"><?= $firstTime ? 'ตั้งรหัสแก้ไขแดชบอร์ด' : 'ใส่รหัสเพื่อเข้าแดชบอร์ด' ?></h2>
         <?php if ($error): ?><div class="flash flash-error"><?= h($error) ?></div><?php endif; ?>
         <?php if ($notice): ?><div class="flash flash-success"><?= h($notice) ?></div><?php endif; ?>
         <?php if ($firstTime): ?>
-        <p class="lock-text">ตั้งรหัสที่ผู้ดูแลระบบทุกคนต้องใส่ก่อนเข้าแก้ไขหลังบ้าน (ใช้ร่วมกันทุกบัญชี) และอีเมลสำหรับรับลิงก์เมื่อลืมรหัส</p>
-        <form method="post">
+        <p class="lock-text">ตั้งรหัสที่ผู้ดูแลระบบต้องใส่ก่อนเข้าแดชบอร์ด (ใช้ร่วมกันทุกบัญชี) และอีเมลสำหรับรับลิงก์เมื่อลืมรหัส</p>
+        <form method="post" data-no-confirm>
             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
             <div class="form-group"><label>รหัสแก้ไข (อย่างน้อย 8 ตัว)</label><input type="password" name="code" required minlength="8" autocomplete="new-password" autofocus></div>
             <div class="form-group"><label>ยืนยันรหัสแก้ไข</label><input type="password" name="confirm" required minlength="8" autocomplete="new-password"></div>
@@ -62,17 +65,18 @@ require __DIR__ . '/includes/lock-layout.php';
             <button class="btn" type="submit" style="width:100%;">บันทึกรหัส</button>
         </form>
         <?php else: ?>
-        <p class="lock-text">หลังบ้านถูกล็อกไว้ เฉพาะผู้ดูแลที่มีรหัสแก้ไขเท่านั้นที่เข้าแก้ไขข้อมูลได้</p>
-        <form method="post">
+        <p class="lock-text">แดชบอร์ดถูกล็อกไว้ เฉพาะผู้ดูแลที่มีรหัสแก้ไขเท่านั้นที่เข้าได้ · <strong>เมนูอื่น ๆ ในแถบด้านซ้ายใช้งานได้ตามปกติ</strong> ไม่ต้องใส่รหัส</p>
+        <form method="post" data-no-confirm>
             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
             <div class="form-group"><label>รหัสแก้ไข</label><input type="password" name="code" required autocomplete="current-password" autofocus></div>
             <button class="btn" type="submit" style="width:100%;">ปลดล็อก</button>
         </form>
-        <form method="post" class="lock-forgot">
+        <form method="post" class="lock-forgot" data-no-confirm>
             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
             <input type="hidden" name="action" value="forgot">
             <button type="submit" class="lock-link">ลืมรหัสแก้ไข?</button>
             <?php if (admin_edit_code_email_masked() !== ''): ?><span>ระบบจะส่งลิงก์ไปที่ <?= h(admin_edit_code_email_masked()) ?></span><?php endif; ?>
         </form>
         <?php endif; ?>
-<?php lock_layout_end(); ?>
+</div>
+<?php require __DIR__ . '/includes/layout-bottom.php'; ?>

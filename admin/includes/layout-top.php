@@ -32,7 +32,7 @@ $adminNavCurrent = admin_nav_current();
             </details>
             <?php endforeach; ?>
         </nav>
-        <a class="admin-logout" href="/admin/lock.php">🔒 ล็อกหลังบ้าน</a>
+        <a class="admin-logout" href="/admin/lock.php">🔒 ล็อกแดชบอร์ด</a>
         <a class="admin-logout" href="/admin/logout.php">ออกจากระบบ</a>
     </aside>
     <main class="admin-main">

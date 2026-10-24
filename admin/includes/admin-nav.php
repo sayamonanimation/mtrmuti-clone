@@ -152,7 +152,7 @@ function admin_nav_groups() {
             ['href' => '/admin/nav-menu.php', 'label' => 'จัดการเมนูเว็บไซต์'],
             ['href' => '/admin/opendrive.php', 'label' => 'ที่เก็บไฟล์ OpenDrive'],
             ['href' => '/admin/admins.php', 'label' => 'ผู้ดูแลระบบ'],
-            ['href' => '/admin/edit-code.php', 'label' => '🔒 รหัสแก้ไขหลังบ้าน'],
+            ['href' => '/admin/edit-code.php', 'label' => '🔒 รหัสแก้ไขแดชบอร์ด'],
         ],
     ];
     return $groups;
