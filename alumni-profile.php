@@ -32,7 +32,7 @@ $skills = $member ? alumni_skill_list($member['skills']) : [];
                     <?php if ($member['contact_phone']): ?><a class="btn hero-fx-btn-ghost" href="tel:<?= h(preg_replace('/[^0-9+]/', '', $member['contact_phone'])) ?>">📞 <?= h($member['contact_phone']) ?></a><?php endif; ?>
                     <?php if ($member['line_id']): ?><a class="btn hero-fx-btn-ghost" href="https://line.me/ti/p/~<?= h(rawurlencode($member['line_id'])) ?>" target="_blank" rel="noopener">💬 LINE: <?= h($member['line_id']) ?></a><?php endif; ?>
                     <?php if ($member['website_url']): ?><a class="btn hero-fx-btn-ghost" href="<?= h($member['website_url']) ?>" target="_blank" rel="noopener">🌐 เว็บไซต์</a><?php endif; ?>
-                    <a class="btn hero-fx-btn-ghost" href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $member['id'])) ?>" target="_blank" rel="noopener">📄 Portfolio (PDF / E-book)</a>
+                    <a class="btn hero-fx-btn-ghost" href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $member['id'])) ?>" target="_blank" rel="noopener">📄 Portfolio (PDF)</a>
                 </div>
             </aside>
             <div class="hub-profile-main">

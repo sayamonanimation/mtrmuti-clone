@@ -3,8 +3,7 @@
  * A hub member's portfolio as a print-ready A4 document: profile, skills,
  * their own portfolio sections and works. "บันทึกเป็น PDF" uses the
  * browser's print dialog (keeps Thai text sharp and selectable, and images
- * from any domain); ?print=1 opens that dialog straight away. The same
- * content is offered as an EPUB e-book by alumni-portfolio-epub.php.
+ * from any domain); ?print=1 opens that dialog straight away.
  */
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/includes/functions.php';
@@ -42,7 +41,6 @@ $num = function () use (&$sectionNo) { return sprintf('%02d', ++$sectionNo); };
     <a href="<?= h(clean_public_url('/alumni-profile?id=' . (int) $member['id'])) ?>">&larr; กลับไปโปรไฟล์</a>
     <span class="pf-toolbar-actions">
         <button type="button" onclick="window.print()">⬇️ บันทึกเป็น PDF</button>
-        <a class="pf-btn" href="<?= h(clean_public_url('/alumni-portfolio-epub?id=' . (int) $member['id'])) ?>">📚 ดาวน์โหลด E-book (EPUB)</a>
     </span>
     <small>บันทึกเป็น PDF: ในหน้าต่างพิมพ์ เลือก "บันทึกเป็น PDF / Save as PDF" และเปิด "กราฟิกพื้นหลัง / Background graphics"</small>
 </div>
