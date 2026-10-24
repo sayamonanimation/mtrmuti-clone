@@ -143,8 +143,8 @@ foreach ($pdo->query('SELECT setting_key, setting_value FROM site_settings') as 
             <input type="text" name="hero_particle_text" value="<?= h($settings['hero_particle_text'] ?? '') ?>" placeholder="MULTIMEDIA|TECHNOLOGY">
         </div>
         <div class="form-group">
-            <label>คำสาขาย่อยที่หมุนเปลี่ยน (คั่นด้วยเครื่องหมายจุลภาค ,)</label>
-            <input type="text" name="hero_keywords" value="<?= h($settings['hero_keywords'] ?? '') ?>" placeholder="ANIMATION, GAME, FILM, GRAPHIC DESIGN, VR / AR, SOUND">
+            <label>คำสาขาย่อยที่หมุนเปลี่ยน (พิมพ์แล้วกด Enter ทีละคำ)</label>
+            <input type="text" name="hero_keywords" data-tag-input value="<?= h($settings['hero_keywords'] ?? '') ?>" placeholder="ANIMATION, GAME, FILM, GRAPHIC DESIGN, VR / AR, SOUND">
         </div>
         <div class="form-group">
             <label>วิดีโอ Showreel พื้นหลังหัวข้อ (YouTube หรือไฟล์ .mp4)</label>
@@ -163,4 +163,5 @@ foreach ($pdo->query('SELECT setting_key, setting_value FROM site_settings') as 
         </div>
     </div>
 </form>
+<script src="/assets/js/tag-input.js?v=<?= (int) @filemtime(__DIR__ . '/../assets/js/tag-input.js') ?>"></script>
 <?php require_once __DIR__ . '/includes/layout-bottom.php'; ?>
