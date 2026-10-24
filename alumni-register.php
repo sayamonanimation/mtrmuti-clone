@@ -38,10 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $currentSlug = 'alumni-hub';
-$pageTitleOverride = 'สมัครฝากประวัติศิษย์เก่า';
+$pageTitleOverride = 'สมัครฝากประวัติ Portfolio';
 require_once __DIR__ . '/includes/header.php';
 ?>
-<div class="page-header"><div class="container"><h1>สมัครฝากประวัติศิษย์เก่า</h1><p>สร้างบัญชีเพื่อฝากประวัติและผลงาน แก้ไขข้อมูลได้ตลอด</p></div></div>
+<div class="page-header"><div class="container"><h1>สมัครฝากประวัติ Portfolio</h1><p>สร้างบัญชีเพื่อฝากประวัติและผลงาน แก้ไขข้อมูลได้ตลอด</p></div></div>
 <div class="page-content">
     <div class="container hub-auth">
         <form method="post" class="hub-form content-card">
