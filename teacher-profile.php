@@ -15,6 +15,7 @@ if (!$teacher) {
     exit;
 }
 
+ensure_teacher_works_levels();
 $sections = [
     'education' => t('profile.education'),
     'subjects_taught' => t('profile.subjects_taught'),
@@ -27,6 +28,9 @@ $sections = [
     'awards' => t('profile.awards'),
 ];
 
+// Works sections are Thai only; research / creative works come in two levels.
+$thaiOnly = ['research_works', 'creative_works', 'innovation_works', 'competition_works', 'intellectual_property', 'copyrights_patents', 'awards'];
+$classroomLinks = get_teacher_classroom_links($teacher['id']);
 $portfolioCategories = portfolio_categories();
 $portfolioImages = array_fill_keys(array_keys($portfolioCategories), []);
 foreach (get_teacher_portfolio($teacher['id']) as $item) {
@@ -55,8 +59,12 @@ foreach (get_teacher_portfolio($teacher['id']) as $item) {
                     <?php if ($teacher['email']): ?><span><a href="mailto:<?= h($teacher['email']) ?>"><?= h($teacher['email']) ?></a></span><?php endif; ?>
                 </div>
                 <?php endif; ?>
-                <?php if ($teacher['classroom_online_url']): ?>
-                <a class="btn" style="display:block; text-align:center; margin-top:14px;" href="<?= h($teacher['classroom_online_url']) ?>" target="_blank" rel="noopener"><?= h(t('teachers.classroom_online')) ?></a>
+                <?php if ($classroomLinks): ?>
+                <div class="classroom-btns">
+                    <?php foreach ($classroomLinks as $cl): ?>
+                    <a class="btn" href="<?= h($cl['url']) ?>" target="_blank" rel="noopener">🎓 <?= h($cl['label'] ?: t('teachers.classroom_online')) ?></a>
+                    <?php endforeach; ?>
+                </div>
                 <?php endif; ?>
             </div>
             <div class="teacher-profile-body">
@@ -71,14 +79,18 @@ foreach (get_teacher_portfolio($teacher['id']) as $item) {
                     <?php foreach ($sections as $column => $label): ?>
                         <?php
                         $images = $portfolioImages[$column] ?? [];
-                        $sectionText = lang_field($teacher, $column);
-                        if (empty($sectionText) && empty($images)) {
+                        $sectionText = in_array($column, $thaiOnly, true) ? (string) ($teacher[$column] ?? '') : (string) lang_field($teacher, $column);
+                        $intlText = in_array($column, TEACHER_LEVELLED_WORKS, true) ? (string) ($teacher[$column . '_intl'] ?? '') : '';
+                        if (trim($sectionText) === '' && trim($intlText) === '' && empty($images)) {
                             continue;
                         }
                         ?>
                         <div class="profile-section">
                             <h2><?= h($label) ?></h2>
-                            <?php if (!empty($sectionText)): ?>
+                            <?php if (in_array($column, TEACHER_LEVELLED_WORKS, true)): ?>
+                                <?php if (trim($intlText) !== ''): ?><h3 class="level-head"><span class="level-tag level-tag-intl">ระดับนานาชาติ</span></h3><?= render_text_list($intlText) ?><?php endif; ?>
+                                <?php if (trim($sectionText) !== ''): ?><h3 class="level-head"><span class="level-tag level-tag-th">ระดับชาติ</span></h3><?= render_text_list($sectionText) ?><?php endif; ?>
+                            <?php elseif (trim($sectionText) !== ''): ?>
                                 <?= render_text_list($sectionText) ?>
                             <?php endif; ?>
                             <?php if ($images): ?>

@@ -505,3 +505,16 @@ table.admin-table { width: 100%; border-collapse: collapse; }
 .adm-table td { text-align: center; vertical-align: top; }
 .adm-table td small { display: block; color: #a3222c; font-weight: 600; margin-top: 2px; }
 .adm-total { white-space: nowrap; }
+
+/* Teacher form: works by level, classroom links */
+.level-fieldset { border: 1px solid #e3e3e3; border-radius: 10px; padding: 10px 16px 4px; margin: 0 0 18px; }
+.level-fieldset legend { font-weight: 600; padding: 0 6px; }
+.level-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .level-grid { grid-template-columns: 1fr; } }
+.level-tag { display: inline-block; padding: 2px 12px; border-radius: 999px; font-size: .8rem; font-weight: 600; }
+.level-tag-th { background: #fdeceb; color: #a3222c; }
+.level-tag-intl { background: #e8f2fd; color: #1d5fa8; }
+.classroom-links { display: grid; gap: 8px; margin-bottom: 8px; }
+.classroom-link-row { display: grid; grid-template-columns: 1fr 1.6fr auto; gap: 8px; }
+.classroom-link-row input { padding: 9px 11px; border: 1px solid #ccc; border-radius: 6px; font: inherit; }
+@media (max-width: 700px) { .classroom-link-row { grid-template-columns: 1fr auto; } .classroom-link-row input:first-child { grid-column: 1 / -1; } }

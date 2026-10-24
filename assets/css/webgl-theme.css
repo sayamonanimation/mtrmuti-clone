@@ -1967,3 +1967,12 @@ section.alt { background: transparent; }
 .pv-thumb img, .pv-box img { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .pv-thumb:hover img { transform: scale(1.04); }
 .album-lightbox-counter:empty { display: none; }
+
+/* Teacher works: national / international levels, several classroom links */
+.level-head { margin: 10px 0 6px; font-size: .9rem; }
+.level-head:first-of-type { margin-top: 2px; }
+.level-tag { display: inline-block; padding: 2px 12px; border-radius: 999px; font-size: .78rem; font-weight: 600; letter-spacing: .02em; }
+.level-tag-intl { color: #8fd0ff; border: 1px solid rgba(120, 190, 255, .45); background: rgba(80, 160, 255, .12); }
+.level-tag-th { color: #ffb199; border: 1px solid rgba(255, 140, 110, .45); background: rgba(255, 90, 60, .12); }
+.classroom-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.classroom-btns .btn { display: block; text-align: center; }
