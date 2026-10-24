@@ -11,7 +11,6 @@ $profileFields = [
     'creative_works' => 'ผลงานสร้างสรรค์',
     'innovation_works' => 'ผลงานนวัตกรรม',
     'competition_works' => 'ผลงานประกวด',
-    'intellectual_property' => 'ทรัพย์สินทางปัญญา',
     'copyrights_patents' => 'ลิขสิทธิ์/สิทธิบัตร',
     'awards' => 'รางวัลที่ได้รับ',
 ];
@@ -220,7 +219,7 @@ require_once __DIR__ . '/includes/layout-top.php';
 <?php if ($teacher['id']): ?>
 <div class="admin-card">
     <h3 style="margin-top:0;">รูปภาพประกอบผลงาน</h3>
-    <p class="field-hint" style="margin:0 0 14px;">อัพโหลดรูปภาพประกอบสำหรับผลงานวิจัย, ผลงานสร้างสรรค์, ผลงานนวัตกรรม, ผลงานประกวด และทรัพย์สินทางปัญญา</p>
+    <p class="field-hint" style="margin:0 0 14px;">อัพโหลดรูปภาพประกอบสำหรับผลงานวิจัย, ผลงานสร้างสรรค์, ผลงานนวัตกรรม และผลงานประกวด</p>
     <a class="btn" href="/admin/teacher-portfolio.php?teacher_id=<?= $teacher['id'] ?>">จัดการรูปภาพผลงาน</a>
 </div>
 <?php else: ?>
