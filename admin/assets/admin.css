@@ -529,3 +529,5 @@ table.admin-table { width: 100%; border-collapse: collapse; }
 .lock-forgot span { display: block; margin-top: 4px; }
 .lock-link { background: none; border: 0; padding: 0; color: #a3222c; font: inherit; text-decoration: underline; cursor: pointer; }
 .admin-logout + .admin-logout { padding-top: 0; }
+.lock-card { max-width: 440px; margin: 30px auto; }
+.lock-title { text-align: center; margin: 4px 0 12px; }

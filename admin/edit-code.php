@@ -29,11 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$adminPageTitle = 'รหัสแก้ไขหลังบ้าน';
+$adminPageTitle = 'รหัสแก้ไขแดชบอร์ด';
 require_once __DIR__ . '/includes/layout-top.php';
 ?>
 <div class="admin-card">
-    <p style="margin:0;">🔒 หลังบ้านล็อกด้วย <strong>รหัสแก้ไข</strong> ที่ใช้ร่วมกันทุกบัญชี: หลังล็อกอินด้วยชื่อผู้ใช้ของตัวเองแล้ว ต้องใส่รหัสนี้อีกครั้งก่อนเข้าแก้ไขข้อมูล · อีเมลกู้รหัส: <strong><?= h(admin_edit_code_email_masked() ?: 'ยังไม่ได้ตั้ง') ?></strong></p>
+    <p style="margin:0;">🔒 หน้า <strong>แดชบอร์ด</strong> ล็อกด้วยรหัสแก้ไขที่ใช้ร่วมกันทุกบัญชี (เมนูอื่นใช้แค่การล็อกอินปกติ) · อีเมลกู้รหัส: <strong><?= h(admin_edit_code_email_masked() ?: 'ยังไม่ได้ตั้ง') ?></strong></p>
 </div>
 <div class="admin-card">
     <h3 style="margin-top:0;">เปลี่ยนรหัสแก้ไข</h3>

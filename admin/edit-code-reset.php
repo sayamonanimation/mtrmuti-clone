@@ -19,7 +19,7 @@ if ($valid && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
-$lockTitle = 'ตั้งรหัสแก้ไขหลังบ้านใหม่';
+$lockTitle = 'ตั้งรหัสแก้ไขแดชบอร์ดใหม่';
 require __DIR__ . '/includes/lock-layout.php';
 ?>
         <?php if (!$valid): ?>
