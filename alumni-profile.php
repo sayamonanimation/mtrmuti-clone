@@ -11,6 +11,7 @@ $skills = $member ? alumni_skill_list($member['skills']) : [];
 <div class="page-header">
     <div class="container">
         <h1><?= $member ? h($member['full_name']) : 'ไม่พบโปรไฟล์' ?></h1>
+        <?php if ($member && alumni_nickname_text($member) !== ''): ?><p class="hub-nickname"><?= h(alumni_nickname_text($member)) ?></p><?php endif; ?>
         <?php if ($member && $member['headline']): ?><p><?= h($member['headline']) ?></p><?php endif; ?>
     </div>
 </div>

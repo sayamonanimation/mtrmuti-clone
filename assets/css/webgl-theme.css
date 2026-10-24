@@ -1957,3 +1957,13 @@ section.alt { background: transparent; }
 .hub-theme-card strong { color: #fff; font-size: .95rem; }
 .hub-theme-card small { color: var(--fx-muted); font-size: .78rem; line-height: 1.4; }
 .hub-theme-card a { font-size: .8rem; color: var(--fx-accent-2); }
+
+/* Nickname under the real name (alumni hub) */
+.page-header .hub-nickname { margin: -2px 0 6px; font-size: 1.15rem; font-weight: 600; color: var(--fx-accent-2); letter-spacing: .02em; }
+.hub-card-nick { font-size: .85rem; color: var(--fx-accent-2); margin-top: -2px; }
+
+/* Teacher works: view-only thumbnails and viewer */
+.pv-thumb { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: 8px; overflow: hidden; }
+.pv-thumb img, .pv-box img { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.pv-thumb:hover img { transform: scale(1.04); }
+.album-lightbox-counter:empty { display: none; }

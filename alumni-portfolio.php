@@ -65,6 +65,7 @@ $num = function () use (&$sectionNo) { return sprintf('%02d', ++$sectionNo); };
             <div class="pf-ident">
                 <p class="pf-kicker">PORTFOLIO</p>
                 <h1><?= h($member['full_name']) ?></h1>
+                <?php if (alumni_nickname_text($member) !== ''): ?><p class="pf-nick"><?= h(alumni_nickname_text($member)) ?></p><?php endif; ?>
                 <?php if ($member['headline']): ?><p class="pf-headline"><?= h($member['headline']) ?></p><?php endif; ?>
                 <p class="pf-meta"><span class="pf-tag"><?= h(alumni_member_type_label($member['member_type'] ?? 'alumni')) ?></span><?php if (alumni_class_line($member, false) !== ''): ?><span><?= h(alumni_class_line($member, false)) ?></span><?php endif; ?><?php if ($member['available_for_work']): ?><span class="pf-live">● OPEN FOR WORK</span><?php endif; ?></p>
             </div>

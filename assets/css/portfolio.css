@@ -193,3 +193,4 @@ h1, h2, h3 { font-family: 'Kanit', sans-serif; }
     .pf-watermark span { transform: rotate(-35deg); text-align: center; font-family: 'Orbitron', 'Kanit', sans-serif; font-weight: 800; font-size: 54pt; line-height: 1.1; letter-spacing: .06em;
         color: transparent; -webkit-text-stroke: 1.2px var(--wm); }
 }
+.pf-nick { margin: -2px 0 4px; font-size: 16px; font-weight: 600; color: var(--cyan); }

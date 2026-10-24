@@ -94,6 +94,7 @@ $galaxyPeople = array_map(fn($m) => [
                 <?php if ($m['available_for_work']): ?><span class="hub-badge">● พร้อมรับงาน</span><?php endif; ?>
                 <span class="hub-card-body">
                     <strong><?= h($m['full_name']) ?></strong>
+                    <?php if (alumni_nickname_text($m) !== ''): ?><span class="hub-card-nick"><?= h(alumni_nickname_text($m)) ?></span><?php endif; ?>
                     <?php if ($m['headline']): ?><span class="hub-headline"><?= h($m['headline']) ?></span><?php endif; ?>
                     <span class="hub-type-pill hub-type-<?= h($m['member_type'] ?? 'alumni') ?>"><?= h(alumni_member_type_label($m['member_type'] ?? 'alumni')) ?></span>
                     <?php if (alumni_class_line($m) !== ''): ?><span class="hub-class"><?= h(alumni_class_line($m)) ?></span><?php endif; ?>
