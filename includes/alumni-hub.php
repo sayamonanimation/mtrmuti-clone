@@ -74,6 +74,29 @@ function ensure_alumni_hub() {
     ensure_alumni_portfolio();
 }
 
+/**
+ * One-time menu change (requested): the hub's item moves from under ศิษย์เก่า
+ * to directly under ฐานข้อมูลนักศึกษา, right after ศิษย์เก่า, renamed
+ * "Portfolio". Admins can still rename or move it in จัดการเมนูเว็บไซต์.
+ */
+function ensure_portfolio_menu_item() {
+    global $pdo;
+    if (get_setting('portfolio_menu_ready') === '1') {
+        return;
+    }
+    $item = $pdo->query("SELECT id, parent_id FROM nav_menu_items WHERE url IN ('/alumni-hub.php', '/alumni-hub') ORDER BY id LIMIT 1")->fetch();
+    $alumni = $pdo->query("SELECT id, parent_id, sort_order FROM nav_menu_items WHERE url IN ('/alumni.php', '/alumni') ORDER BY id LIMIT 1")->fetch();
+    if ($item && $alumni && $alumni['parent_id']) {
+        $parent = (int) $alumni['parent_id'];
+        $sort = (int) $alumni['sort_order'] + 1;
+        $pdo->prepare('UPDATE nav_menu_items SET sort_order = sort_order + 1 WHERE parent_id = ? AND sort_order >= ? AND id <> ?')
+            ->execute([$parent, $sort, $item['id']]);
+        $pdo->prepare("UPDATE nav_menu_items SET parent_id = ?, sort_order = ?, label = 'Portfolio', label_en = 'Portfolio' WHERE id = ?")
+            ->execute([$parent, $sort, $item['id']]);
+    }
+    set_setting('portfolio_menu_ready', '1');
+}
+
 // ---------- Consent to publish personal data (PDPA) ----------
 
 /** Bump when the consent text on alumni-register.php changes. */
