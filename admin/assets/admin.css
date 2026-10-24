@@ -518,3 +518,14 @@ table.admin-table { width: 100%; border-collapse: collapse; }
 .classroom-link-row { display: grid; grid-template-columns: 1fr 1.6fr auto; gap: 8px; }
 .classroom-link-row input { padding: 9px 11px; border: 1px solid #ccc; border-radius: 6px; font: inherit; }
 @media (max-width: 700px) { .classroom-link-row { grid-template-columns: 1fr auto; } .classroom-link-row input:first-child { grid-column: 1 / -1; } }
+
+/* Edit-code lock screens */
+.lock-box { text-align: left; }
+.lock-icon { font-size: 2.4rem; text-align: center; }
+.lock-box h1 { text-align: center; }
+.lock-user { text-align: center; font-size: .85rem; color: #777; margin: -6px 0 14px; }
+.lock-text { font-size: .9rem; color: #555; }
+.lock-forgot { margin-top: 14px; text-align: center; font-size: .85rem; color: #777; }
+.lock-forgot span { display: block; margin-top: 4px; }
+.lock-link { background: none; border: 0; padding: 0; color: #a3222c; font: inherit; text-decoration: underline; cursor: pointer; }
+.admin-logout + .admin-logout { padding-top: 0; }
