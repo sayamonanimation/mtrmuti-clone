@@ -17,7 +17,7 @@ $skills = $member ? alumni_skill_list($member['skills']) : [];
 </div>
 <div class="page-content">
     <div class="container">
-        <p><a href="<?= h(clean_public_url('/alumni-hub')) ?>">&larr; กลับไปหน้าติดต่องานศิษย์เก่า</a></p>
+        <p><a href="<?= h(clean_public_url('/alumni-hub')) ?>">&larr; กลับไปหน้า Portfolio</a></p>
         <?php if ($member): ?>
         <?php if ($member['status'] !== 'approved'): ?>
         <div class="hub-notice">👀 ตัวอย่างโปรไฟล์ — สถานะ: <strong><?= h(alumni_status_label($member['status'])) ?></strong> (ยังไม่แสดงต่อสาธารณะ)</div>

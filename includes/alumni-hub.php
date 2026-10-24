@@ -1,6 +1,6 @@
 <?php
 /**
- * "ติดต่องานศิษย์เก่า" - alumni self-service portfolio hub.
+ * "Portfolio" (เดิม ติดต่องานศิษย์เก่า) - self-service portfolio hub.
  *
  * Alumni register an account (email + password), fill in their profile and
  * upload works. A profile appears on the public page only after an admin
@@ -11,6 +11,7 @@
  */
 
 const ALUMNI_HUB_MAX_WORKS = 12;
+const ALUMNI_HUB_SUBTITLE = 'รวม Portfolio ผลงานและช่องทางติดต่อ ศิษย์เก่า นักศึกษา และบุคคลทั่วไป สาขาเทคโนโลยีมัลติมีเดีย';
 
 function ensure_alumni_hub() {
     global $pdo;
@@ -59,14 +60,14 @@ function ensure_alumni_hub() {
     $exists->execute(['alumni-hub']);
     if (!$exists->fetchColumn()) {
         $pdo->prepare('INSERT INTO pages (slug, title, title_en, subtitle, content) VALUES (?, ?, ?, ?, ?)')
-            ->execute(['alumni-hub', 'ติดต่องานศิษย์เก่า', 'Hire Our Alumni', 'รวมผลงานและช่องทางติดต่อศิษย์เก่าสาขาเทคโนโลยีมัลติมีเดีย', '']);
+            ->execute(['alumni-hub', 'Portfolio', 'Portfolio', ALUMNI_HUB_SUBTITLE, '']);
     }
     $hasItem = $pdo->query("SELECT COUNT(*) FROM nav_menu_items WHERE url IN ('/alumni-hub.php', '/alumni-hub')")->fetchColumn();
     if (!$hasItem) {
         $parent = $pdo->query("SELECT id FROM nav_menu_items WHERE url IN ('/alumni.php', '/alumni') ORDER BY id LIMIT 1")->fetchColumn();
         if ($parent) {
             $pdo->prepare('INSERT INTO nav_menu_items (parent_id, label, label_en, url, sort_order, is_active) VALUES (?, ?, ?, ?, 1, 1)')
-                ->execute([$parent, 'ติดต่องานศิษย์เก่า', 'Hire Our Alumni', '/alumni-hub.php']);
+                ->execute([$parent, 'Portfolio', 'Portfolio', '/alumni-hub.php']);
         }
     }
     set_setting('alumni_hub_ready', '1');
@@ -95,6 +96,17 @@ function ensure_portfolio_menu_item() {
             ->execute([$parent, $sort, $item['id']]);
     }
     set_setting('portfolio_menu_ready', '1');
+}
+
+/** One-time: the hub page itself is now titled "Portfolio" (only if still the original title). */
+function ensure_portfolio_page_title() {
+    global $pdo;
+    if (get_setting('portfolio_page_ready') === '1') {
+        return;
+    }
+    $pdo->prepare("UPDATE pages SET title = 'Portfolio', title_en = 'Portfolio', subtitle = ? WHERE slug = 'alumni-hub' AND title = 'ติดต่องานศิษย์เก่า'")
+        ->execute([ALUMNI_HUB_SUBTITLE]);
+    set_setting('portfolio_page_ready', '1');
 }
 
 // ---------- Consent to publish personal data (PDPA) ----------
@@ -262,7 +274,7 @@ function alumni_request_password_reset($email) {
     $link = alumni_absolute_url('/alumni-reset?token=' . $token);
     alumni_send_mail($member['email'], 'ตั้งรหัสผ่านใหม่ - ' . get_site_name(),
         "สวัสดีคุณ {$member['full_name']}\n\n"
-        . "มีการขอตั้งรหัสผ่านใหม่สำหรับบัญชีติดต่องานศิษย์เก่า กดลิงก์นี้เพื่อตั้งรหัสผ่านใหม่ (ใช้ได้ 1 ครั้ง ภายใน 1 ชั่วโมง):\n\n"
+        . "มีการขอตั้งรหัสผ่านใหม่สำหรับบัญชี Portfolio กดลิงก์นี้เพื่อตั้งรหัสผ่านใหม่ (ใช้ได้ 1 ครั้ง ภายใน 1 ชั่วโมง):\n\n"
         . "$link\n\n"
         . "ถ้าคุณไม่ได้เป็นผู้ขอ ไม่ต้องทำอะไร รหัสผ่านเดิมยังใช้ได้ตามปกติ\n\n" . get_site_name());
 }
@@ -291,7 +303,7 @@ function alumni_set_password($member, $newPassword) {
         ->execute([date('Y-m-d H:i:s'), $member['id']]);
     alumni_send_mail($member['email'], 'รหัสผ่านถูกเปลี่ยนแล้ว - ' . get_site_name(),
         "สวัสดีคุณ {$member['full_name']}\n\n"
-        . 'รหัสผ่านบัญชีติดต่องานศิษย์เก่าของคุณถูกเปลี่ยนเมื่อ ' . date('d/m/Y H:i') . " น.\n\n"
+        . 'รหัสผ่านบัญชี Portfolioของคุณถูกเปลี่ยนเมื่อ ' . date('d/m/Y H:i') . " น.\n\n"
         . "ถ้าคุณไม่ได้เป็นผู้เปลี่ยน กรุณาตั้งรหัสผ่านใหม่ทันทีที่ " . alumni_absolute_url('/alumni-forgot') . " และแจ้งเจ้าหน้าที่สาขา\n\n" . get_site_name());
 }
 

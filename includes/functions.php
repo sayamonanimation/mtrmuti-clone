@@ -1003,6 +1003,7 @@ function get_nav_menu_tree($activeOnly = true) {
     ensure_outstanding_alumni();
     ensure_alumni_hub();
     ensure_portfolio_menu_item();
+    ensure_portfolio_page_title();
     $sql = 'SELECT * FROM nav_menu_items';
     if ($activeOnly) {
         $sql .= ' WHERE is_active = 1';

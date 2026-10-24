@@ -32,18 +32,16 @@ $galaxyPeople = array_map(fn($m) => [
 </div>
 <div class="page-content">
     <div class="container">
-        <?php $alumniTab = 'hub'; require __DIR__ . '/includes/alumni-tabs.php'; ?>
-
         <div class="hub-cta">
             <div>
-                <strong>🎓 เป็นศิษย์เก่าสาขาเทคโนโลยีมัลติมีเดีย?</strong>
-                <p>ฝากประวัติและผลงานไว้ที่นี่ ให้บริษัทและผู้ว่าจ้างติดต่อคุณได้โดยตรง — สมัครฟรี อัปเดตข้อมูลเองได้ตลอด</p>
+                <strong>💼 สร้าง Portfolio ของคุณ</strong>
+                <p>ศิษย์เก่า นักศึกษาปัจจุบัน และบุคคลทั่วไป ฝากประวัติและผลงานไว้ที่นี่ ให้บริษัทและผู้ว่าจ้างติดต่อคุณได้โดยตรง — สมัครฟรี อัปเดตข้อมูลเองได้ตลอด และบันทึกเป็น PDF ได้</p>
             </div>
             <div class="hub-cta-actions">
                 <?php if ($me): ?>
                 <a class="btn" href="<?= h(clean_public_url('/alumni-dashboard')) ?>">จัดการโปรไฟล์ของฉัน</a>
                 <?php else: ?>
-                <a class="btn" href="<?= h(clean_public_url('/alumni-register')) ?>">สมัครฝากประวัติ</a>
+                <a class="btn" href="<?= h(clean_public_url('/alumni-register')) ?>">สร้าง Portfolio</a>
                 <a class="btn hero-fx-btn-ghost" href="<?= h(clean_public_url('/alumni-login')) ?>">เข้าสู่ระบบ</a>
                 <?php endif; ?>
             </div>
@@ -55,14 +53,14 @@ $galaxyPeople = array_map(fn($m) => [
 
         <?php if ($members): ?>
         <div class="hub-stats">
-            <div class="hub-stat"><span class="hub-stat-num" data-count="<?= count($members) ?>"><?= count($members) ?></span><span>ศิษย์เก่าฝากประวัติ</span></div>
+            <div class="hub-stat"><span class="hub-stat-num" data-count="<?= count($members) ?>"><?= count($members) ?></span><span>Portfolio</span></div>
             <div class="hub-stat"><span class="hub-stat-num" data-count="<?= $availableCount ?>"><?= $availableCount ?></span><span>พร้อมรับงาน</span></div>
             <div class="hub-stat"><span class="hub-stat-num" data-count="<?= count($allSkills) ?>"><?= count($allSkills) ?></span><span>ทักษะ</span></div>
             <div class="hub-stat"><span class="hub-stat-num" data-count="<?= array_sum(array_map(fn($m) => (int) $m['work_count'], $members)) ?>"><?= array_sum(array_map(fn($m) => (int) $m['work_count'], $members)) ?></span><span>ผลงาน</span></div>
         </div>
 
         <div class="hub-galaxy" id="hubGalaxy" data-people="<?= h(json_encode($galaxyPeople, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?>">
-            <p class="hub-galaxy-hint">🌐 เครือข่ายศิษย์เก่าและทักษะ — ลากเพื่อหมุน · ชี้เพื่อดูความเชื่อมโยง · คลิกรูปเพื่อดูโปรไฟล์ · คลิกทักษะเพื่อกรองรายชื่อ</p>
+            <p class="hub-galaxy-hint">🌐 เครือข่าย Portfolio และทักษะ — ลากเพื่อหมุน · ชี้เพื่อดูความเชื่อมโยง · คลิกรูปเพื่อดูโปรไฟล์ · คลิกทักษะเพื่อกรองรายชื่อ</p>
         </div>
 
         <div class="hub-filters">
@@ -106,9 +104,9 @@ $galaxyPeople = array_map(fn($m) => [
             </a>
             <?php endforeach; ?>
         </div>
-        <p class="hub-empty" id="hubEmpty" hidden>ไม่พบศิษย์เก่าที่ตรงกับการค้นหา</p>
+        <p class="hub-empty" id="hubEmpty" hidden>ไม่พบ Portfolio ที่ตรงกับการค้นหา</p>
         <?php else: ?>
-        <p>ยังไม่มีศิษย์เก่าฝากประวัติไว้ — เป็นคนแรกได้เลย!</p>
+        <p>ยังไม่มี Portfolio — สร้างเป็นคนแรกได้เลย!</p>
         <?php endif; ?>
     </div>
 </div>

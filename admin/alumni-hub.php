@@ -49,11 +49,11 @@ $stmt = $pdo->prepare('SELECT m.*, (SELECT COUNT(*) FROM alumni_works w WHERE w.
 $stmt->execute([$filter]);
 $members = $stmt->fetchAll();
 
-$adminPageTitle = 'ติดต่องานศิษย์เก่า (ตรวจสอบโปรไฟล์)';
+$adminPageTitle = 'Portfolio (ตรวจสอบโปรไฟล์)';
 require_once __DIR__ . '/includes/layout-top.php';
 ?>
 <div class="admin-card">
-    <p style="margin:0;">ศิษย์เก่าสมัครและกรอกข้อมูลเองที่ <a href="<?= h(clean_public_url('/alumni-register')) ?>" target="_blank">หน้าสมัครฝากประวัติ</a> — โปรไฟล์จะแสดงบน <a href="<?= h(clean_public_url('/alumni-hub')) ?>" target="_blank">หน้าติดต่องานศิษย์เก่า</a> หลังจากกด <strong>อนุมัติ</strong> ที่นี่</p>
+    <p style="margin:0;">ผู้ใช้สมัครและกรอกข้อมูลเองที่ <a href="<?= h(clean_public_url('/alumni-register')) ?>" target="_blank">หน้าสมัครฝากประวัติ</a> — โปรไฟล์จะแสดงบน <a href="<?= h(clean_public_url('/alumni-hub')) ?>" target="_blank">หน้า Portfolio</a> หลังจากกด <strong>อนุมัติ</strong> ที่นี่</p>
 </div>
 <div class="alumni-hub-tabs">
     <?php foreach (['pending' => '⏳ รอตรวจสอบ', 'approved' => '✅ เผยแพร่แล้ว', 'rejected' => '↩️ ตีกลับ', 'hidden' => '🙈 ซ่อนอยู่'] as $key => $label): ?>

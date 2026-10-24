@@ -131,7 +131,7 @@ $statusClass = ['approved' => 'ok', 'pending' => 'wait', 'rejected' => 'bad', 'h
         <div class="hub-status hub-status-<?= $statusClass ?>">
             <div>
                 <strong>สถานะ: <?= h(alumni_status_label($me['status'])) ?></strong>
-                <?php if ($me['status'] === 'approved'): ?><span>โปรไฟล์ของคุณแสดงบนหน้า "ติดต่องานศิษย์เก่า" แล้ว แก้ไขข้อมูลได้ตลอด</span>
+                <?php if ($me['status'] === 'approved'): ?><span>โปรไฟล์ของคุณแสดงบนหน้า "Portfolio" แล้ว แก้ไขข้อมูลได้ตลอด</span>
                 <?php elseif ($me['status'] === 'rejected'): ?><span>ยังไม่ผ่านการตรวจสอบ<?= $me['admin_note'] ? ': ' . h($me['admin_note']) : '' ?> — แก้ไขแล้วกดส่งตรวจสอบอีกครั้ง</span>
                 <?php elseif ($me['status'] === 'hidden'): ?><span>เจ้าหน้าที่ซ่อนโปรไฟล์นี้ไว้ชั่วคราว ติดต่อสาขาหากมีข้อสงสัย</span>
                 <?php else: ?><span>กรอกโปรไฟล์และเพิ่มผลงาน แล้วกด "ส่งให้ตรวจสอบ" — เจ้าหน้าที่จะอนุมัติก่อนแสดงบนหน้าเว็บ</span><?php endif; ?>
