@@ -567,6 +567,52 @@ function ensure_batch_year_columns() {
     $done = true;
 }
 
+/**
+ * Cohort label "รุ่น 20 รหัส 69": batch_no is the cohort number, the code is
+ * the last two digits of the entry year (students) or stored student_code
+ * (alumni). Columns are added on first use.
+ */
+function ensure_batch_code_columns() {
+    global $pdo;
+    static $done = false;
+    if ($done || get_setting('batch_codes_ready') === '1') {
+        $done = true;
+        return;
+    }
+    ensure_batch_year_columns();
+    foreach ([
+        'ALTER TABLE student_batches ADD COLUMN batch_no VARCHAR(20) DEFAULT NULL',
+        'ALTER TABLE alumni_batches ADD COLUMN batch_no VARCHAR(20) DEFAULT NULL',
+        'ALTER TABLE alumni_batches ADD COLUMN student_code VARCHAR(10) DEFAULT NULL',
+    ] as $sql) {
+        try {
+            $pdo->exec($sql);
+        } catch (PDOException $e) {
+            // Column already exists.
+        }
+    }
+    set_setting('batch_codes_ready', '1');
+    $done = true;
+}
+
+/** Student code (รหัส) of a cohort: "69" for entry year 2569, or the stored alumni code. */
+function batch_student_code($batch) {
+    if (!empty($batch['student_code'])) {
+        return (string) $batch['student_code'];
+    }
+    return empty($batch['entry_year']) ? '' : sprintf('%02d', (int) $batch['entry_year'] % 100);
+}
+
+/** "รุ่น 20 รหัส 69"; falls back to the free-text name for cohorts set up before this. */
+function batch_label($batch) {
+    $no = trim((string) ($batch['batch_no'] ?? ''));
+    if ($no === '') {
+        return (string) $batch['name'];
+    }
+    $code = batch_student_code($batch);
+    return 'รุ่น ' . $no . ($code !== '' ? ' รหัส ' . $code : '');
+}
+
 /** Year level (1..course_years) of a current-student cohort, or null without an entry year. */
 function batch_year_level($batch) {
     if (empty($batch['entry_year'])) {
@@ -590,11 +636,12 @@ function move_batch_to_alumni($studentBatchId) {
     if (!$batch) {
         return null;
     }
+    ensure_batch_code_columns();
     $gradYear = batch_graduation_year($batch) ?: current_academic_year();
     $pdo->beginTransaction();
     try {
-        $pdo->prepare('INSERT INTO alumni_batches (name, sort_order, graduation_year) VALUES (?, 0, ?)')
-            ->execute([$batch['name'], $gradYear]);
+        $pdo->prepare('INSERT INTO alumni_batches (name, sort_order, graduation_year, batch_no, student_code) VALUES (?, 0, ?, ?, ?)')
+            ->execute([batch_label($batch), $gradYear, ($batch['batch_no'] ?? '') ?: null, batch_student_code($batch) ?: null]);
         $alumniId = (int) $pdo->lastInsertId();
         $pdo->prepare('INSERT INTO alumni_photos (batch_id, image_path, caption, sort_order, created_at)
                        SELECT ?, image_path, caption, sort_order, created_at FROM student_photos WHERE batch_id = ?')
@@ -613,7 +660,7 @@ function move_batch_to_alumni($studentBatchId) {
 /** Promotes every cohort whose course has ended. Returns the names moved. */
 function promote_graduated_batches() {
     global $pdo;
-    ensure_batch_year_columns();
+    ensure_batch_code_columns();
     $stmt = $pdo->prepare('SELECT id, name FROM student_batches WHERE entry_year IS NOT NULL AND entry_year + course_years <= ?');
     // Bind as an integer: some drivers compare a string parameter as text.
     $stmt->bindValue(1, current_academic_year(), PDO::PARAM_INT);

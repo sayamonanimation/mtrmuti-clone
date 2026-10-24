@@ -31,13 +31,13 @@ foreach ($batches as $batch) {
                 <?php continue; ?>
             <?php endif; ?>
             <div class="batch-section">
-                <h2><?= h($batch['name']) ?>
+                <h2><?= h(batch_label($batch)) ?>
                     <?php if (!empty($batch['graduation_year'])): ?><span class="batch-badge batch-badge-grad">🎓 <?= h(t('alumni.graduated')) ?> <?= (int) $batch['graduation_year'] ?></span><?php endif; ?>
                 </h2>
                 <div class="gallery-grid">
                     <?php foreach ($photos as $photo): ?>
                     <figure>
-                        <img src="<?= h($photo['image_path']) ?>" alt="<?= h($photo['caption'] ?: $batch['name']) ?>">
+                        <img src="<?= h($photo['image_path']) ?>" alt="<?= h($photo['caption'] ?: batch_label($batch)) ?>">
                         <?php if ($photo['caption']): ?><figcaption><?= h($photo['caption']) ?></figcaption><?php endif; ?>
                     </figure>
                     <?php endforeach; ?>

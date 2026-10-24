@@ -1,13 +1,16 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
 
-ensure_batch_year_columns();
+ensure_batch_code_columns();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $action = $_POST['action'] ?? '';
     $entryYear = (int) ($_POST['entry_year'] ?? 0) ?: null;
     $courseYears = max(1, min(8, (int) ($_POST['course_years'] ?? 4)));
+    $batchNo = mb_substr(trim($_POST['batch_no'] ?? ''), 0, 20);
+    // Stored name = the label, so lists elsewhere (and the alumni copy) read "รุ่น 20 รหัส 69".
+    $label = batch_label(['batch_no' => $batchNo, 'entry_year' => $entryYear, 'name' => trim($_POST['name'] ?? '')]);
 
     if ($action === 'delete') {
         $id = (int) $_POST['id'];
@@ -15,17 +18,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$id]);
         set_flash('ลบรุ่นนักศึกษาเรียบร้อยแล้ว (รูปภาพในรุ่นนี้ถูกลบไปด้วย)');
     } elseif ($action === 'add') {
-        $name = trim($_POST['name'] ?? '');
         $sortOrder = (int) ($_POST['sort_order'] ?? 0);
-        if ($name !== '') {
-            $stmt = $pdo->prepare('INSERT INTO student_batches (name, sort_order, entry_year, course_years) VALUES (?, ?, ?, ?)');
-            $stmt->execute([$name, $sortOrder, $entryYear, $courseYears]);
-            set_flash('เพิ่มรุ่นนักศึกษาเรียบร้อยแล้ว');
+        if ($batchNo === '' || !$entryYear) {
+            set_flash('กรุณากรอกรุ่นที่ และเลือกปีการศึกษาที่เข้าศึกษา', 'error');
+        } else {
+            $stmt = $pdo->prepare('INSERT INTO student_batches (name, sort_order, entry_year, course_years, batch_no) VALUES (?, ?, ?, ?, ?)');
+            $stmt->execute([$label, $sortOrder, $entryYear, $courseYears, $batchNo]);
+            set_flash('เพิ่ม ' . $label . ' แล้ว');
         }
     } elseif ($action === 'edit') {
-        $stmt = $pdo->prepare('UPDATE student_batches SET name = ?, sort_order = ?, entry_year = ?, course_years = ? WHERE id = ?');
-        $stmt->execute([trim($_POST['name'] ?? ''), (int) ($_POST['sort_order'] ?? 0), $entryYear, $courseYears, (int) $_POST['id']]);
-        set_flash('บันทึกข้อมูลรุ่นแล้ว');
+        $stmt = $pdo->prepare('UPDATE student_batches SET name = ?, sort_order = ?, entry_year = ?, course_years = ?, batch_no = ? WHERE id = ?');
+        $stmt->execute([$label, (int) ($_POST['sort_order'] ?? 0), $entryYear, $courseYears, $batchNo ?: null, (int) $_POST['id']]);
+        set_flash('บันทึก ' . $label . ' แล้ว');
     } elseif ($action === 'graduate') {
         if (move_batch_to_alumni((int) $_POST['id'])) {
             set_flash('ย้ายรุ่นนี้ไปเป็นศิษย์เก่าแล้ว (รูปภาพย้ายไปด้วย)');
@@ -55,7 +59,8 @@ $yearOptions = range($thisYear, $thisYear - 7);
 ?>
 <div class="admin-card graduate-info">
     <strong>🎓 เลื่อนเป็นศิษย์เก่าอัตโนมัติ</strong>
-    <p>ปีการศึกษาปัจจุบัน: <strong><?= $thisYear ?></strong> (ขึ้นปีการศึกษาใหม่ทุกวันที่ 1 มิถุนายน) — ระบุ <em>ปีการศึกษาที่เข้าศึกษา</em> ของแต่ละรุ่น ระบบจะแสดงชั้นปีให้เอง และเมื่อเรียนครบตามจำนวนปีของหลักสูตร (ปกติ 4 ปี) รุ่นนั้นพร้อมรูปภาพจะย้ายไปอยู่หน้า <a href="/admin/alumni.php">ศิษย์เก่า</a> อัตโนมัติเมื่อขึ้นปีการศึกษาใหม่</p>
+    <p>ปีการศึกษาปัจจุบัน: <strong><?= $thisYear ?></strong> (ขึ้นปีการศึกษาใหม่ทุกวันที่ 1 มิถุนายน)</p>
+    <p>กรอก <strong>รุ่นที่</strong> และ <strong>ปีการศึกษาที่เข้าศึกษา</strong> — หน้าเว็บแสดงเป็น <strong>"รุ่น 20 รหัส 69"</strong> (รหัส = 2 หลักท้ายของปีที่เข้า) และ <strong>ชั้นปีที่ 1 → 2 → 3 → 4 เลื่อนเองทุก 1 มิ.ย.</strong> ไม่ต้องแก้ข้อมูลหรืออัปรูปใหม่ เมื่อเรียนครบ 4 ปี รุ่นนั้นพร้อมรูปภาพจะย้ายไปหน้า <a href="/admin/alumni.php">ศิษย์เก่า</a> อัตโนมัติในวันขึ้นปีการศึกษาใหม่</p>
 </div>
 
 <div class="admin-card">
@@ -64,13 +69,13 @@ $yearOptions = range($thisYear, $thisYear - 7);
         <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
         <input type="hidden" name="action" value="add">
         <div class="form-group">
-            <label>ชื่อรุ่น</label>
-            <input type="text" name="name" placeholder="เช่น MT20 (รหัส 69)" required>
+            <label>รุ่นที่</label>
+            <input type="text" name="batch_no" maxlength="20" placeholder="เช่น 20" required style="max-width:160px;">
         </div>
         <div class="form-group">
-            <label>ปีการศึกษาที่เข้าศึกษา</label>
-            <select name="entry_year">
-                <?php foreach ($yearOptions as $y): ?><option value="<?= $y ?>"><?= $y ?></option><?php endforeach; ?>
+            <label>ปีการศึกษาที่เข้าศึกษา (รหัส = 2 หลักท้าย)</label>
+            <select name="entry_year" required>
+                <?php foreach ($yearOptions as $y): ?><option value="<?= $y ?>"><?= $y ?> → รหัส <?= sprintf('%02d', $y % 100) ?></option><?php endforeach; ?>
             </select>
         </div>
         <div class="form-group">
@@ -87,7 +92,7 @@ $yearOptions = range($thisYear, $thisYear - 7);
 
 <div class="admin-card">
     <table class="admin-table">
-        <thead><tr><th>รุ่น</th><th>ชั้นปี</th><th>จะเป็นศิษย์เก่า</th><th>รูปภาพ</th><th></th></tr></thead>
+        <thead><tr><th>รุ่น / รหัส</th><th>ชั้นปี</th><th>จะเป็นศิษย์เก่า</th><th>รูปภาพ</th><th></th></tr></thead>
         <tbody>
             <?php foreach ($batches as $batch): ?>
             <?php $level = batch_year_level($batch); $grad = batch_graduation_year($batch); ?>
@@ -97,11 +102,13 @@ $yearOptions = range($thisYear, $thisYear - 7);
                         <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
                         <input type="hidden" name="action" value="edit">
                         <input type="hidden" name="id" value="<?= (int) $batch['id'] ?>">
-                        <input type="text" name="name" value="<?= h($batch['name']) ?>" style="width:150px;" title="ชื่อรุ่น">
+                        <input type="hidden" name="name" value="<?= h($batch['name']) ?>">
+                        <label class="field-hint">รุ่นที่</label>
+                        <input type="text" name="batch_no" value="<?= h($batch['batch_no'] ?? '') ?>" maxlength="20" style="width:70px;" title="รุ่นที่" placeholder="20">
                         <label class="field-hint">เข้าปี</label>
                         <select name="entry_year" title="ปีการศึกษาที่เข้าศึกษา">
                             <option value="">— ไม่ระบุ —</option>
-                            <?php foreach ($yearOptions as $y): ?><option value="<?= $y ?>"<?= (int) $batch['entry_year'] === $y ? ' selected' : '' ?>><?= $y ?></option><?php endforeach; ?>
+                            <?php foreach ($yearOptions as $y): ?><option value="<?= $y ?>"<?= (int) $batch['entry_year'] === $y ? ' selected' : '' ?>><?= $y ?> (รหัส <?= sprintf('%02d', $y % 100) ?>)</option><?php endforeach; ?>
                         </select>
                         <label class="field-hint">หลักสูตร</label>
                         <input type="number" name="course_years" value="<?= (int) ($batch['course_years'] ?: 4) ?>" min="1" max="8" style="width:60px;" title="จำนวนปี">
@@ -109,7 +116,7 @@ $yearOptions = range($thisYear, $thisYear - 7);
                         <button class="btn btn-sm btn-ghost" type="submit">บันทึก</button>
                     </form>
                 </td>
-                <td><?= $level ? '<span class="year-pill">ปี ' . $level . '</span>' : '<span class="field-hint">ระบุปีที่เข้า</span>' ?></td>
+                <td><strong><?= h(batch_label($batch)) ?></strong><br><?= $level ? '<span class="year-pill">ชั้นปีที่ ' . $level . '</span>' : '<span class="field-hint">⚠️ ระบุรุ่นที่และปีที่เข้า</span>' ?></td>
                 <td><?= $grad ? 'หลังจบปีการศึกษา ' . $grad . '<br><span class="field-hint">(1 มิ.ย. ' . ($grad + 1 - 543) . ')</span>' : '<span class="field-hint">ต้องระบุปีที่เข้า</span>' ?></td>
                 <td><?= $photoCounts[$batch['id']] ?? 0 ?> รูป</td>
                 <td class="actions-row">
