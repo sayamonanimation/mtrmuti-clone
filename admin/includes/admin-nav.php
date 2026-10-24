@@ -26,7 +26,7 @@ function admin_nav_registry() {
         '/students' => [['href' => '/admin/students.php', 'label' => 'นักศึกษาปัจจุบัน', 'match' => ['student-photos.php'], 'page' => 'students']],
         '/alumni' => [['href' => '/admin/alumni.php', 'label' => 'ศิษย์เก่า', 'match' => ['alumni-photos.php'], 'page' => 'alumni']],
         '/outstanding-alumni' => [['href' => '/admin/outstanding-alumni.php', 'label' => 'ศิษย์เก่าดีเด่น', 'page' => 'outstanding-alumni']],
-        '/alumni-hub' => [['href' => '/admin/alumni-hub.php', 'label' => 'ติดต่องานศิษย์เก่า', 'page' => 'alumni-hub', 'badge' => 'alumni_hub_pending']],
+        '/alumni-hub' => [['href' => '/admin/alumni-hub.php', 'label' => 'Portfolio', 'page' => 'alumni-hub', 'badge' => 'alumni_hub_pending']],
         '/statistics' => [
             ['href' => '/admin/stats.php', 'label' => 'สถิติการรับนักศึกษา', 'page' => 'statistics'],
             ['href' => '/admin/student-year-stats.php', 'label' => 'สถิตินักศึกษาแยกชั้นปี'],
