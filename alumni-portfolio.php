@@ -24,10 +24,15 @@ if ($member && isset($_GET['theme']) && (alumni_member_id() === (int) $member['i
     $themeKey = alumni_portfolio_theme($_GET['theme']);
 }
 $theme = alumni_portfolio_themes()[$themeKey];
+$layoutKey = $member ? alumni_portfolio_layout($member['portfolio_layout'] ?? 'classic') : 'classic';
+if ($member && isset($_GET['layout']) && (alumni_member_id() === (int) $member['id'] || is_admin_logged_in())) {
+    $layoutKey = alumni_portfolio_layout($_GET['layout']);
+}
+$handle = $member ? strtolower(preg_replace('/[^A-Za-z0-9]+/', '-', (string) ($member['contact_email'] ? strstr($member['contact_email'], '@', true) : 'member-' . $member['id']))) : '';
 $sectionNo = 0;
 $num = function () use (&$sectionNo) { return sprintf('%02d', ++$sectionNo); };
 ?><!DOCTYPE html>
-<html lang="th" class="pf-theme-<?= h($themeKey) ?>">
+<html lang="th" class="pf-theme-<?= h($themeKey) ?> pf-layout-<?= h($layoutKey) ?>">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,9 +58,20 @@ $num = function () use (&$sectionNo) { return sprintf('%02d', ++$sectionNo); };
 
 <main class="pf-page">
     <header class="pf-cover pf-hud">
+        <!-- Layout decorations: each shows only in its own layout (portfolio.css). -->
+        <div class="pf-deco pf-deco-term" aria-hidden="true"><i></i><i></i><i></i><span>~/portfolio/<?= h($handle) ?> — zsh</span></div>
+        <div class="pf-deco pf-deco-slate" aria-hidden="true">
+            <div class="pf-slate-stripes"></div>
+            <dl>
+                <div><dt>PROD.</dt><dd>PORTFOLIO</dd></div>
+                <div><dt>DIRECTOR</dt><dd><?= h($member['full_name']) ?></dd></div>
+                <div><dt>ROLL</dt><dd>MT-<?= sprintf('%04d', (int) $member['id']) ?></dd></div>
+                <div><dt>DATE</dt><dd><?= date('d/m/') . (date('Y') + 543) ?></dd></div>
+            </dl>
+        </div>
         <div class="pf-cover-top">
-            <span class="pf-mono">// DIGITAL PORTFOLIO</span>
-            <span class="pf-mono">MT-<?= sprintf('%04d', (int) $member['id']) ?> · <?= date('Y') + 543 ?></span>
+            <span class="pf-mono">// DIGITAL PORTFOLIO <span class="pf-deco pf-deco-rec">● REC</span></span>
+            <span class="pf-mono"><span class="pf-deco pf-deco-tc" id="pfTimecode">00:00:00:00</span> MT-<?= sprintf('%04d', (int) $member['id']) ?> · <?= date('Y') + 543 ?></span>
         </div>
         <div class="pf-cover-main">
             <div class="pf-avatar">
@@ -83,15 +99,15 @@ $num = function () use (&$sectionNo) { return sprintf('%02d', ++$sectionNo); };
     </header>
 
     <?php if ($member['bio'] || $skills): ?>
-    <div class="pf-duo">
+    <div class="pf-duo pf-block-about">
         <?php if ($member['bio']): ?>
-        <section class="pf-section pf-panel">
+        <section class="pf-section pf-panel" data-file="about.md">
             <h2><em><?= $num() ?></em>เกี่ยวกับฉัน <small>ABOUT</small></h2>
             <p class="pf-text"><?= nl2br(h($member['bio'])) ?></p>
         </section>
         <?php endif; ?>
         <?php if ($skills): ?>
-        <section class="pf-section pf-panel">
+        <section class="pf-section pf-panel" data-file="skills.json">
             <h2><em><?= $num() ?></em>ทักษะ <small>SKILLS</small></h2>
             <div class="pf-skills"><?php foreach ($skills as $i => $s): ?><span style="--i:<?= $i ?>"><?= h($s) ?></span><?php endforeach; ?></div>
         </section>
@@ -100,7 +116,7 @@ $num = function () use (&$sectionNo) { return sprintf('%02d', ++$sectionNo); };
     <?php endif; ?>
 
     <?php foreach ($items as $it): ?>
-    <section class="pf-section pf-panel pf-item<?= $it['image_path'] ? ' has-image' : '' ?>">
+    <section class="pf-section pf-panel pf-item pf-block-item<?= $it['image_path'] ? ' has-image' : '' ?>" data-file="section-<?= sprintf('%02d', $sectionNo + 1) ?>.md">
         <h2><em><?= $num() ?></em><?= h($it['heading']) ?></h2>
         <div class="pf-item-body">
             <?php if ($it['image_path']): ?><figure class="pf-frame"><img src="<?= h($it['image_path']) ?>" alt=""></figure><?php endif; ?>
@@ -113,12 +129,12 @@ $num = function () use (&$sectionNo) { return sprintf('%02d', ++$sectionNo); };
     <?php endforeach; ?>
 
     <?php if ($works): ?>
-    <section class="pf-section">
+    <section class="pf-section pf-block-works" data-file="works/">
         <h2><em><?= $num() ?></em>ผลงาน <small>SELECTED WORKS · <?= count($works) ?></small></h2>
         <div class="pf-works">
             <?php foreach ($works as $i => $w): ?>
             <article class="pf-work">
-                <?php if ($w['image_path']): ?><figure class="pf-frame"><img src="<?= h($w['image_path']) ?>" alt=""><span class="pf-work-no"><?= sprintf('%02d', $i + 1) ?></span></figure><?php endif; ?>
+                <?php if ($w['image_path']): ?><figure class="pf-frame"><span class="pf-deco pf-browser" aria-hidden="true"><i></i><i></i><i></i><b><?= h($w['link_url'] ? preg_replace('#^https?://(www\.)?#', '', $w['link_url']) : 'localhost:3000') ?></b></span><img src="<?= h($w['image_path']) ?>" alt=""><span class="pf-work-no"><?= sprintf('%02d', $i + 1) ?></span></figure><?php endif; ?>
                 <div class="pf-work-body">
                     <h3><?= h($w['title']) ?></h3>
                     <?php if ($w['description']): ?><p><?= nl2br(h($w['description'])) ?></p><?php endif; ?>
@@ -140,6 +156,16 @@ $num = function () use (&$sectionNo) { return sprintf('%02d', ++$sectionNo); };
 (function () {
     // QR code to the online profile (scannable from the printed PDF too).
     var box = document.querySelector('.pf-qr');
+    // Cinema layout: a running timecode in the cover (static when printed).
+    var tc = document.getElementById('pfTimecode');
+    if (tc && document.documentElement.classList.contains('pf-layout-cinema') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        var t0 = performance.now();
+        (function tick(now) {
+            var f = Math.floor((now - t0) / (1000 / 24)), p = function (n) { return ('0' + n).slice(-2); };
+            tc.textContent = p(Math.floor(f / 86400) % 24) + ':' + p(Math.floor(f / 1440) % 60) + ':' + p(Math.floor(f / 24) % 60) + ':' + p(f % 24);
+            requestAnimationFrame(tick);
+        })(t0);
+    }
     if (box && window.QRCode) {
         new QRCode(box, { text: box.getAttribute('data-url'), width: 96, height: 96, colorDark: <?= json_encode($theme['qr']) ?>, colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
     } else if (box) {
