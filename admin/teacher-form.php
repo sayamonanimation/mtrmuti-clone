@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
 
+ensure_teacher_works_levels();
+
 // label => db column, for the long-text profile sections
 $profileFields = [
     'education' => 'วุฒิการศึกษา',
@@ -14,24 +16,33 @@ $profileFields = [
     'awards' => 'รางวัลที่ได้รับ',
 ];
 
+// Works sections are Thai only (requested); English stays for these two.
+$englishFields = ['education', 'subjects_taught'];
 $profileFieldsEn = array_combine(
-    array_map(fn($c) => $c . '_en', array_keys($profileFields)),
-    array_values($profileFields)
+    array_map(fn($c) => $c . '_en', $englishFields),
+    array_map(fn($c) => $profileFields[$c], $englishFields)
+);
+// Research / creative works: the main column is the national list, *_intl the international one.
+$levelFields = array_combine(
+    array_map(fn($c) => $c . '_intl', TEACHER_LEVELLED_WORKS),
+    TEACHER_LEVELLED_WORKS
 );
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $teacher = array_merge(
     ['id' => null, 'name' => '', 'position' => '', 'position_en' => '', 'phone' => '', 'email' => '', 'photo_path' => '', 'bio' => '', 'bio_en' => '', 'classroom_online_url' => '', 'sort_order' => 0, 'identity_tags' => '', 'show_phone' => 0],
     array_fill_keys(array_keys($profileFields), ''),
-    array_fill_keys(array_keys($profileFieldsEn), '')
+    array_fill_keys(array_keys($profileFieldsEn), ''),
+    array_fill_keys(array_keys($levelFields), '')
 );
 
 if ($id) {
     $found = get_teacher($id);
     if ($found) {
-        $teacher = $found;
+        $teacher = $found + array_fill_keys(array_keys($levelFields), '');
     }
 }
+$classroomLinks = $teacher['id'] ? get_teacher_classroom_links($teacher['id']) : [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     reject_oversized_upload($teacher['id'] ? '/admin/teacher-form.php?id=' . $teacher['id'] : '/admin/teacher-form.php');
@@ -43,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $bio = trim($_POST['bio'] ?? '');
     $bioEn = trim($_POST['bio_en'] ?? '');
-    $classroomUrl = normalize_url($_POST['classroom_online_url'] ?? '');
     $sortOrder = (int) ($_POST['sort_order'] ?? 0);
     $identityTags = mb_substr(trim($_POST['identity_tags'] ?? ''), 0, 255);
     $showPhone = isset($_POST['show_phone']) ? 1 : 0;
@@ -56,14 +66,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($profileFieldsEn as $column => $label) {
         $profileValues[$column] = trim($_POST[$column] ?? '');
     }
+    foreach ($levelFields as $column => $base) {
+        $profileValues[$column] = trim($_POST[$column] ?? '');
+    }
 
     $uploaded = handle_image_upload('photo', 'teachers');
     if ($uploaded) {
         $photoPath = $uploaded;
     }
 
-    $columns = array_merge(['name', 'position', 'position_en', 'phone', 'email', 'bio', 'bio_en', 'classroom_online_url', 'sort_order', 'photo_path', 'identity_tags', 'show_phone'], array_keys($profileFields), array_keys($profileFieldsEn));
-    $values = array_merge([$name, $position, $positionEn, $phone, $email, $bio, $bioEn, $classroomUrl, $sortOrder, $photoPath, $identityTags, $showPhone], array_values($profileValues));
+    $columns = array_merge(['name', 'position', 'position_en', 'phone', 'email', 'bio', 'bio_en', 'sort_order', 'photo_path', 'identity_tags', 'show_phone'], array_keys($profileValues));
+    $values = array_merge([$name, $position, $positionEn, $phone, $email, $bio, $bioEn, $sortOrder, $photoPath, $identityTags, $showPhone], array_values($profileValues));
 
     if ($teacher['id']) {
         $setClause = implode(', ', array_map(fn($c) => "$c = ?", $columns));
@@ -73,7 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $placeholders = implode(', ', array_fill(0, count($columns), '?'));
         $stmt = $pdo->prepare('INSERT INTO teachers (' . implode(', ', $columns) . ") VALUES ($placeholders)");
         $stmt->execute($values);
+        $teacher['id'] = (int) $pdo->lastInsertId();
     }
+    save_teacher_classroom_links($teacher['id'], (array) ($_POST['classroom_label'] ?? []), (array) ($_POST['classroom_url'] ?? []));
 
     set_flash('บันทึกข้อมูลอาจารย์เรียบร้อยแล้ว');
     header('Location: /admin/teachers.php');
@@ -151,20 +166,48 @@ require_once __DIR__ . '/includes/layout-top.php';
 
     <div class="admin-card">
         <h3 style="margin-top:0;">ข้อมูลผลงานและวิชาการ</h3>
+        <p class="field-hint" style="margin-top:0;">หากมีหลายรายการ ให้ขึ้นบรรทัดใหม่ต่อ 1 รายการ ระบบจะแสดงเป็นข้อย่อยให้อัตโนมัติ</p>
         <?php foreach ($profileFields as $column => $label): ?>
+        <?php if (in_array($column, TEACHER_LEVELLED_WORKS, true)): ?>
+        <fieldset class="level-fieldset">
+            <legend><?= h($label) ?></legend>
+            <div class="level-grid">
+                <div class="form-group">
+                    <label><span class="level-tag level-tag-th">ระดับชาติ</span></label>
+                    <textarea name="<?= h($column) ?>"><?= h($teacher[$column]) ?></textarea>
+                </div>
+                <div class="form-group">
+                    <label><span class="level-tag level-tag-intl">ระดับนานาชาติ</span></label>
+                    <textarea name="<?= h($column) ?>_intl"><?= h($teacher[$column . '_intl'] ?? '') ?></textarea>
+                </div>
+            </div>
+        </fieldset>
+        <?php else: ?>
         <div class="form-group">
             <label><?= h($label) ?></label>
             <textarea name="<?= h($column) ?>"><?= h($teacher[$column]) ?></textarea>
-            <p class="field-hint">หากมีหลายรายการ ให้ขึ้นบรรทัดใหม่ต่อ 1 รายการ ระบบจะแสดงเป็นข้อย่อยให้อัตโนมัติ</p>
         </div>
+        <?php if (isset($profileFieldsEn[$column . '_en'])): ?>
         <div class="form-group">
             <label><?= h($label) ?> (English)</label>
             <textarea name="<?= h($column) ?>_en"><?= h($teacher[$column . '_en']) ?></textarea>
         </div>
+        <?php endif; ?>
+        <?php endif; ?>
         <?php endforeach; ?>
         <div class="form-group">
-            <label>Classroom Online (ลิงก์ห้องเรียนออนไลน์ของอาจารย์ท่านนี้)</label>
-            <input type="text" name="classroom_online_url" placeholder="https://classroom.google.com/..." value="<?= h($teacher['classroom_online_url']) ?>">
+            <label>Classroom Online (ลิงก์ห้องเรียนออนไลน์ของอาจารย์ท่านนี้ — เพิ่มได้ไม่จำกัด)</label>
+            <div class="classroom-links" id="classroomLinks">
+                <?php foreach ($classroomLinks ?: [['label' => '', 'url' => '']] as $cl): ?>
+                <div class="classroom-link-row">
+                    <input type="text" name="classroom_label[]" maxlength="150" placeholder="ชื่อห้อง/วิชา เช่น การเขียนโปรแกรม 1 (ไม่บังคับ)" value="<?= h($cl['label']) ?>">
+                    <input type="text" name="classroom_url[]" maxlength="500" placeholder="https://classroom.google.com/..." value="<?= h($cl['url']) ?>">
+                    <button type="button" class="btn btn-sm btn-ghost classroom-remove" title="เอาลิงก์นี้ออก">✕</button>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <button type="button" class="btn btn-sm btn-ghost" id="classroomAdd">+ เพิ่มห้องเรียน</button>
+            <p class="field-hint">ลิงก์ที่เอาออกจะหายไปเมื่อกดบันทึก · ถ้าไม่ใส่ชื่อ ปุ่มบนหน้าเว็บจะขึ้นว่า "Classroom Online"</p>
         </div>
     </div>
 
@@ -216,6 +259,25 @@ require_once __DIR__ . '/includes/layout-top.php';
     }
     input.addEventListener('input', detect);
     detect();
+})();
+</script>
+<script>
+(function () {
+    var box = document.getElementById('classroomLinks'), add = document.getElementById('classroomAdd');
+    if (!box) return;
+    add.addEventListener('click', function () {
+        var row = box.querySelector('.classroom-link-row').cloneNode(true);
+        row.querySelectorAll('input').forEach(function (i) { i.value = ''; });
+        box.appendChild(row);
+        row.querySelector('input').focus();
+    });
+    box.addEventListener('click', function (e) {
+        var btn = e.target.closest('.classroom-remove');
+        if (!btn) return;
+        var rows = box.querySelectorAll('.classroom-link-row'), row = btn.closest('.classroom-link-row');
+        if (rows.length > 1) row.remove();
+        else row.querySelectorAll('input').forEach(function (i) { i.value = ''; });
+    });
 })();
 </script>
 <?php require_once __DIR__ . '/includes/layout-bottom.php'; ?>

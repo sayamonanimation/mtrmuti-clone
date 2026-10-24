@@ -422,6 +422,72 @@ function get_teacher($id) {
     return $stmt->fetch();
 }
 
+/**
+ * Teacher profile additions: research / creative works split into national
+ * and international (the existing columns hold the national list), and any
+ * number of Classroom Online links (teacher_classroom_links; the old single
+ * classroom_online_url is copied in and kept pointing at the first link).
+ */
+const TEACHER_LEVELLED_WORKS = ['research_works', 'creative_works'];
+
+function ensure_teacher_works_levels() {
+    global $pdo;
+    static $done = false;
+    if ($done || get_setting('teacher_levels_ready') === '1') {
+        $done = true;
+        return;
+    }
+    foreach (TEACHER_LEVELLED_WORKS as $column) {
+        try {
+            $pdo->exec("ALTER TABLE teachers ADD COLUMN {$column}_intl TEXT");
+        } catch (PDOException $e) {
+            // Column already exists.
+        }
+    }
+    $pdo->exec('CREATE TABLE IF NOT EXISTS teacher_classroom_links (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        teacher_id INT NOT NULL,
+        label VARCHAR(150) DEFAULT NULL,
+        url VARCHAR(500) NOT NULL,
+        sort_order INT DEFAULT 0,
+        INDEX (teacher_id),
+        FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+    $pdo->exec("INSERT INTO teacher_classroom_links (teacher_id, label, url, sort_order)
+        SELECT t.id, NULL, t.classroom_online_url, 0 FROM teachers t
+        WHERE t.classroom_online_url IS NOT NULL AND t.classroom_online_url <> ''
+          AND NOT EXISTS (SELECT 1 FROM teacher_classroom_links c WHERE c.teacher_id = t.id)");
+    set_setting('teacher_levels_ready', '1');
+    $done = true;
+}
+
+function get_teacher_classroom_links($teacherId) {
+    global $pdo;
+    ensure_teacher_works_levels();
+    $stmt = $pdo->prepare('SELECT * FROM teacher_classroom_links WHERE teacher_id = ? ORDER BY sort_order ASC, id ASC');
+    $stmt->execute([(int) $teacherId]);
+    return $stmt->fetchAll();
+}
+
+/** Replaces a teacher's Classroom Online links with the form's rows (empty URLs dropped). */
+function save_teacher_classroom_links($teacherId, array $labels, array $urls) {
+    global $pdo;
+    ensure_teacher_works_levels();
+    $pdo->prepare('DELETE FROM teacher_classroom_links WHERE teacher_id = ?')->execute([(int) $teacherId]);
+    $insert = $pdo->prepare('INSERT INTO teacher_classroom_links (teacher_id, label, url, sort_order) VALUES (?, ?, ?, ?)');
+    $first = null;
+    $order = 0;
+    foreach ($urls as $i => $url) {
+        $url = mb_substr(normalize_url(trim((string) $url)), 0, 500);
+        if ($url === '') {
+            continue;
+        }
+        $insert->execute([(int) $teacherId, mb_substr(trim((string) ($labels[$i] ?? '')), 0, 150) ?: null, $url, $order++]);
+        $first = $first ?? $url;
+    }
+    $pdo->prepare('UPDATE teachers SET classroom_online_url = ? WHERE id = ?')->execute([$first, (int) $teacherId]);
+}
+
 /** Work categories that support attaching photo evidence via teacher_portfolio. */
 function portfolio_categories() {
     return [
