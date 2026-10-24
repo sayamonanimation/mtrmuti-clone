@@ -58,6 +58,14 @@ function ensure_alumni_portfolio() {
     if ($done) {
         return;
     }
+    if (get_setting('alumni_nickname_ready') !== '1') {
+        try {
+            $pdo->exec('ALTER TABLE alumni_members ADD COLUMN nickname VARCHAR(60) DEFAULT NULL');
+        } catch (PDOException $e) {
+            // Column already exists, or alumni_members is created below first.
+        }
+        set_setting('alumni_nickname_ready', '1');
+    }
     if (get_setting('alumni_portfolio_theme_ready') !== '1') {
         try {
             $pdo->exec("ALTER TABLE alumni_members ADD COLUMN portfolio_theme VARCHAR(20) NOT NULL DEFAULT 'red'");
@@ -103,6 +111,12 @@ function get_alumni_portfolio_items($memberId) {
     $stmt = $pdo->prepare('SELECT * FROM alumni_portfolio_items WHERE member_id = ? ORDER BY sort_order ASC, id ASC');
     $stmt->execute([(int) $memberId]);
     return $stmt->fetchAll();
+}
+
+/** "(ชื่อเล่น)" shown under the real name, or '' when not set. */
+function alumni_nickname_text(array $m) {
+    $nick = trim((string) ($m['nickname'] ?? ''));
+    return $nick === '' ? '' : '(' . $nick . ')';
 }
 
 /** The member if this visitor may see their profile/portfolio, else null. */

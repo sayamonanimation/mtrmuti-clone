@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'profile') {
         $f = [
             'full_name' => trim($_POST['full_name'] ?? '') ?: $me['full_name'],
+            'nickname' => mb_substr(trim($_POST['nickname'] ?? ''), 0, 60) ?: null,
             'batch_name' => trim($_POST['batch_name'] ?? ''),
             'graduation_year' => (int) ($_POST['graduation_year'] ?? 0) ?: null,
             'headline' => mb_substr(trim($_POST['headline'] ?? ''), 0, 255),
@@ -158,7 +159,10 @@ $statusClass = ['approved' => 'ok', 'pending' => 'wait', 'rejected' => 'bad', 'h
                 <label><input type="radio" name="member_type" value="<?= $key ?>"<?= $myType === $key ? ' checked' : '' ?>><span><?= h($label) ?></span></label>
                 <?php endforeach; ?>
             </fieldset>
-            <label>ชื่อ - นามสกุล<input type="text" name="full_name" required maxlength="150" value="<?= h($me['full_name']) ?>"></label>
+            <div class="hub-form-row">
+                <label>ชื่อ - นามสกุล<input type="text" name="full_name" required maxlength="150" value="<?= h($me['full_name']) ?>"></label>
+                <label>ชื่อเล่น (ไม่บังคับ — แสดงใต้ชื่อจริง)<input type="text" name="nickname" maxlength="60" placeholder="เช่น ต้น" value="<?= h($me['nickname'] ?? '') ?>"></label>
+            </div>
             <div class="hub-form-row hub-class-fields">
                 <label>รุ่น<input type="text" name="batch_name" maxlength="100" value="<?= h($me['batch_name']) ?>"></label>
                 <label><span class="hub-year-label">จบปีการศึกษา</span><input type="number" name="graduation_year" min="2500" max="2700" value="<?= h($me['graduation_year']) ?>"></label>

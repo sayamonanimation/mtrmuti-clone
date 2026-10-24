@@ -85,9 +85,9 @@ foreach (get_teacher_portfolio($teacher['id']) as $item) {
                             <div class="portfolio-thumbs">
                                 <?php foreach ($images as $img): ?>
                                 <figure>
-                                    <a href="<?= h($img['image_path']) ?>" target="_blank" rel="noopener">
-                                        <img src="<?= h($img['image_path']) ?>" alt="<?= h($img['caption'] ?: $label) ?>">
-                                    </a>
+                                    <button type="button" class="pv-thumb" data-src="<?= h($img['image_path']) ?>" data-caption="<?= h($img['caption']) ?>" aria-label="ดูภาพ <?= h($img['caption'] ?: $label) ?>">
+                                        <img src="<?= h($img['image_path']) ?>" alt="<?= h($img['caption'] ?: $label) ?>" draggable="false">
+                                    </button>
                                     <?php if ($img['caption']): ?><figcaption><?= h($img['caption']) ?></figcaption><?php endif; ?>
                                 </figure>
                                 <?php endforeach; ?>
@@ -100,5 +100,33 @@ foreach (get_teacher_portfolio($teacher['id']) as $item) {
         </div>
     </div>
 </div>
+<!-- Works open in a viewer only: no link to the file, no right-click / drag saving. -->
+<div class="album-lightbox pv-box" id="pvBox" hidden>
+    <button type="button" class="album-lightbox-close" aria-label="ปิด">&times;</button>
+    <button type="button" class="album-lightbox-nav prev" aria-label="ก่อนหน้า">&lsaquo;</button>
+    <figure><img src="" alt="" draggable="false"><figcaption></figcaption></figure>
+    <button type="button" class="album-lightbox-nav next" aria-label="ถัดไป">&rsaquo;</button>
+    <span class="album-lightbox-counter"></span>
+</div>
+<script>
+(function () {
+    var box = document.getElementById('pvBox');
+    var items = Array.prototype.slice.call(document.querySelectorAll('.pv-thumb'));
+    document.querySelectorAll('.portfolio-thumbs, #pvBox').forEach(function (el) {
+        el.addEventListener('contextmenu', function (e) { if (e.target.tagName === 'IMG') e.preventDefault(); });
+        el.addEventListener('dragstart', function (e) { if (e.target.tagName === 'IMG') e.preventDefault(); });
+    });
+    if (!items.length) return;
+    var img = box.querySelector('img'), cap = box.querySelector('figcaption'), counter = box.querySelector('.album-lightbox-counter'), index = 0;
+    function show(i) { index = (i + items.length) % items.length; img.src = items[index].dataset.src; cap.textContent = items[index].dataset.caption || ''; counter.textContent = items.length > 1 ? (index + 1) + ' / ' + items.length : ''; }
+    function close() { box.hidden = true; document.body.style.overflow = ''; }
+    items.forEach(function (el, i) { el.addEventListener('click', function () { show(i); box.hidden = false; document.body.style.overflow = 'hidden'; }); });
+    box.querySelector('.album-lightbox-close').onclick = close;
+    box.querySelector('.prev').onclick = function () { show(index - 1); };
+    box.querySelector('.next').onclick = function () { show(index + 1); };
+    box.addEventListener('click', function (e) { if (e.target === box) close(); });
+    document.addEventListener('keydown', function (e) { if (box.hidden) return; if (e.key === 'Escape') close(); if (e.key === 'ArrowLeft') show(index - 1); if (e.key === 'ArrowRight') show(index + 1); });
+})();
+</script>
 <script src="/assets/js/teacher-fx.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/teacher-fx.js') ?>" defer></script>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
