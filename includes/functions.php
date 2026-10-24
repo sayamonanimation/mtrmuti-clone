@@ -495,7 +495,6 @@ function portfolio_categories() {
         'creative_works' => t('profile.creative_works'),
         'innovation_works' => t('profile.innovation_works'),
         'competition_works' => t('profile.competition_works'),
-        'intellectual_property' => t('profile.intellectual_property'),
     ];
 }
 
