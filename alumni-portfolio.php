@@ -18,10 +18,16 @@ $works = $member ? get_alumni_works($member['id']) : [];
 $skills = $member ? alumni_skill_list($member['skills']) : [];
 $siteName = get_site_name();
 $profileUrl = $member ? alumni_absolute_url('/alumni-profile?id=' . (int) $member['id']) : '';
+// Owner's chosen look; the owner (or an admin) can preview others with ?theme=.
+$themeKey = $member ? alumni_portfolio_theme($member['portfolio_theme'] ?? 'red') : 'red';
+if ($member && isset($_GET['theme']) && (alumni_member_id() === (int) $member['id'] || is_admin_logged_in())) {
+    $themeKey = alumni_portfolio_theme($_GET['theme']);
+}
+$theme = alumni_portfolio_themes()[$themeKey];
 $sectionNo = 0;
 $num = function () use (&$sectionNo) { return sprintf('%02d', ++$sectionNo); };
 ?><!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="pf-theme-<?= h($themeKey) ?>">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -134,7 +140,7 @@ $num = function () use (&$sectionNo) { return sprintf('%02d', ++$sectionNo); };
     // QR code to the online profile (scannable from the printed PDF too).
     var box = document.querySelector('.pf-qr');
     if (box && window.QRCode) {
-        new QRCode(box, { text: box.getAttribute('data-url'), width: 96, height: 96, colorDark: '#1a0607', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+        new QRCode(box, { text: box.getAttribute('data-url'), width: 96, height: 96, colorDark: <?= json_encode($theme['qr']) ?>, colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
     } else if (box) {
         box.parentNode.hidden = true;
     }

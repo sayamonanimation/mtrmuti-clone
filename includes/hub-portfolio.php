@@ -38,10 +38,35 @@ function alumni_class_line(array $m, $short = true) {
     return trim(($m['batch_name'] ?? '') . ($year !== '' ? ' · ' . $year : ''), ' ·');
 }
 
+/** Portfolio looks the owner can pick: key => [label, description, swatch colours, QR dot colour]. */
+function alumni_portfolio_themes() {
+    return [
+        'red' => ['label' => 'MT Red', 'desc' => 'ธีมสาขา ดำ-แดง เหมือนเว็บไซต์หลัก', 'swatch' => ['#0b0203', '#ff5a3c', '#ff9b7a'], 'qr' => '#1a0607'],
+        'cyber' => ['label' => 'Cyber Neon', 'desc' => 'น้ำเงินเข้ม นีออนฟ้า-ชมพู-ม่วง', 'swatch' => ['#07080e', '#ff2d75', '#3de1ff'], 'qr' => '#0b0d16'],
+        'gold' => ['label' => 'Luxury Gold', 'desc' => 'ดำ-ทอง หรูหรา', 'swatch' => ['#0c0a07', '#d6a240', '#f2c66d'], 'qr' => '#1c160c'],
+        'minimal' => ['label' => 'Minimal Light', 'desc' => 'พื้นสว่าง เรียบ สะอาด ประหยัดหมึกเมื่อพิมพ์', 'swatch' => ['#f5f4f2', '#1b1b1f', '#b3261e'], 'qr' => '#1b1b1f'],
+    ];
+}
+
+function alumni_portfolio_theme($value) {
+    return array_key_exists((string) $value, alumni_portfolio_themes()) ? (string) $value : 'red';
+}
+
 function ensure_alumni_portfolio() {
     global $pdo;
     static $done = false;
-    if ($done || get_setting('alumni_portfolio_ready') === '1') {
+    if ($done) {
+        return;
+    }
+    if (get_setting('alumni_portfolio_theme_ready') !== '1') {
+        try {
+            $pdo->exec("ALTER TABLE alumni_members ADD COLUMN portfolio_theme VARCHAR(20) NOT NULL DEFAULT 'red'");
+        } catch (PDOException $e) {
+            // Column already exists, or alumni_members is created below first.
+        }
+    }
+    if (get_setting('alumni_portfolio_ready') === '1') {
+        set_setting('alumni_portfolio_theme_ready', '1');
         $done = true;
         return;
     }
@@ -62,7 +87,13 @@ function ensure_alumni_portfolio() {
         INDEX (member_id),
         FOREIGN KEY (member_id) REFERENCES alumni_members(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+    try {
+        $pdo->exec("ALTER TABLE alumni_members ADD COLUMN portfolio_theme VARCHAR(20) NOT NULL DEFAULT 'red'");
+    } catch (PDOException $e) {
+        // Column already exists.
+    }
     set_setting('alumni_portfolio_ready', '1');
+    set_setting('alumni_portfolio_theme_ready', '1');
     $done = true;
 }
 

@@ -88,6 +88,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $pdo->prepare('UPDATE alumni_members SET updated_at = CURRENT_TIMESTAMP WHERE id = ?')->execute([$me['id']]);
         }
+    } elseif ($action === 'portfolio_theme') {
+        $theme = alumni_portfolio_theme($_POST['portfolio_theme'] ?? '');
+        $pdo->prepare('UPDATE alumni_members SET portfolio_theme = ? WHERE id = ?')->execute([$theme, $me['id']]);
+        $flash = 'เปลี่ยนธีม Portfolio เป็น ' . alumni_portfolio_themes()[$theme]['label'] . ' แล้ว';
     } elseif ($action === 'delete_item') {
         $pdo->prepare('DELETE FROM alumni_portfolio_items WHERE id = ? AND member_id = ?')->execute([(int) $_POST['item_id'], $me['id']]);
         $flash = 'ลบหัวข้อแล้ว';
@@ -216,6 +220,24 @@ $statusClass = ['approved' => 'ok', 'pending' => 'wait', 'rejected' => 'bad', 'h
                 <a class="btn" href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $me['id'])) ?>" target="_blank" rel="noopener">👁 ดู Portfolio</a>
                 <a class="btn hero-fx-btn-ghost" href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $me['id'] . '&print=1')) ?>" target="_blank" rel="noopener">⬇️ บันทึกเป็น PDF</a>
             </div>
+            <form method="post" class="hub-pf-themes">
+                <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                <input type="hidden" name="action" value="portfolio_theme">
+                <h3>ธีมของ Portfolio</h3>
+                <div class="hub-theme-grid">
+                    <?php $myTheme = alumni_portfolio_theme($me['portfolio_theme'] ?? 'red'); ?>
+                    <?php foreach (alumni_portfolio_themes() as $key => $th): ?>
+                    <label class="hub-theme-card">
+                        <input type="radio" name="portfolio_theme" value="<?= $key ?>"<?= $myTheme === $key ? ' checked' : '' ?>>
+                        <span class="hub-theme-swatch" style="background:<?= $th['swatch'][0] ?>"><i style="background:<?= $th['swatch'][1] ?>"></i><i style="background:<?= $th['swatch'][2] ?>"></i></span>
+                        <strong><?= h($th['label']) ?></strong>
+                        <small><?= h($th['desc']) ?></small>
+                        <a href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $me['id'] . '&theme=' . $key)) ?>" target="_blank" rel="noopener">ดูตัวอย่าง ↗</a>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+                <button class="btn" type="submit">ใช้ธีมที่เลือก</button>
+            </form>
             <?php foreach ($portfolioItems as $it): ?>
             <form method="post" enctype="multipart/form-data" class="hub-pf-item">
                 <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
