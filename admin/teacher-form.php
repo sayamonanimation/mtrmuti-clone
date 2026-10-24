@@ -157,8 +157,8 @@ require_once __DIR__ . '/includes/layout-top.php';
         </div>
         <div class="form-group">
             <label>ตัวตน / ความเชี่ยวชาญ (แสดงเป็นลูกเล่นรอบรูปอาจารย์)</label>
-            <p class="field-hint" style="margin-top:0;">พิมพ์คำที่บอกตัวตน คั่นด้วยเครื่องหมายจุลภาค ( , ) ไม่เกิน 6 คำ เช่น <em>เขียนโปรแกรม, อัลกอริทึม, พัฒนาเกม</em> ระบบจะเลือกลูกเล่นให้ตามคำที่กรอก</p>
-            <input type="text" name="identity_tags" id="identityTags" maxlength="255" value="<?= h($teacher['identity_tags'] ?? '') ?>" placeholder="เขียนโปรแกรม, อัลกอริทึม, พัฒนาเกม">
+            <p class="field-hint" style="margin-top:0;">พิมพ์คำที่บอกตัวตนแล้วกด <strong>Enter</strong> ทีละคำ ไม่เกิน 6 คำ เช่น <em>เขียนโปรแกรม</em> ↵ <em>อัลกอริทึม</em> ↵ <em>พัฒนาเกม</em> ↵ ระบบจะเลือกลูกเล่นให้ตามคำที่กรอก</p>
+            <input type="text" name="identity_tags" id="identityTags" data-tag-input data-tag-max="6" maxlength="255" value="<?= h($teacher['identity_tags'] ?? '') ?>" placeholder="เขียนโปรแกรม, อัลกอริทึม, พัฒนาเกม">
             <div class="identity-preview" id="identityPreview"></div>
             <p class="field-hint">ธีมที่รองรับ: โปรแกรม · อัลกอริทึม/AI/ข้อมูล · เกม · เว็บ/UI/แอป · แอนิเมชัน · 3D/VR/AR · ภาพยนตร์/วิดีโอ · ถ่ายภาพ · ออกแบบ/กราฟิก · เสียง/ดนตรี</p>
         </div>
@@ -280,4 +280,5 @@ require_once __DIR__ . '/includes/layout-top.php';
     });
 })();
 </script>
+<script src="/assets/js/tag-input.js?v=<?= (int) @filemtime(__DIR__ . '/../assets/js/tag-input.js') ?>"></script>
 <?php require_once __DIR__ . '/includes/layout-bottom.php'; ?>

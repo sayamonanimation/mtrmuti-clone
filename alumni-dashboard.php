@@ -168,7 +168,7 @@ $statusClass = ['approved' => 'ok', 'pending' => 'wait', 'rejected' => 'bad', 'h
                 <label><span class="hub-year-label">จบปีการศึกษา</span><input type="number" name="graduation_year" min="2500" max="2700" value="<?= h($me['graduation_year']) ?>"></label>
             </div>
             <label>ตำแหน่ง / ความถนัดหลัก<input type="text" name="headline" maxlength="255" placeholder="เช่น 3D Animator · Freelance" value="<?= h($me['headline']) ?>"></label>
-            <label>ทักษะ (คั่นด้วยจุลภาค)<input type="text" name="skills" maxlength="500" placeholder="Animation, Unity, Blender, ตัดต่อวิดีโอ" value="<?= h($me['skills']) ?>"></label>
+            <label>ทักษะ (พิมพ์แล้วกด Enter ทีละคำ)<input type="text" name="skills" data-tag-input data-tag-max="12" maxlength="500" placeholder="Animation, Unity, Blender, ตัดต่อวิดีโอ" value="<?= h($me['skills']) ?>"></label>
             <label>แนะนำตัว / ประสบการณ์<textarea name="bio" rows="5" maxlength="4000"><?= h($me['bio']) ?></textarea></label>
             <h2>ช่องทางติดต่อ (แสดงบนหน้าเว็บ — กรอกเฉพาะที่ต้องการให้เห็น)</h2>
             <div class="hub-form-row">
@@ -306,6 +306,7 @@ $statusClass = ['approved' => 'ok', 'pending' => 'wait', 'rejected' => 'bad', 'h
         </form>
     </div>
 </div>
+<script src="/assets/js/tag-input.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/tag-input.js') ?>"></script>
 <script src="/assets/js/hub-type.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/hub-type.js') ?>"></script>
 <script src="/assets/js/confirm-popup.js?v=<?= (int) @filemtime(__DIR__ . '/assets/js/confirm-popup.js') ?>"></script>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
