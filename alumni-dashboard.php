@@ -210,12 +210,11 @@ $statusClass = ['approved' => 'ok', 'pending' => 'wait', 'rejected' => 'bad', 'h
         </div>
 
         <div class="content-card hub-form" id="portfolio">
-            <h2>📄 Portfolio — ส่งออกเป็น PDF / E-book</h2>
+            <h2>📄 Portfolio — ส่งออกเป็น PDF</h2>
             <p class="hub-muted" style="margin:0;">Portfolio รวมข้อมูลส่วนตัว ทักษะ ผลงาน และหัวข้อที่คุณเพิ่มด้านล่าง (เช่น การศึกษา ประสบการณ์ทำงาน รางวัล) ในรูปแบบเอกสารพร้อมพิมพ์</p>
             <div class="hub-status-actions">
                 <a class="btn" href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $me['id'])) ?>" target="_blank" rel="noopener">👁 ดู Portfolio</a>
                 <a class="btn hero-fx-btn-ghost" href="<?= h(clean_public_url('/alumni-portfolio?id=' . (int) $me['id'] . '&print=1')) ?>" target="_blank" rel="noopener">⬇️ บันทึกเป็น PDF</a>
-                <a class="btn hero-fx-btn-ghost" href="<?= h(clean_public_url('/alumni-portfolio-epub?id=' . (int) $me['id'])) ?>">📚 ดาวน์โหลด E-book (EPUB)</a>
             </div>
             <?php foreach ($portfolioItems as $it): ?>
             <form method="post" enctype="multipart/form-data" class="hub-pf-item">

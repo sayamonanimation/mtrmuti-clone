@@ -2,8 +2,7 @@
 /**
  * Hub members: who they are (ศิษย์เก่า / นักศึกษาปัจจุบัน / บุคคลทั่วไป) and a
  * portfolio of free-form sections (heading, text, image, link) that is
- * shown as a printable A4 page (alumni-portfolio.php -> PDF) and as an EPUB
- * e-book (alumni-portfolio-epub.php).
+ * shown as a printable A4 page (alumni-portfolio.php -> PDF).
  *
  * The member_type column and the portfolio table are created on first use.
  */
