@@ -81,7 +81,41 @@ function normalize_nav_url($url) {
     if ($url === '#' || strpos($url, '/') === 0) {
         return $url;
     }
-    return normalize_url($url);
+    $url = normalize_url($url);
+    return nav_url_is_own_site($url) ? nav_url_to_path($url) : $url;
+}
+
+/** True for a full URL that points at this site (current host, mtrmuti.com, or a Hostinger temporary domain). */
+function nav_url_is_own_site($url) {
+    $host = strtolower((string) parse_url((string) $url, PHP_URL_HOST));
+    if ($host === '') {
+        return false;
+    }
+    $own = strtolower(preg_replace('/:\d+$/', '', (string) ($_SERVER['HTTP_HOST'] ?? '')));
+    return $host === $own
+        || in_array($host, ['mtrmuti.com', 'www.mtrmuti.com', 'new.mtrmuti.com'], true)
+        || substr($host, -strlen('.hostingersite.com')) === '.hostingersite.com';
+}
+
+/** "https://host/admin/dashboard.php?x=1" -> "/admin/dashboard.php?x=1", so the link works on any domain. */
+function nav_url_to_path($url) {
+    $parts = parse_url((string) $url);
+    return ($parts['path'] ?? '/') . (isset($parts['query']) ? '?' . $parts['query'] : '') . (isset($parts['fragment']) ? '#' . $parts['fragment'] : '');
+}
+
+/** One-time: menu links saved with the old temporary domain become site-relative paths. */
+function ensure_nav_links_relative() {
+    global $pdo;
+    if (get_setting('nav_links_relative_ready') === '1') {
+        return;
+    }
+    $update = $pdo->prepare('UPDATE nav_menu_items SET url = ? WHERE id = ?');
+    foreach ($pdo->query("SELECT id, url FROM nav_menu_items WHERE url LIKE 'http%'")->fetchAll() as $row) {
+        if (nav_url_is_own_site($row['url'])) {
+            $update->execute([nav_url_to_path($row['url']), $row['id']]);
+        }
+    }
+    set_setting('nav_links_relative_ready', '1');
 }
 
 /** Extracts the 11-char video ID from a youtube.com/watch, youtu.be, or /embed/ URL. */
@@ -1069,6 +1103,7 @@ function get_nav_menu_tree($activeOnly = true) {
     ensure_alumni_hub();
     ensure_portfolio_menu_item();
     ensure_portfolio_page_title();
+    ensure_nav_links_relative();
     $sql = 'SELECT * FROM nav_menu_items';
     if ($activeOnly) {
         $sql .= ' WHERE is_active = 1';
