@@ -79,6 +79,7 @@ const OPENDRIVE_PATH_COLUMNS = [
     ['outstanding_alumni', 'id', 'photo_path'],
     ['alumni_members', 'id', 'photo_path'],
     ['alumni_works', 'id', 'image_path'],
+    ['alumni_portfolio_items', 'id', 'image_path'],
     ['site_settings', 'setting_key', 'setting_value'],
 ];
 
@@ -305,11 +306,49 @@ final class OpenDriveClient
         }
     }
 
-    /** @param string|array $body string for form/json, array for multipart */
-    private function request($method, $path, $body = null, $mode = 'form') {
-        // Same browser-like headers as rmutimt_gallery: the API sits behind
-        // Cloudflare, which is stricter with requests that look like bots.
-        $headers = [
+    /**
+     * Downloads a file the account owns into $dest via the API (works with
+     * the owner's session even when the public od.lk link is blocked).
+     */
+    public function downloadFile($fileId, $dest) {
+        $sid = $this->login();
+        $fp = fopen($dest, 'wb');
+        if (!$fp) {
+            throw new RuntimeException('เขียนไฟล์บนเซิร์ฟเวอร์ไม่ได้');
+        }
+        $ch = curl_init(self::apiBase() . '/download/file.json/' . rawurlencode($fileId) . '?' . http_build_query(['session_id' => $sid, 'inline' => '0']));
+        curl_setopt_array($ch, [
+            CURLOPT_FILE => $fp,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS => 5,
+            CURLOPT_USERAGENT => self::USER_AGENT,
+            CURLOPT_HTTPHEADER => self::browserHeaders(),
+            CURLOPT_CONNECTTIMEOUT => 30,
+            CURLOPT_TIMEOUT => 120,
+        ]);
+        $ok = curl_exec($ch);
+        $err = curl_error($ch);
+        $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        fclose($fp);
+        if ($ok === false || $code !== 200) {
+            $snippet = is_file($dest) ? substr((string) file_get_contents($dest, false, null, 0, 300), 0, 300) : '';
+            @unlink($dest);
+            $data = json_decode($snippet, true);
+            $message = is_array($data) ? (string) ($data['error']['message'] ?? $data['message'] ?? $snippet) : strip_tags($snippet);
+            throw new RuntimeException('OpenDrive API ' . ($ok === false ? $err : 'HTTP ' . $code) . ($message !== '' ? ': ' . trim(mb_substr($message, 0, 160)) : ''));
+        }
+    }
+
+    private static function apiBase() {
+        return defined('OD_API_BASE') && OD_API_BASE !== '' ? rtrim(OD_API_BASE, '/') : self::API_BASE;
+    }
+
+    /**
+     * Same browser-like headers as rmutimt_gallery: the API sits behind
+     * Cloudflare, which is stricter with requests that look like bots.
+     */
+    private static function browserHeaders() {
+        return [
             'Accept: application/json, text/plain, */*',
             'Accept-Language: th-TH,th;q=0.9,en-US;q=0.8,en;q=0.7',
             'Origin: https://www.opendrive.com',
@@ -321,13 +360,17 @@ final class OpenDriveClient
             'Sec-Fetch-Mode: cors',
             'Sec-Fetch-Site: same-site',
         ];
+    }
+
+    /** @param string|array $body string for form/json, array for multipart */
+    private function request($method, $path, $body = null, $mode = 'form') {
+        $headers = self::browserHeaders();
         if ($mode === 'json') {
             $headers[] = 'Content-Type: application/json';
         } elseif ($mode === 'form' && $body !== null) {
             $headers[] = 'Content-Type: application/x-www-form-urlencoded';
         }
-        $base = defined('OD_API_BASE') && OD_API_BASE !== '' ? rtrim(OD_API_BASE, '/') : self::API_BASE;
-        $ch = curl_init($base . $path);
+        $ch = curl_init(self::apiBase() . $path);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST => $method,
@@ -361,3 +404,5 @@ function opendrive_temp_dir() {
     }
     return is_dir($dir) && is_writable($dir) ? $dir : sys_get_temp_dir();
 }
+
+require_once __DIR__ . '/opendrive-mirror.php';
