@@ -18,6 +18,10 @@ $langSwitchUrl = ($urlParts['path'] ?? '/') . '?' . http_build_query($langQueryP
 // admin/mourning-toggle.php) - it grays out the whole site for every
 // visitor, not a per-visitor preference.
 $mourningMode = get_setting('mourning_mode', '0') === '1';
+
+if (function_exists('track_visit')) {
+    track_visit($pageTitleOverride ?? $siteName);
+}   // admin สถิติผู้เข้าชม (never breaks the page)
 ?>
 <!DOCTYPE html>
 <html lang="<?= current_lang() === 'en' ? 'en' : 'th' ?>" class="<?= $mourningMode ? 'mourning-mode' : '' ?>">

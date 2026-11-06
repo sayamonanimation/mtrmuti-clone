@@ -148,6 +148,7 @@ function admin_nav_groups() {
     $groups[] = [
         'label' => 'ตั้งค่าระบบ', 'icon' => '⚙️', 'system' => true, 'public' => null,
         'items' => [
+            ['href' => '/admin/visitor-stats.php', 'label' => '📊 สถิติผู้เข้าชมเว็บไซต์'],
             ['href' => '/admin/settings.php', 'label' => 'ตั้งค่าเว็บไซต์'],
             ['href' => '/admin/nav-menu.php', 'label' => 'จัดการเมนูเว็บไซต์'],
             ['href' => '/admin/opendrive.php', 'label' => 'ที่เก็บไฟล์ OpenDrive'],
