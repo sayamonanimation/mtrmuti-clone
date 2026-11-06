@@ -10,20 +10,25 @@ if (!isset($ranges[$days])) {
 $byMonth = $days === 365;
 $from = $byMonth ? (new DateTime(visit_today('-11 months'), new DateTimeZone(VISIT_TZ)))->modify('first day of this month')->format('Y-m-d') : visit_today('-' . ($days - 1) . ' days');
 
+// Ranges never reach back before the start date (no empty days before counting began).
+$since = visit_stats_since();
+if ($from < $since) {
+    $from = $since;
+}
+
 $today = visit_today();
 $tiles = [
     ['วันนี้', visit_totals($today, $today)],
     ['เมื่อวาน', visit_totals(visit_today('-1 day'), visit_today('-1 day'))],
     ['7 วันล่าสุด', visit_totals(visit_today('-6 days'), $today)],
     ['เดือนนี้', visit_totals(substr($today, 0, 8) . '01', $today)],
-    ['ทั้งหมด', visit_totals('2000-01-01', $today)],
+    ['ทั้งหมด', visit_totals($since, $today)],
 ];
 $series = visit_series($from, $byMonth);
 $range = visit_totals($from, $today);
 $top = visit_top_pages($from);
 $devices = visit_devices($from);
 $deviceTotal = max(1, array_sum($devices));
-$since = get_setting('visit_stats_since', $today);
 
 $maxVisitors = max(1, max(array_column($series, 'visitors') ?: [0]));
 // Round the axis top up to a "nice" number so gridlines land on whole values.

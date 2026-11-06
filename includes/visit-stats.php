@@ -14,6 +14,7 @@
  */
 
 const VISIT_TZ = 'Asia/Bangkok';
+const VISIT_STATS_START = '2026-11-05';   // official start (mtrmuti.com went live); stats never show earlier days
 const VISIT_BOT_PATTERN = '/bot|crawl|spider|slurp|scrap|fetch|preview|monitor|uptime|headless|lighthouse|pagespeed|facebookexternalhit|whatsapp|line-poker|curl|wget|python|java\/|go-http|okhttp|axios|node-fetch|php\//i';
 
 function visit_today($modify = null) {
@@ -48,6 +49,12 @@ function ensure_visit_stats() {
     set_setting('visit_stats_since', visit_today());
     set_setting('visit_stats_ready', '1');
     $done = true;
+}
+
+/** First day the statistics cover (Y-m-d). */
+function visit_stats_since() {
+    $saved = (string) get_setting('visit_stats_since', VISIT_STATS_START);
+    return min($saved !== '' ? $saved : VISIT_STATS_START, VISIT_STATS_START);
 }
 
 /** Page key: clean path, plus ?id= for profile/album style pages. */
