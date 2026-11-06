@@ -167,10 +167,17 @@ final class OpenDriveClient
     private $username;
     private $password;
     private $sessionId = '';
+    private $timeout = self::TIMEOUT;
 
     public function __construct($username, $password) {
         $this->username = $username;
         $this->password = $password;
+    }
+
+    /** Shorter network timeout (seconds) for quick jobs, so a hanging API can't hold a PHP worker for minutes. */
+    public function setTimeout($seconds) {
+        $this->timeout = max(5, (int) $seconds);
+        return $this;
     }
 
     public function login() {
@@ -323,8 +330,8 @@ final class OpenDriveClient
             CURLOPT_MAXREDIRS => 5,
             CURLOPT_USERAGENT => self::USER_AGENT,
             CURLOPT_HTTPHEADER => self::browserHeaders(),
-            CURLOPT_CONNECTTIMEOUT => 30,
-            CURLOPT_TIMEOUT => 120,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => $this->timeout,
         ]);
         $ok = curl_exec($ch);
         $err = curl_error($ch);
@@ -376,8 +383,8 @@ final class OpenDriveClient
             CURLOPT_CUSTOMREQUEST => $method,
             CURLOPT_USERAGENT => self::USER_AGENT,
             CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_CONNECTTIMEOUT => 30,
-            CURLOPT_TIMEOUT => self::TIMEOUT,
+            CURLOPT_CONNECTTIMEOUT => min(30, $this->timeout),
+            CURLOPT_TIMEOUT => $this->timeout,
             CURLOPT_ENCODING => '',
         ]);
         if ($body !== null) {
@@ -405,4 +412,7 @@ function opendrive_temp_dir() {
     return is_dir($dir) && is_writable($dir) ? $dir : sys_get_temp_dir();
 }
 
-require_once __DIR__ . '/opendrive-mirror.php';
+// Optional tool; guarded so a missing file can never take the whole site down.
+if (is_file(__DIR__ . '/opendrive-mirror.php')) {
+    require_once __DIR__ . '/opendrive-mirror.php';
+}

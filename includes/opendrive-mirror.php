@@ -11,7 +11,8 @@
  * storage/opendrive_mirror.json (local path => original OpenDrive link).
  */
 
-const OPENDRIVE_MIRROR_BATCH = 4;
+const OPENDRIVE_MIRROR_BATCH = 2;
+const OPENDRIVE_MIRROR_NET_TIMEOUT = 25;   // seconds per network call; keeps each request short
 const OPENDRIVE_MIRROR_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf'];
 const OPENDRIVE_LINK_PATTERN = '~https?://(?:www\.)?od\.lk/[dsf]/([A-Za-z0-9_=-]+)/([^\s"\'<>(),\\\\]+)~';
 
@@ -97,8 +98,8 @@ function opendrive_fetch_public($url, $dest) {
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_MAXREDIRS => 5,
         CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        CURLOPT_CONNECTTIMEOUT => 20,
-        CURLOPT_TIMEOUT => 90,
+        CURLOPT_CONNECTTIMEOUT => 8,
+        CURLOPT_TIMEOUT => OPENDRIVE_MIRROR_NET_TIMEOUT,
     ]);
     $ok = curl_exec($ch);
     $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -164,7 +165,7 @@ function opendrive_mirror_link(PDO $pdo, $url, array $places, &$client = null, $
                     throw new RuntimeException('ลิงก์สาธารณะถูกปิด และยังไม่ได้ตั้งค่าบัญชี OpenDrive');
                 }
                 if (!$client) {
-                    $client = new OpenDriveClient(OD_USERNAME, OD_PASSWORD);
+                    $client = (new OpenDriveClient(OD_USERNAME, OD_PASSWORD))->setTimeout(OPENDRIVE_MIRROR_NET_TIMEOUT);
                 }
                 $client->downloadFile($fileId, $part);
                 $got = true;
@@ -199,18 +200,35 @@ function opendrive_mirror_link(PDO $pdo, $url, array $places, &$client = null, $
  * Returns ['copied' => n, 'failed' => [[url, message]], 'remaining' => n].
  */
 function opendrive_mirror_batch(PDO $pdo, $skip = 0, $limit = OPENDRIVE_MIRROR_BATCH) {
-    @set_time_limit(300);
+    @set_time_limit(120);
+    // One run at a time: double clicks or a second tab must not pile up PHP workers.
+    $lock = @fopen(SITE_ROOT . '/storage/opendrive_mirror.lock', 'c');
+    if ($lock && !flock($lock, LOCK_EX | LOCK_NB)) {
+        throw new RuntimeException('กำลังดึงไฟล์อยู่ในอีกหน้าต่างหนึ่ง รอสักครู่แล้วกด "ทำต่อ"');
+    }
     $links = opendrive_remote_links($pdo);
     $client = null;
     $copied = 0;
     $failed = [];
+    $apiError = '';
     foreach (array_slice($links, max(0, (int) $skip), $limit, true) as $url => $places) {
+        if ($apiError !== '') {
+            $failed[] = [$url, $apiError];   // API already refused this run; don't wait on it again
+            continue;
+        }
         try {
             opendrive_mirror_link($pdo, $url, $places, $client);
             $copied++;
         } catch (Throwable $e) {
             $failed[] = [$url, $e->getMessage()];
+            if (strpos($e->getMessage(), 'OpenDrive') === 0) {
+                $apiError = $e->getMessage();
+            }
         }
+    }
+    if ($lock) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
     }
     return ['copied' => $copied, 'failed' => $failed, 'remaining' => count(opendrive_remote_links($pdo))];
 }
