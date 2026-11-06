@@ -9,7 +9,15 @@ foreach ($pdo->query('SELECT slug, updated_at FROM pages') as $row) {
     $pageUpdated[$row['slug']] = $row['updated_at'];
 }
 $groups = admin_nav_groups();
+$visitToday = visit_totals(visit_today(), visit_today());
+$visitMonth = visit_totals(substr(visit_today(), 0, 8) . '01', visit_today());
 ?>
+<div class="admin-card" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 28px;">
+    <strong style="font-size:1.05rem;">📊 ผู้เข้าชมเว็บไซต์</strong>
+    <span>วันนี้ <strong style="font-size:1.3rem;"><?= number_format($visitToday['visitors']) ?></strong> คน</span>
+    <span>เดือนนี้ <strong style="font-size:1.3rem;"><?= number_format($visitMonth['visitors']) ?></strong> คน</span>
+    <a class="btn btn-ghost" style="margin-left:auto;" href="/admin/visitor-stats.php">ดูสถิติทั้งหมด →</a>
+</div>
 <div class="admin-card">
     <p style="margin:0;">สวัสดี, <strong><?= h($_SESSION['admin_username']) ?></strong> — หมวดและชื่อเมนูด้านล่างดึงมาจาก <strong>เมนูบนหน้าเว็บไซต์</strong> โดยตรง เรียงลำดับเหมือนกัน
         ถ้าเพิ่ม ย้าย หรือเปลี่ยนชื่อเมนูที่ <a href="/admin/nav-menu.php">จัดการเมนูเว็บไซต์</a> หน้านี้และแถบเมนูด้านซ้ายจะเปลี่ยนตามอัตโนมัติ</p>
